@@ -189,3 +189,17 @@ export function filterTestEvents(events: NostrEvent[]): NostrEvent[] {
 export function getTestEvents(events: NostrEvent[]): NostrEvent[] {
   return events.filter(isTestEvent);
 }
+
+/**
+ * Get test player metadata by pubkey
+ */
+export function getTestPlayerMetadata(pubkey: string): NostrEvent | undefined {
+  return TEST_PLAYER_METADATA[pubkey];
+}
+
+/**
+ * Check if a pubkey is a test player
+ */
+export function isTestPlayer(pubkey: string): boolean {
+  return pubkey in TEST_PLAYER_METADATA;
+}

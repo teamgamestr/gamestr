@@ -1,6 +1,6 @@
 import { useSeoMeta } from '@unhead/react';
 
-// FIXME: Update this page (the content is just a fallback if you fail to update the page)
+// This is a fallback index page - the Home component is used as the main landing page
 
 const Index = () => {
   useSeoMeta({

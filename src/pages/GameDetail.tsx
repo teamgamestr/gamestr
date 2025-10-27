@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useLeaderboard, type LeaderboardPeriod } from '@/hooks/useScores';
+import { type LeaderboardPeriod } from '@/hooks/useScores';
+import { useLeaderboardWithTestData } from '@/hooks/useScoresWithTestData';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,11 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, Zap, TestTube2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, TestTube2 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ZapButton } from '@/components/ZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import { isTestEvent } from '@/lib/testData';
+import type { Event } from 'nostr-tools';
 
 export function GameDetail() {
   const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
@@ -24,7 +26,7 @@ export function GameDetail() {
   const { getGame } = useGameConfig();
   const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
 
-  const { data: scores, isLoading } = useLeaderboard(
+  const { data: scores, isLoading } = useLeaderboardWithTestData(
     gameIdentifier || '',
     period,
     {
@@ -32,6 +34,7 @@ export function GameDetail() {
       mode,
       developerPubkey: pubkey,
       limit: 100,
+      includeTestData: true,
     }
   );
 
@@ -254,7 +257,15 @@ export function GameDetail() {
 interface LeaderboardRowProps {
   rank: number;
   score: {
-    event: { id: string; pubkey: string; created_at: number };
+    event: {
+      id: string;
+      pubkey: string;
+      created_at: number;
+      kind: number;
+      tags: string[][];
+      content: string;
+      sig: string;
+    };
     score: number;
     playerPubkey: string;
     level?: string;
@@ -328,7 +339,7 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
             </p>
           )}
         </div>
-        <ZapButton eventId={score.event.id} />
+        <ZapButton target={score.event as unknown as Event} />
       </div>
     </div>
   );

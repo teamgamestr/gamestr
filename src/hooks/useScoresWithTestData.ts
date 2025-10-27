@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useScores, type LeaderboardPeriod } from './useScores';
+import { useScores, type LeaderboardPeriod, type ScoreEvent } from './useScores';
 import { ALL_TEST_SCORES, TEST_PLAYER_METADATA } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { ParsedScore } from './useScores';
@@ -100,10 +100,10 @@ export function useScoresWithTestData(options: UseScoresWithTestDataOptions = {}
       const modeTag = event.tags.find(([name]) => name === 'mode')?.[1];
       const durationTag = event.tags.find(([name]) => name === 'duration')?.[1];
       const achievementsTag = event.tags.find(([name]) => name === 'achievements')?.[1];
-      const genreTags = event.tags.filter(([name]) => name === 't' && name !== 'test').map(([, value]) => value);
+      const genreTags = event.tags.filter(([name, value]) => name === 't' && value !== 'test').map(([, value]) => value);
 
       return {
-        event: event as any,
+        event: event as unknown as ScoreEvent,
         gameIdentifier: gameTag,
         score: parseInt(scoreTag),
         playerPubkey: playerTag,
@@ -139,4 +139,43 @@ export function getTestPlayerMetadata(pubkey: string): NostrEvent | undefined {
  */
 export function isTestPlayer(pubkey: string): boolean {
   return pubkey in TEST_PLAYER_METADATA;
+}
+
+/**
+ * Get leaderboard for a specific game with test data support
+ */
+export function useLeaderboardWithTestData(
+  gameIdentifier: string,
+  period: LeaderboardPeriod = 'all-time',
+  options: {
+    difficulty?: string;
+    mode?: string;
+    limit?: number;
+    developerPubkey?: string;
+    includeTestData?: boolean;
+  } = {}
+) {
+  return useScoresWithTestData({
+    gameIdentifier,
+    period,
+    ...options,
+  });
+}
+
+/**
+ * Get scores for a specific player with test data support
+ */
+export function usePlayerScoresWithTestData(
+  playerPubkey: string,
+  options: {
+    gameIdentifier?: string;
+    period?: LeaderboardPeriod;
+    limit?: number;
+    includeTestData?: boolean;
+  } = {}
+) {
+  return useScoresWithTestData({
+    playerPubkey,
+    ...options,
+  });
 }

@@ -42,7 +42,7 @@ export function useAuthor(pubkey: string | undefined) {
         } catch {
           return { event };
         }
-      } catch (error) {
+      } catch {
         // If relay query fails, return empty (don't throw)
         return {};
       }

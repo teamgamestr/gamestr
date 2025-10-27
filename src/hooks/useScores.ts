@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import type { NostrEvent } from '@nostrify/nostrify';
+import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 
 export interface ScoreEvent extends NostrEvent {
   kind: 762;
@@ -115,9 +115,9 @@ export function useScores(options: UseScoresOptions = {}) {
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       
-      const filter: any = {
+      const filter: NostrFilter = {
         kinds: [762],
-        limit,
+        limit: 1000, // Fetch more events since we'll filter in JS
       };
 
       // Add time filter for period
@@ -126,27 +126,15 @@ export function useScores(options: UseScoresOptions = {}) {
         filter.since = since;
       }
 
-      // Add game filter
-      if (gameIdentifier) {
-        filter['#game'] = [gameIdentifier];
-      }
-
-      // Add player filter
+      // Only add filters that relays can actually index
+      // Relays only index single-letter tags and special fields like 'authors'
+      
+      // Add player filter (p is a single-letter tag)
       if (playerPubkey) {
         filter['#p'] = [playerPubkey];
       }
 
-      // Add difficulty filter
-      if (difficulty) {
-        filter['#difficulty'] = [difficulty];
-      }
-
-      // Add mode filter
-      if (mode) {
-        filter['#mode'] = [mode];
-      }
-
-      // Add genre filter
+      // Add genre filter (t is a single-letter tag)
       if (genre) {
         filter['#t'] = [genre];
       }
@@ -159,12 +147,29 @@ export function useScores(options: UseScoresOptions = {}) {
       const events = await nostr.query([filter], { signal });
 
       // Validate and parse events
-      const parsedScores = events
+      let parsedScores = events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null);
 
-      // Sort by score descending
-      return parsedScores.sort((a, b) => b.score - a.score);
+      // Filter by game identifier in JavaScript
+      if (gameIdentifier) {
+        parsedScores = parsedScores.filter(score => score.gameIdentifier === gameIdentifier);
+      }
+
+      // Filter by difficulty in JavaScript
+      if (difficulty) {
+        parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
+      }
+
+      // Filter by mode in JavaScript
+      if (mode) {
+        parsedScores = parsedScores.filter(score => score.mode === mode);
+      }
+
+      // Sort by score descending and limit results
+      return parsedScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit);
     },
     enabled,
   });
