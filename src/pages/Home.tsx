@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Gamepad2, Flame, Sparkles, Star } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Search, Gamepad2, Flame, Sparkles, Star, TestTube2 } from 'lucide-react';
 import { GAME_GENRES } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
@@ -15,8 +17,9 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
+  const [showTestData, setShowTestData] = useState(true);
 
-  const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000 });
+  const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000, includeTestData: showTestData });
   const { getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();
 
   // Combine score data with metadata
@@ -163,6 +166,19 @@ export function Home() {
                 {genre}
               </Button>
             ))}
+          </div>
+
+          {/* Test Data Toggle */}
+          <div className="flex items-center justify-center gap-2 p-3 bg-muted/50 rounded-lg max-w-md mx-auto">
+            <TestTube2 className="h-4 w-4 text-muted-foreground" />
+            <Label htmlFor="test-data-toggle" className="text-sm cursor-pointer">
+              Show test data
+            </Label>
+            <Switch
+              id="test-data-toggle"
+              checked={showTestData}
+              onCheckedChange={setShowTestData}
+            />
           </div>
 
           {/* Active Filters Display */}

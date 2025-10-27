@@ -65,6 +65,16 @@ npm run dev
 
 The app will be available at `http://localhost:5173`
 
+### Test Data
+
+Gamestr includes comprehensive local test data for development:
+- **5 example games** with scores and metadata
+- **5 test players** with profiles and avatars
+- **36 test score events** distributed across different time periods
+- **Toggle in UI** to show/hide test data
+
+See `docs/TEST_DATA.md` for complete documentation on the test data system.
+
 ### Building for Production
 
 ```bash

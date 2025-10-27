@@ -210,19 +210,32 @@ export function usePlayerScores(
 /**
  * Get all games with scores
  */
-export function useGamesWithScores(options: { limit?: number } = {}) {
+export function useGamesWithScores(options: { limit?: number; includeTestData?: boolean } = {}) {
   const { nostr } = useNostr();
-  const { limit = 500 } = options;
+  const { limit = 500, includeTestData = true } = options;
 
   return useQuery({
-    queryKey: ['games-with-scores', limit],
+    queryKey: ['games-with-scores', limit, includeTestData],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       
-      const events = await nostr.query([{
-        kinds: [762],
-        limit,
-      }], { signal });
+      let events: NostrEvent[] = [];
+      
+      // Try to fetch from relays, but don't fail if it times out
+      try {
+        events = await nostr.query([{
+          kinds: [762],
+          limit,
+        }], { signal });
+      } catch (error) {
+        console.warn('Failed to fetch scores from relays, using test data only', error);
+      }
+
+      // Add test data if enabled
+      if (includeTestData) {
+        const { ALL_TEST_SCORES } = await import('@/lib/testData');
+        events = [...events, ...ALL_TEST_SCORES];
+      }
 
       // Parse and validate
       const parsedScores = events

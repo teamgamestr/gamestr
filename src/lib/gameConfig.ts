@@ -35,8 +35,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // Example game configurations
   // Format: "<developer-pubkey>:<game-identifier>"
   
-  // Snake Game Example
-  'example-dev-pubkey:snake-game': {
+  // Snake Game Example (matches test data)
+  'test-developer-pubkey-1234567890abcdef:snake-game': {
     name: 'Classic Snake',
     description: 'The timeless arcade classic! Eat apples, grow longer, and avoid hitting yourself. How high can you score?',
     image: 'https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -48,8 +48,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
   
-  // Tetris Example
-  'example-dev-pubkey:tetris-clone': {
+  // Tetris Example (matches test data)
+  'test-developer-pubkey-1234567890abcdef:tetris-clone': {
     name: 'Block Puzzle Master',
     description: 'Stack falling blocks to clear lines and rack up massive combos. A puzzle game that never gets old!',
     image: 'https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -61,8 +61,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
   
-  // Racing Game Example
-  'example-dev-pubkey:speed-racer': {
+  // Racing Game Example (matches test data)
+  'test-developer-pubkey-1234567890abcdef:speed-racer': {
     name: 'Speed Racer 3D',
     description: 'Hit the track in this high-octane racing game. Drift around corners, boost past opponents, and dominate the leaderboards!',
     image: 'https://images.pexels.com/photos/1202723/pexels-photo-1202723.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -74,8 +74,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: true,
   },
   
-  // Puzzle Game Example
-  'example-dev-pubkey:match-three': {
+  // Puzzle Game Example (matches test data)
+  'test-developer-pubkey-1234567890abcdef:match-three': {
     name: 'Gem Crusher',
     description: 'Match colorful gems in this addictive puzzle game. Create cascading combos and special power-ups!',
     image: 'https://images.pexels.com/photos/1670977/pexels-photo-1670977.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -87,8 +87,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: true,
   },
   
-  // FPS Example
-  'example-dev-pubkey:space-shooter': {
+  // FPS Example (matches test data)
+  'test-developer-pubkey-1234567890abcdef:space-shooter': {
     name: 'Cosmic Defender',
     description: 'Defend Earth from alien invaders in this fast-paced space shooter. Upgrade your ship and save humanity!',
     image: 'https://images.pexels.com/photos/2085831/pexels-photo-2085831.jpeg?auto=compress&cs=tinysrgb&w=800',
