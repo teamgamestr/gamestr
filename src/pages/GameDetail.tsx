@@ -9,10 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, Zap } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, Zap, TestTube2 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ZapButton } from '@/components/ZapButton';
 import { formatDistanceToNow } from 'date-fns';
+import { isTestEvent } from '@/lib/testData';
 
 export function GameDetail() {
   const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
@@ -303,6 +304,12 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
 
       {/* Score Details */}
       <div className="flex items-center gap-4">
+        {isTestEvent(score.event) && (
+          <Badge variant="secondary" className="hidden sm:inline-flex gap-1">
+            <TestTube2 className="h-3 w-3" />
+            Test
+          </Badge>
+        )}
         {score.difficulty && (
           <Badge variant="outline" className="hidden sm:inline-flex">
             {score.difficulty}
