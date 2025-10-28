@@ -3,7 +3,7 @@ import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 
 export interface ScoreEvent extends NostrEvent {
-  kind: 762;
+  kind: 30762;
 }
 
 export interface ParsedScore {
@@ -11,6 +11,7 @@ export interface ParsedScore {
   gameIdentifier: string;
   score: number;
   playerPubkey: string;
+  state?: string;
   level?: string;
   difficulty?: string;
   mode?: string;
@@ -25,7 +26,7 @@ export interface ParsedScore {
  * Validate and parse a score event
  */
 function validateScoreEvent(event: NostrEvent): ParsedScore | null {
-  if (event.kind !== 762) return null;
+  if (event.kind !== 30762) return null;
 
   const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
   const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
@@ -36,6 +37,7 @@ function validateScoreEvent(event: NostrEvent): ParsedScore | null {
   const score = parseInt(scoreTag);
   if (isNaN(score)) return null;
 
+  const stateTag = event.tags.find(([name]) => name === 'state')?.[1];
   const levelTag = event.tags.find(([name]) => name === 'level')?.[1];
   const difficultyTag = event.tags.find(([name]) => name === 'difficulty')?.[1];
   const modeTag = event.tags.find(([name]) => name === 'mode')?.[1];
@@ -50,6 +52,7 @@ function validateScoreEvent(event: NostrEvent): ParsedScore | null {
     gameIdentifier: gameTag,
     score,
     playerPubkey: playerTag,
+    state: stateTag,
     level: levelTag,
     difficulty: difficultyTag,
     mode: modeTag,
@@ -116,7 +119,7 @@ export function useScores(options: UseScoresOptions = {}) {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       
       const filter: NostrFilter = {
-        kinds: [762],
+        kinds: [30762],
         limit: 1000, // Fetch more events since we'll filter in JS
       };
 
@@ -149,7 +152,8 @@ export function useScores(options: UseScoresOptions = {}) {
       // Validate and parse events
       let parsedScores = events
         .map(validateScoreEvent)
-        .filter((score): score is ParsedScore => score !== null);
+        .filter((score): score is ParsedScore => score !== null)
+        .filter(score => score.state !== 'invalidated'); // Filter out invalidated scores
 
       // Filter by game identifier in JavaScript
       if (gameIdentifier) {
@@ -229,7 +233,7 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
       // Try to fetch from relays, but don't fail if it times out
       try {
         events = await nostr.query([{
-          kinds: [762],
+          kinds: [30762],
           limit,
         }], { signal });
       } catch (error) {
@@ -305,7 +309,7 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
       const since = Math.floor(Date.now() / 1000) - (days * 86400);
       
       const events = await nostr.query([{
-        kinds: [762],
+        kinds: [30762],
         since,
         limit: 1000,
       }], { signal });

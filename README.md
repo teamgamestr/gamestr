@@ -19,7 +19,7 @@ Gamestr is a social gaming score platform built on the Nostr protocol. It enable
 - 📚 **Comprehensive Docs** - Interactive guides and code examples
 - 🧪 **Event Playground** - Test score events in your browser
 - 📈 **Built-in Analytics** - Track player engagement and top scores
-- 🔓 **Open Protocol** - Based on NIP-762 (kind 762 events)
+- 🔓 **Open Protocol** - Based on NIP-762 (kind 30762 addressable events)
 - 🌍 **Cross-Platform** - Works with any programming language
 
 ### Core Features
@@ -99,14 +99,15 @@ const relays = ['wss://relay.nostr.band', 'wss://relay.damus.io'];
 
 async function publishScore(playerPubkey, score, metadata = {}) {
   const event = {
-    kind: 762,
+    kind: 30762,
     created_at: Math.floor(Date.now() / 1000),
     content: 'New high score!',
     tags: [
-      ['d', `my-game:${Date.now()}:${Math.random().toString(36).substring(7)}`],
+      ['d', `my-game:${playerPubkey}:default`], // Unique identifier for replaceable event
       ['game', 'my-awesome-game'],
       ['score', score.toString()],
       ['p', playerPubkey],
+      ['state', 'active'], // Score state
       ['t', 'arcade'], // Genre tag
     ],
   };
@@ -118,19 +119,20 @@ async function publishScore(playerPubkey, score, metadata = {}) {
 }
 ```
 
-### Score Event Structure (Kind 762)
+### Score Event Structure (Kind 30762)
 
 ```json
 {
-  "kind": 762,
+  "kind": 30762,
   "pubkey": "game-developer-pubkey",
   "created_at": 1698765432,
   "content": "New high score achieved!",
   "tags": [
-    ["d", "game-id:timestamp:random"],
+    ["d", "my-awesome-game:player-pubkey:level-12"],
     ["game", "my-awesome-game"],
     ["score", "15000"],
     ["p", "player-pubkey"],
+    ["state", "active"],
     ["level", "12"],
     ["difficulty", "hard"],
     ["mode", "single-player"],
@@ -245,7 +247,8 @@ Gamestr implements NIP-762, a standardized format for publishing game scores to 
 
 ### Key Features of NIP-762
 
-- Uses kind 762 events
+- Uses kind 30762 addressable replaceable events
+- Supports score state tracking (active, verified, disputed, invalidated)
 - Supports multiple difficulty levels and game modes
 - Achievement tracking
 - Genre categorization with `t` tags

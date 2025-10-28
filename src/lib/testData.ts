@@ -78,7 +78,7 @@ function createTestScore(
     id: `test-event-${gameIdentifier}-${playerIndex}-${score}`,
     pubkey: TEST_DEV_PUBKEY,
     created_at: createdAt,
-    kind: 762,
+    kind: 30762,
     tags,
     content: `${player.name} scored ${score.toLocaleString()} points!`,
     sig: 'test-signature-not-real',

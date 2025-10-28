@@ -67,7 +67,7 @@ export function Playground() {
 
     createEvent(
       {
-        kind: 762,
+        kind: 30762,
         content: formData.content,
         tags,
       },
@@ -122,7 +122,7 @@ export function Playground() {
             <Badge variant="secondary">Developer Tool</Badge>
             <h1 className="text-4xl md:text-5xl font-bold">Event Playground</h1>
             <p className="text-lg text-muted-foreground">
-              Test kind 762 score events in your browser. Perfect for developers integrating Gamestr.
+              Test kind 30762 score events in your browser. Perfect for developers integrating Gamestr.
             </p>
           </div>
         </div>

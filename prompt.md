@@ -1,6 +1,6 @@
 Build a comprehensive social gaming score website called Gamestr based on Nostr.
 
-Gamestr is a platform to display, browse, and interact with scores and leaderboards for games publishing kind 762 score events on Nostr. The site should integrate the latest Score NIP specification, processing events from popular, reliable, and user-configurable relays. Below are required features and guidelines:
+Gamestr is a platform to display, browse, and interact with scores and leaderboards for games publishing kind 30762 score events on Nostr. The site should integrate the latest Score NIP specification, processing events from popular, reliable, and user-configurable relays. Below are required features and guidelines:
 
 ### Core Features
 
@@ -12,7 +12,7 @@ Gamestr is a platform to display, browse, and interact with scores and leaderboa
 - **Social Features:** Let users follow other players, view friends’ scores, and create private or public friend leaderboards. Enable leaderboard/score sharing to Nostr and other social networks.
 - **Score Interactions:** Allow users to zap, comment, and quote scores as kind 1 events. Display notifications for new zaps, comments, mentions, and when personal records are surpassed.
 - **Developer Explainer:** Provide a dedicated, interactive explainer page showing how game developers can integrate the Score NIP into their games, appear on Gamestr, and access analytics.
-- **API & Test Suite:** Include API documentation and an event playground for developers to send/test kind 762 events. Store test events in an editable directory; allow adding/removing via the frontend. Clearly distinguish test events from live ones.
+- **API & Test Suite:** Include API documentation and an event playground for developers to send/test kind 30762 events. Store test events in an editable directory; allow adding/removing via the frontend. Clearly distinguish test events from live ones.
 - **Moderation & Security:** Support mute/report/abuse tools, relay selection and reliability metrics, basic admin dashboard for managing games, events, players, and comments. Support anti-cheat/event verification options for developers.
 - **Event History:** Let users and games display historical leaderboards and progress charts, with downloadable data as needed.
 

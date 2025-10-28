@@ -16,15 +16,16 @@ export function Developers() {
   };
 
   const exampleEvent = `{
-  "kind": 762,
+  "kind": 30762,
   "pubkey": "your-game-developer-pubkey",
   "created_at": ${Math.floor(Date.now() / 1000)},
   "content": "New high score achieved!",
   "tags": [
-    ["d", "my-game:${Date.now()}:${Math.random().toString(36).substring(7)}"],
+    ["d", "my-awesome-game:player-pubkey:level-12"],
     ["game", "my-awesome-game"],
     ["score", "15000"],
     ["p", "player-pubkey"],
+    ["state", "active"],
     ["level", "12"],
     ["difficulty", "hard"],
     ["mode", "single-player"],
@@ -47,14 +48,15 @@ const gamePubkey = getPublicKey(gamePrivateKey);
 // Function to publish a score
 async function publishScore(playerPubkey, score, metadata = {}) {
   const event = {
-    kind: 762,
+    kind: 30762,
     created_at: Math.floor(Date.now() / 1000),
     content: metadata.message || 'New score achieved!',
     tags: [
-      ['d', \`my-game:\${Date.now()}:\${Math.random().toString(36).substring(7)}\`],
+      ['d', \`my-awesome-game:\${playerPubkey}:\${metadata.level || 'default'}\`],
       ['game', 'my-awesome-game'],
       ['score', score.toString()],
       ['p', playerPubkey],
+      ['state', 'active'], // Score state
       ['t', 'arcade'], // Genre tag
     ],
   };
@@ -120,7 +122,7 @@ def publish_score(player_pubkey, score, **metadata):
     
     # Create and sign event
     event = Event(
-        kind=762,
+        kind=30762,
         content=metadata.get("message", "New score achieved!"),
         tags=tags,
         public_key=private_key.public_key.hex()
@@ -252,7 +254,7 @@ publish_score(
                 <div>
                   <h3 className="font-semibold mb-1">Publish Score Events</h3>
                   <p className="text-sm text-muted-foreground">
-                    When a player achieves a score, create and publish a kind 762 event to Nostr relays.
+                    When a player achieves a score, create and publish a kind 30762 addressable event to Nostr relays.
                     See code examples below.
                   </p>
                 </div>
@@ -279,12 +281,12 @@ publish_score(
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Code2 className="h-5 w-5" />
-              Score Event Structure (Kind 762)
+              Score Event Structure (Kind 30762)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Score events use kind 762 and follow this structure:
+              Score events use kind 30762 (addressable replaceable) and follow this structure:
             </p>
 
             <div className="relative">

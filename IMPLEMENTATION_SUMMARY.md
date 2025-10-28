@@ -3,7 +3,7 @@
 ## ✅ Completed Features
 
 ### Core Infrastructure
-- **NIP-762 Specification**: Complete specification for game score events (kind 762) in `NIP.md`
+- **NIP-762 Specification**: Complete specification for game score events (kind 30762 addressable replaceable) in `NIP.md`
 - **Game Metadata System**: Configurable game metadata with local storage persistence
 - **Hooks Architecture**: Custom React hooks for querying and managing scores
 - **Routing System**: Complete routing with Layout wrapper and Header navigation
@@ -112,7 +112,7 @@
 ## 🔧 Technical Implementation
 
 ### Event Validation
-- Strict validation of kind 762 events
+- Strict validation of kind 30762 events with state filtering
 - Required tag checking (d, game, score, p)
 - Score parsing and validation
 - Graceful error handling
