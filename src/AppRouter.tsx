@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 
 import { Home } from "./pages/Home";
 import { GameDetail } from "./pages/GameDetail";
+import { ScoreDetail } from "./pages/ScoreDetail";
 import { PlayerProfile } from "./pages/PlayerProfile";
 import { Developers } from "./pages/Developers";
 import { Playground } from "./pages/Playground";
@@ -19,6 +20,7 @@ export function AppRouter() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/game/:pubkey/:gameIdentifier" element={<GameDetail />} />
+          <Route path="/score/:eventId" element={<ScoreDetail />} />
           <Route path="/player/:pubkey" element={<PlayerProfile />} />
           <Route path="/developers" element={<Developers />} />
           <Route path="/playground" element={<Playground />} />

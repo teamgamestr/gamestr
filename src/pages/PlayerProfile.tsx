@@ -274,9 +274,10 @@ export function PlayerProfile() {
                 {scores.slice(0, 10).map((score) => {
                   const metadata = getGame(score.event.pubkey, score.gameIdentifier);
                   return (
-                    <div
+                    <Link
                       key={score.event.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                      to={`/score/${score.event.id}`}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="h-10 w-10 rounded overflow-hidden bg-background flex-shrink-0">
@@ -287,7 +288,9 @@ export function PlayerProfile() {
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate">{metadata.name}</p>
+                          <p className="font-medium truncate group-hover:text-primary transition-colors">
+                            {metadata.name}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
                           </p>
@@ -303,7 +306,7 @@ export function PlayerProfile() {
                           {score.score.toLocaleString()}
                         </span>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

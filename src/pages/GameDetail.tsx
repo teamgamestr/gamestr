@@ -289,29 +289,31 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
+    <Link
+      to={`/score/${score.event.id}`}
+      className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
+    >
       {/* Rank */}
       <div className="flex items-center justify-center w-10">
         {getRankIcon()}
       </div>
 
       {/* Player Info */}
-      <Link
-        to={`/player/${score.playerPubkey}`}
-        className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
-      >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <Avatar>
           <AvatarImage src={metadata?.picture} alt={displayName} />
           <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="font-medium truncate">{displayName}</p>
+          <p className="font-medium truncate group-hover:text-primary transition-colors">
+            {displayName}
+          </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
             {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* Score Details */}
       <div className="flex items-center gap-4">
@@ -339,8 +341,10 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
             </p>
           )}
         </div>
-        <ZapButton target={score.event as unknown as Event} />
+        <div onClick={(e) => e.preventDefault()}>
+          <ZapButton target={score.event as unknown as Event} />
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
