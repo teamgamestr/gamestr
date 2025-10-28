@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, TestTube2 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
-import { ZapButton } from '@/components/ZapButton';
+import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import { isTestEvent } from '@/lib/testData';
 import type { Event } from 'nostr-tools';
@@ -342,7 +342,10 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
           )}
         </div>
         <div onClick={(e) => e.preventDefault()}>
-          <ZapButton target={score.event as unknown as Event} />
+          <ScoreZapButton
+            scoreEvent={score.event as unknown as Event}
+            playerPubkey={score.playerPubkey}
+          />
         </div>
       </div>
     </Link>

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CommentsSection } from '@/components/comments/CommentsSection';
-import { ZapButton } from '@/components/ZapButton';
+import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
 import {
@@ -113,17 +113,17 @@ export function ScoreDetail() {
     enabled: !!eventId,
   });
 
-  // Fetch zap data
+  // Get player metadata
+  const playerAuthor = useAuthor(scoreData?.playerPubkey || '');
+  const playerMetadata = playerAuthor.data?.metadata;
+  const playerDisplayName = playerMetadata?.name || genUserName(scoreData?.playerPubkey || '');
+
+  // Fetch zap data for the score
   const { totalSats, zapCount, isLoading: zapsLoading } = useZaps(
     scoreData?.event ? [scoreData.event as unknown as Event] : [],
     webln,
     activeNWC
   );
-
-  // Get player metadata
-  const playerAuthor = useAuthor(scoreData?.playerPubkey || '');
-  const playerMetadata = playerAuthor.data?.metadata;
-  const playerDisplayName = playerMetadata?.name || genUserName(scoreData?.playerPubkey || '');
 
   // Get game metadata
   const gameMetadata = scoreData
@@ -242,8 +242,9 @@ export function ScoreDetail() {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-3">
-                    <ZapButton
-                      target={scoreData.event as unknown as Event}
+                    <ScoreZapButton
+                      scoreEvent={scoreData.event as unknown as Event}
+                      playerPubkey={scoreData.playerPubkey}
                       className="text-sm"
                       showCount={true}
                       zapData={{ count: zapCount, totalSats, isLoading: zapsLoading }}

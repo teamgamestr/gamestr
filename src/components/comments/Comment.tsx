@@ -39,7 +39,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
   const hasReplies = replies.length > 0;
 
   return (
-    <div className={`space-y-3 ${depth > 0 ? 'ml-6 border-l-2 border-muted pl-4' : ''}`}>
+    <div className={depth > 0 ? 'ml-6 border-l-2 border-muted pl-4' : ''}>
       <Card className="bg-card/50">
         <CardContent className="p-4">
           <div className="space-y-3">
@@ -120,7 +120,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
 
       {/* Reply Form */}
       {showReplyForm && (
-        <div className="ml-6">
+        <div className="ml-6 mt-3">
           <CommentForm
             root={root}
             reply={comment}
@@ -134,7 +134,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
       {/* Replies */}
       {hasReplies && (
         <Collapsible open={showReplies} onOpenChange={setShowReplies}>
-          <CollapsibleContent className="space-y-3">
+          <CollapsibleContent className="mt-3 space-y-3">
             {replies.map((reply) => (
               <Comment
                 key={reply.id}
