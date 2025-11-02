@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
-import { isTestEvent } from '@/lib/testData';
+import { isTestEvent, ALL_TEST_SCORES } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
 
@@ -98,9 +98,15 @@ export function ScoreDetail() {
     queryFn: async (c) => {
       if (!eventId) return null;
 
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      // First check test data
+      const testEvent = ALL_TEST_SCORES.find(event => event.id === eventId);
+      if (testEvent) {
+        const parsed = validateScoreEvent(testEvent);
+        return parsed;
+      }
 
-      // First try to fetch by event ID
+      // Then try to fetch from relays
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const events = await nostr.query([{ ids: [eventId] }], { signal });
 
       if (events.length > 0) {
