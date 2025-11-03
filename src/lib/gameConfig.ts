@@ -35,6 +35,21 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // Example game configurations
   // Format: "<developer-pubkey>:<game-identifier>"
   
+  
+  //Blockstr
+  
+    'c70f635895bf0cade4f4c80863fe662a1d6e72153c9be357dc5fa5064c3624de:blockstr': {
+    name: 'blockstr',
+    description: 'Classic 8-bit Tetris with a timechain twist!',
+    image: 'https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=800',
+    genres: ['arcade', 'casual', 'retro'],
+    url: 'https://example.com/snake',
+    developer: 'Example Dev',
+    featured: true,
+    trending: true,
+    newRelease: true,
+  },
+  
   // Snake Game Example (matches test data)
   'test-developer-pubkey-1234567890abcdef:snake-game': {
     name: 'Classic Snake',
