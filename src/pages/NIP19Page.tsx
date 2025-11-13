@@ -17,6 +17,129 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
 import NotFound from './NotFound';
 
+function EventView({ eventId }: { eventId: string }) {
+  const { nostr } = useNostr();
+
+  // Fetch the event
+  const { data: event, isLoading } = useQuery({
+    queryKey: ['event', eventId],
+    queryFn: async (c) => {
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const events = await nostr.query(
+        [{ ids: [eventId] }],
+        { signal }
+      );
+      return events[0];
+    },
+  });
+
+  const author = useAuthor(event?.pubkey);
+  const metadata = author.data?.metadata;
+  const displayName = metadata?.name || genUserName(event?.pubkey || '');
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Skeleton className="h-10 w-32 mb-6" />
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-24 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-muted-foreground mb-4">Event not found</p>
+            <Button asChild>
+              <Link to="/">Back to Home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+        {/* Back Button */}
+        <Button variant="ghost" asChild>
+          <Link to="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
+          </Link>
+        </Button>
+
+        {/* Event Card */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Author Info */}
+              <div className="flex items-center justify-between">
+                <Link 
+                  to={`/${nip19.npubEncode(event.pubkey)}`}
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={metadata?.picture} alt={displayName} />
+                    <AvatarFallback>
+                      {displayName[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{displayName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDistanceToNow(event.created_at * 1000, { addSuffix: true })}
+                    </p>
+                  </div>
+                </Link>
+
+                {/* Zap Button */}
+                {author.data?.event && (
+                  <div className="cursor-pointer">
+                    <ZapButton 
+                      target={event as unknown as Event}
+                      showCount={true}
+                      className="h-10 px-4 text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Event Content */}
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <NoteContent event={event} className="text-base" />
+              </div>
+
+              {/* Event Metadata */}
+              <div className="flex flex-wrap gap-2 pt-4 border-t">
+                <Badge variant="outline">Kind {event.kind}</Badge>
+                <Badge variant="outline" className="font-mono text-xs">
+                  {event.id.substring(0, 8)}...
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 function ProfileView({ pubkey }: { pubkey: string }) {
   const { nostr } = useNostr();
   const author = useAuthor(pubkey);
@@ -198,12 +321,10 @@ export function NIP19Page() {
       return <ProfileView pubkey={(data as any).pubkey} />;
 
     case 'note':
-      // AI agent should implement note view here
-      return <div>Note placeholder</div>;
+      return <EventView eventId={data as string} />;
 
     case 'nevent':
-      // AI agent should implement event view here
-      return <div>Event placeholder</div>;
+      return <EventView eventId={(data as any).id} />;
 
     case 'naddr':
       // AI agent should implement addressable event view here

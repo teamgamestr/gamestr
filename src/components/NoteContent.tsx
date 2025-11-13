@@ -11,19 +11,31 @@ interface NoteContentProps {
   className?: string;
 }
 
-/** Parses content of text note events so that URLs and hashtags are linkified. */
+/** Check if a URL is an image */
+function isImageUrl(url: string): boolean {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+  const lowerUrl = url.toLowerCase();
+  return imageExtensions.some(ext => lowerUrl.includes(ext)) || 
+         lowerUrl.includes('image') ||
+         lowerUrl.includes('i.nostr.build') ||
+         lowerUrl.includes('nostr.build') ||
+         lowerUrl.includes('void.cat');
+}
+
+/** Parses content of text note events so that URLs and hashtags are linkified, and images are displayed. */
 export function NoteContent({
   event, 
   className, 
 }: NoteContentProps) {  
-  // Process the content to render mentions, links, etc.
+  // Process the content to render mentions, links, images, etc.
   const content = useMemo(() => {
     const text = event.content;
     
     // Regex to find URLs, Nostr references, and hashtags
-    const regex = /(https?:\/\/[^\s]+)|nostr:(npub1|note1|nprofile1|nevent1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
+    const regex = /(https?:\/\/[^\s]+)|nostr:(npub1|note1|nprofile1|nevent1|naddr1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
     
     const parts: React.ReactNode[] = [];
+    const images: string[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let keyCounter = 0;
@@ -38,18 +50,24 @@ export function NoteContent({
       }
       
       if (url) {
-        // Handle URLs
-        parts.push(
-          <a 
-            key={`url-${keyCounter++}`}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            {url}
-          </a>
-        );
+        // Check if URL is an image
+        if (isImageUrl(url)) {
+          images.push(url);
+          // Don't add to parts, we'll render images separately at the end
+        } else {
+          // Handle regular URLs
+          parts.push(
+            <a 
+              key={`url-${keyCounter++}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline break-all"
+            >
+              {url}
+            </a>
+          );
+        }
       } else if (nostrPrefix && nostrData) {
         // Handle Nostr references
         try {
@@ -104,12 +122,41 @@ export function NoteContent({
       parts.push(text);
     }
     
-    return parts;
+    return { textParts: parts, images };
   }, [event]);
 
   return (
-    <div className={cn("whitespace-pre-wrap break-words", className)}>
-      {content.length > 0 ? content : event.content}
+    <div className={cn("space-y-3", className)}>
+      {/* Text content */}
+      <div className="whitespace-pre-wrap break-words">
+        {content.textParts.length > 0 ? content.textParts : event.content}
+      </div>
+      
+      {/* Images */}
+      {content.images.length > 0 && (
+        <div className="space-y-2">
+          {content.images.map((imageUrl, index) => (
+            <a
+              key={`img-${index}`}
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <img
+                src={imageUrl}
+                alt={`Image ${index + 1}`}
+                className="max-w-full h-auto rounded-lg border border-border hover:opacity-90 transition-opacity"
+                loading="lazy"
+                onError={(e) => {
+                  // If image fails to load, hide it
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
