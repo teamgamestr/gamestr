@@ -33,8 +33,8 @@ const queryClient = new QueryClient({
 });
 
 const defaultConfig: AppConfig = {
-  theme: "light",
-  relayUrl: "wss://relay.ditto.pub",
+  theme: "dark",
+  relayUrl: "wss://relay.damus.io",
 };
 
 const presetRelays = [
