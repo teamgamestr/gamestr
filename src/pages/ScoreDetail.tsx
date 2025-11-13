@@ -388,17 +388,13 @@ export function ScoreDetail() {
         </Card>
 
         {/* Comments Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Comments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CommentsSection root={scoreData.event} />
-          </CardContent>
-        </Card>
+        <div>
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <MessageSquare className="h-6 w-6" />
+            Comments
+          </h2>
+          <CommentsSection root={scoreData.event} />
+        </div>
       </div>
     </div>
   );
