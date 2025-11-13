@@ -4,18 +4,20 @@ import { type LeaderboardPeriod } from '@/hooks/useScores';
 import { useLeaderboardWithTestData } from '@/hooks/useScoresWithTestData';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { ZapButton } from '@/components/ZapButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, TestTube2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, TestTube2, User } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import { isTestEvent } from '@/lib/testData';
 import type { Event } from 'nostr-tools';
+import { nip19 } from 'nostr-tools';
 
 export function GameDetail() {
   const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
@@ -25,6 +27,11 @@ export function GameDetail() {
 
   const { getGame } = useGameConfig();
   const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
+  
+  // Fetch game developer's profile
+  const developerAuthor = useAuthor(pubkey);
+  const developerMetadata = developerAuthor.data?.metadata;
+  const developerDisplayName = developerMetadata?.name || metadata?.developer || genUserName(pubkey || '');
 
   const { data: scores, isLoading } = useLeaderboardWithTestData(
     gameIdentifier || '',
@@ -127,9 +134,21 @@ export function GameDetail() {
                     </a>
                   </Button>
                 )}
-                {metadata.developer && (
-                  <Button variant="outline" size="lg">
-                    By {metadata.developer}
+                {pubkey && developerAuthor.data?.event && (
+                  <div className="cursor-pointer">
+                    <ZapButton 
+                      target={developerAuthor.data.event as unknown as Event}
+                      showCount={true}
+                      className="h-11 px-6 text-base font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                    />
+                  </div>
+                )}
+                {pubkey && (
+                  <Button variant="outline" size="lg" asChild>
+                    <Link to={`/${nip19.npubEncode(pubkey)}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      By {developerDisplayName}
+                    </Link>
                   </Button>
                 )}
               </div>
