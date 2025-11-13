@@ -55,7 +55,7 @@ Gamestr is a social gaming score platform built on the Nostr protocol. It enable
 ### Deployment
 - **Type:** Autoscale (stateless web app)
 - **Build:** `npm run build` (outputs to /dist)
-- **Run:** `npx vite preview --host 0.0.0.0 --port 5000`
+- **Run:** `npx serve dist -l 5000 -n` (production-ready static server)
 
 ## Available Scripts
 - `npm run dev` - Start development server
@@ -85,13 +85,15 @@ Integration is simple - publish kind 30762 events to Nostr with:
 
 Full documentation available at `/developers` route in the app.
 
-## Recent Changes (Import Setup)
+## Recent Changes
 - ✅ Updated Vite config to use port 5000 with 0.0.0.0 host
 - ✅ Enabled `allowedHosts: true` for Replit proxy compatibility
 - ✅ Configured dev workflow for webview output
 - ✅ Set up deployment configuration for autoscale
 - ✅ Created .gitignore for Node.js project
 - ✅ Verified app loads correctly with all features
+- ✅ Fixed deployment to use production-ready `serve` instead of `vite preview` (Nov 13, 2025)
+- ✅ Removed extra port configuration for autoscale compatibility (Nov 13, 2025)
 
 ## Notes
 - This is a frontend-only application (no backend server)
