@@ -31,8 +31,8 @@ export function NoteContent({
   const content = useMemo(() => {
     const text = event.content;
     
-    // Regex to find URLs, Nostr references, and hashtags
-    const regex = /(https?:\/\/[^\s]+)|nostr:(npub1|note1|nprofile1|nevent1|naddr1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
+    // Regex to find URLs, Nostr references (with or without nostr: prefix), and hashtags
+    const regex = /(https?:\/\/[^\s]+)|(?:nostr:)?(npub1|note1|nprofile1|nevent1|naddr1)([023456789acdefghjklmnpqrstuvwxyz]{58,})|(\bnote:[a-f0-9]{64}\b)|(#\w+)/g;
     
     const parts: React.ReactNode[] = [];
     const images: string[] = [];
@@ -41,7 +41,7 @@ export function NoteContent({
     let keyCounter = 0;
     
     while ((match = regex.exec(text)) !== null) {
-      const [fullMatch, url, nostrPrefix, nostrData, hashtag] = match;
+      const [fullMatch, url, nostrPrefix, nostrData, noteHex, hashtag] = match;
       const index = match.index;
       
       // Add text before this match
@@ -67,6 +67,24 @@ export function NoteContent({
               {url}
             </a>
           );
+        }
+      } else if (noteHex) {
+        // Handle note:hexid format
+        const eventId = noteHex.replace('note:', '');
+        // Convert hex to note1 format for routing
+        try {
+          const note1 = nip19.noteEncode(eventId);
+          parts.push(
+            <Link 
+              key={`notehex-${keyCounter++}`}
+              to={`/${note1}`}
+              className="text-blue-500 hover:underline"
+            >
+              note:{eventId.substring(0, 8)}...
+            </Link>
+          );
+        } catch {
+          parts.push(fullMatch);
         }
       } else if (nostrPrefix && nostrData) {
         // Handle Nostr references
