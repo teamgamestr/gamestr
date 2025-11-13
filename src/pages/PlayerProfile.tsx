@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { usePlayerScores, type LeaderboardPeriod } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { ZapButton } from '@/components/ZapButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow } from 'date-fns';
+import type { Event } from 'nostr-tools';
 
 export function PlayerProfile() {
   const { pubkey } = useParams<{ pubkey: string }>();
@@ -126,6 +128,13 @@ export function PlayerProfile() {
 
             {/* Action Buttons */}
             <div className="flex gap-2">
+              {author.data?.event && (
+                <ZapButton 
+                  target={author.data.event as unknown as Event}
+                  showCount={true}
+                  className="h-10 px-4 text-sm"
+                />
+              )}
               <Button variant="outline" asChild>
                 <Link to="/">Back to Games</Link>
               </Button>

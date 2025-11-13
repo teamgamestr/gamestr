@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NostrEvent } from '@nostrify/nostrify';
 import { nip19 } from 'nostr-tools';
+import type { Event } from 'nostr-tools';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useComments } from '@/hooks/useComments';
 import { CommentForm } from './CommentForm';
 import { NoteContent } from '@/components/NoteContent';
+import { ZapButton } from '@/components/ZapButton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,6 +100,14 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
                     </CollapsibleTrigger>
                   </Collapsible>
                 )}
+
+                <div className="cursor-pointer">
+                  <ZapButton 
+                    target={comment as unknown as Event}
+                    className="h-8 px-2 text-xs hover:text-primary transition-colors"
+                    showCount={true}
+                  />
+                </div>
               </div>
 
               {/* Comment menu */}

@@ -41,7 +41,7 @@ export function ZapButton({
 
   return (
     <ZapDialog target={target}>
-      <div className={`flex items-center gap-1 ${className}`}>
+      <div className={`flex items-center gap-1 cursor-pointer hover:text-primary transition-colors ${className}`}>
         <Zap className="h-4 w-4" />
         <span className="text-xs">
           {showLoading ? (

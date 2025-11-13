@@ -15,30 +15,35 @@ export const TEST_PLAYERS = [
     name: 'Alice',
     picture: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Competitive gamer and speedrunner. Love arcade classics!',
+    lud16: 'alice@getalby.com',
   },
   {
     pubkey: 'player-bob-pubkey-1234567890abcdef',
     name: 'Bob',
     picture: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Casual gamer enjoying puzzle games in my spare time.',
+    lud16: 'bob@getalby.com',
   },
   {
     pubkey: 'player-charlie-pubkey-1234567890abcdef',
     name: 'Charlie',
     picture: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Professional esports player. Always pushing for #1!',
+    lud16: 'charlie@getalby.com',
   },
   {
     pubkey: 'player-diana-pubkey-1234567890abcdef',
     name: 'Diana',
     picture: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Game developer and player. Testing my own games!',
+    lud16: 'diana@getalby.com',
   },
   {
     pubkey: 'player-eve-pubkey-1234567890abcdef',
     name: 'Eve',
     picture: 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Retro gaming enthusiast. High scores are my passion!',
+    lud16: 'eve@getalby.com',
   },
 ];
 
@@ -164,6 +169,7 @@ TEST_PLAYERS.forEach((player) => {
       name: player.name,
       picture: player.picture,
       about: player.about,
+      lud16: player.lud16,
     }),
     sig: 'test-signature-not-real',
   };
