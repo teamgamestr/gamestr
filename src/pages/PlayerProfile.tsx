@@ -1,16 +1,19 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useNostr } from '@nostrify/react';
 import { usePlayerScores, type LeaderboardPeriod } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
 import { ZapButton } from '@/components/ZapButton';
+import { NoteContent } from '@/components/NoteContent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink } from 'lucide-react';
+import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink, MessageSquare, Calendar } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
@@ -18,6 +21,7 @@ import type { Event } from 'nostr-tools';
 export function PlayerProfile() {
   const { pubkey } = useParams<{ pubkey: string }>();
   const [period, setPeriod] = useState<LeaderboardPeriod>('all-time');
+  const { nostr } = useNostr();
 
   const author = useAuthor(pubkey || '');
   const metadata = author.data?.metadata;
@@ -26,6 +30,21 @@ export function PlayerProfile() {
   const { data: scores, isLoading } = usePlayerScores(pubkey || '', {
     period,
     limit: 500,
+  });
+
+  // Fetch recent kind 1 notes
+  const { data: notes, isLoading: notesLoading } = useQuery({
+    queryKey: ['notes', pubkey],
+    queryFn: async (c) => {
+      if (!pubkey) return [];
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const events = await nostr.query(
+        [{ kinds: [1], authors: [pubkey], limit: 20 }],
+        { signal }
+      );
+      return events.sort((a, b) => b.created_at - a.created_at);
+    },
+    enabled: !!pubkey,
   });
 
   const { getGame } = useGameConfig();
@@ -267,6 +286,50 @@ export function PlayerProfile() {
               <div className="py-12 text-center text-muted-foreground">
                 <Gamepad2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No scores found for this time period</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Notes Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Recent Notes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notesLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ))}
+              </div>
+            ) : notes && notes.length > 0 ? (
+              <div className="space-y-4">
+                {notes.map((note) => (
+                  <div key={note.id} className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        {formatDistanceToNow(note.created_at * 1000, { addSuffix: true })}
+                      </div>
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <NoteContent event={note} className="text-sm" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No notes found</p>
               </div>
             )}
           </CardContent>
