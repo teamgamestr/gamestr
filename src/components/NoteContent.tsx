@@ -79,8 +79,35 @@ export function NoteContent({
             parts.push(
               <NostrMention key={`mention-${keyCounter++}`} pubkey={pubkey} />
             );
+          } else if (decoded.type === 'nprofile') {
+            const pubkey = (decoded.data as any).pubkey;
+            parts.push(
+              <NostrMention key={`mention-${keyCounter++}`} pubkey={pubkey} />
+            );
+          } else if (decoded.type === 'note') {
+            const eventId = decoded.data as string;
+            parts.push(
+              <Link 
+                key={`note-${keyCounter++}`}
+                to={`/${nostrId}`}
+                className="text-blue-500 hover:underline"
+              >
+                note:{eventId.substring(0, 8)}...
+              </Link>
+            );
+          } else if (decoded.type === 'nevent') {
+            const eventId = (decoded.data as any).id;
+            parts.push(
+              <Link 
+                key={`nevent-${keyCounter++}`}
+                to={`/${nostrId}`}
+                className="text-blue-500 hover:underline"
+              >
+                note:{eventId.substring(0, 8)}...
+              </Link>
+            );
           } else {
-            // For other types, just show as a link
+            // For other types (naddr), just show as a link
             parts.push(
               <Link 
                 key={`nostr-${keyCounter++}`}
