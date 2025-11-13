@@ -106,8 +106,20 @@ export function NoteContent({
                 note:{eventId.substring(0, 8)}...
               </Link>
             );
+          } else if (decoded.type === 'naddr') {
+            const addrData = decoded.data as any;
+            const identifier = addrData.identifier || 'unknown';
+            parts.push(
+              <Link 
+                key={`naddr-${keyCounter++}`}
+                to={`/${nostrId}`}
+                className="text-blue-500 hover:underline"
+              >
+                article:{identifier.substring(0, 16)}...
+              </Link>
+            );
           } else {
-            // For other types (naddr), just show as a link
+            // For any other types, just show as a link
             parts.push(
               <Link 
                 key={`nostr-${keyCounter++}`}
