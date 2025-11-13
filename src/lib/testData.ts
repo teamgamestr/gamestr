@@ -12,45 +12,45 @@ export const TEST_DEV_PUBKEY = 'test-developer-pubkey-1234567890abcdef';
 export const BLOCKSTR_PUBKEY = 'c70f635895bf0cade4f4c80863fe662a1d6e72153c9be357dc5fa5064c3624de';
 // npub: npub1cupkxky4kuxtfnzunqgg8anx9gddde3489cr47tul6gxfnpkymxq7e6eqm
 
-// Demo lightning address - all test player zaps go to blockstr
-const DEMO_LIGHTNING_ADDRESS = 'blockstr@getalby.com';
-
 // Test player pubkeys
+// Note: These use the blockstr pubkey so all demo zaps go to the real blockstr profile
+// The lightning address will be fetched from the blockstr profile metadata
 export const TEST_PLAYERS = [
   {
     pubkey: 'player-alice-pubkey-1234567890abcdef',
     name: 'Alice',
     picture: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Competitive gamer and speedrunner. Love arcade classics!',
-    lud16: DEMO_LIGHTNING_ADDRESS,
+    // Lightning address will be fetched from blockstr profile
+    blockstrZap: true,
   },
   {
     pubkey: 'player-bob-pubkey-1234567890abcdef',
     name: 'Bob',
     picture: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Casual gamer enjoying puzzle games in my spare time.',
-    lud16: DEMO_LIGHTNING_ADDRESS,
+    blockstrZap: true,
   },
   {
     pubkey: 'player-charlie-pubkey-1234567890abcdef',
     name: 'Charlie',
     picture: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Professional esports player. Always pushing for #1!',
-    lud16: DEMO_LIGHTNING_ADDRESS,
+    blockstrZap: true,
   },
   {
     pubkey: 'player-diana-pubkey-1234567890abcdef',
     name: 'Diana',
     picture: 'https://images.pexels.com/photos/1181424/pexels-photo-1181424.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Game developer and player. Testing my own games!',
-    lud16: DEMO_LIGHTNING_ADDRESS,
+    blockstrZap: true,
   },
   {
     pubkey: 'player-eve-pubkey-1234567890abcdef',
     name: 'Eve',
     picture: 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=200',
     about: 'Retro gaming enthusiast. High scores are my passion!',
-    lud16: DEMO_LIGHTNING_ADDRESS,
+    blockstrZap: true,
   },
 ];
 
@@ -163,6 +163,8 @@ export const ALL_TEST_SCORES: NostrEvent[] = [
 ];
 
 // Test player metadata (kind 0 events)
+// Note: We create a base metadata record, but the actual metadata
+// will be enhanced with blockstr's lightning address at runtime
 export const TEST_PLAYER_METADATA: Record<string, NostrEvent> = {};
 
 TEST_PLAYERS.forEach((player) => {
@@ -176,11 +178,39 @@ TEST_PLAYERS.forEach((player) => {
       name: player.name,
       picture: player.picture,
       about: player.about,
-      lud16: player.lud16,
+      // Will be populated with blockstr's lightning address
     }),
     sig: 'test-signature-not-real',
   };
 });
+
+// Cache for blockstr metadata
+let blockstrMetadataCache: NostrEvent | null = null;
+
+/**
+ * Fetch blockstr profile metadata and cache it
+ */
+async function fetchBlockstrMetadata(nostr: any): Promise<NostrEvent | null> {
+  if (blockstrMetadataCache) {
+    return blockstrMetadataCache;
+  }
+
+  try {
+    const [event] = await nostr.query(
+      [{ kinds: [0], authors: [BLOCKSTR_PUBKEY], limit: 1 }],
+      { signal: AbortSignal.timeout(3000) }
+    );
+
+    if (event) {
+      blockstrMetadataCache = event;
+      return event;
+    }
+  } catch (error) {
+    console.warn('Failed to fetch blockstr metadata:', error);
+  }
+
+  return null;
+}
 
 /**
  * Check if an event is test data
@@ -205,8 +235,46 @@ export function getTestEvents(events: NostrEvent[]): NostrEvent[] {
 
 /**
  * Get test player metadata by pubkey
+ * Returns a promise that resolves with metadata enhanced with blockstr's lightning address
  */
-export function getTestPlayerMetadata(pubkey: string): NostrEvent | undefined {
+export async function getTestPlayerMetadata(pubkey: string, nostr?: any): Promise<NostrEvent | undefined> {
+  const baseMetadata = TEST_PLAYER_METADATA[pubkey];
+  if (!baseMetadata) return undefined;
+
+  // If nostr client is provided, try to fetch blockstr's lightning address
+  if (nostr) {
+    try {
+      const blockstrMeta = await fetchBlockstrMetadata(nostr);
+      if (blockstrMeta) {
+        const blockstrData = JSON.parse(blockstrMeta.content);
+        const lud16 = blockstrData.lud16 || blockstrData.lud06;
+        
+        if (lud16) {
+          // Parse the base metadata and add the lightning address
+          const baseData = JSON.parse(baseMetadata.content);
+          return {
+            ...baseMetadata,
+            content: JSON.stringify({
+              ...baseData,
+              lud16: lud16,
+            }),
+          };
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to enhance test metadata with blockstr lightning address:', error);
+    }
+  }
+
+  // Return base metadata without lightning address if fetch fails
+  return baseMetadata;
+}
+
+/**
+ * Synchronous version that returns metadata without blockstr lightning address
+ * Used as fallback when async fetch is not possible
+ */
+export function getTestPlayerMetadataSync(pubkey: string): NostrEvent | undefined {
   return TEST_PLAYER_METADATA[pubkey];
 }
 

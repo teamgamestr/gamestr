@@ -13,15 +13,18 @@ export function useAuthor(pubkey: string | undefined) {
       }
 
       // Check if this is a test player first
-      const { getTestPlayerMetadata } = await import('@/lib/testData');
-      const testMetadata = getTestPlayerMetadata(pubkey);
+      const { getTestPlayerMetadata, isTestPlayer } = await import('@/lib/testData');
       
-      if (testMetadata) {
-        try {
-          const metadata = n.json().pipe(n.metadata()).parse(testMetadata.content);
-          return { metadata, event: testMetadata };
-        } catch {
-          return { event: testMetadata };
+      if (isTestPlayer(pubkey)) {
+        const testMetadata = await getTestPlayerMetadata(pubkey, nostr);
+        
+        if (testMetadata) {
+          try {
+            const metadata = n.json().pipe(n.metadata()).parse(testMetadata.content);
+            return { metadata, event: testMetadata };
+          } catch {
+            return { event: testMetadata };
+          }
         }
       }
 
