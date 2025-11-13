@@ -32,17 +32,25 @@ export function PlayerProfile() {
     limit: 500,
   });
 
-  // Fetch recent kind 1 notes
+  // Fetch recent kind 1 notes (original posts only, no replies)
   const { data: notes, isLoading: notesLoading } = useQuery({
     queryKey: ['notes', pubkey],
     queryFn: async (c) => {
       if (!pubkey) return [];
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const events = await nostr.query(
-        [{ kinds: [1], authors: [pubkey], limit: 20 }],
+        [{ kinds: [1], authors: [pubkey], limit: 50 }], // Fetch more to filter replies
         { signal }
       );
-      return events.sort((a, b) => b.created_at - a.created_at);
+      // Filter out replies (events with 'e' or 'p' tags in reply context)
+      const originalPosts = events.filter(event => {
+        // A note is a reply if it has an 'e' tag (replying to an event)
+        const hasReplyTag = event.tags.some(([tagName]) => tagName === 'e');
+        return !hasReplyTag;
+      });
+      return originalPosts
+        .sort((a, b) => b.created_at - a.created_at)
+        .slice(0, 10); // Limit to 10 original posts
     },
     enabled: !!pubkey,
   });
@@ -291,50 +299,6 @@ export function PlayerProfile() {
           </CardContent>
         </Card>
 
-        {/* Recent Notes Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Recent Notes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {notesLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="p-4 space-y-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
-                ))}
-              </div>
-            ) : notes && notes.length > 0 ? (
-              <div className="space-y-4">
-                {notes.map((note) => (
-                  <div key={note.id} className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        {formatDistanceToNow(note.created_at * 1000, { addSuffix: true })}
-                      </div>
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <NoteContent event={note} className="text-sm" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center text-muted-foreground">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No notes found</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Recent Scores */}
         {scores && scores.length > 0 && (
           <Card>
@@ -385,6 +349,50 @@ export function PlayerProfile() {
             </CardContent>
           </Card>
         )}
+
+        {/* Recent Notes Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Recent Notes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {notesLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 space-y-3">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                ))}
+              </div>
+            ) : notes && notes.length > 0 ? (
+              <div className="space-y-4">
+                {notes.map((note) => (
+                  <div key={note.id} className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        {formatDistanceToNow(note.created_at * 1000, { addSuffix: true })}
+                      </div>
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <NoteContent event={note} className="text-sm" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No notes found</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
