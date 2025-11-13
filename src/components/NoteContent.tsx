@@ -184,12 +184,12 @@ export function NoteContent({
               href={imageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block"
+              className="block w-1/2"
             >
               <img
                 src={imageUrl}
                 alt={`Image ${index + 1}`}
-                className="max-w-full h-auto rounded-lg border border-border hover:opacity-90 transition-opacity"
+                className="w-full h-auto rounded-lg border border-border hover:opacity-90 transition-opacity"
                 loading="lazy"
                 onError={(e) => {
                   // If image fails to load, hide it
