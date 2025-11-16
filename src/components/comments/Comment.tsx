@@ -40,6 +40,10 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
   const replies = commentsData?.getDirectReplies(comment.id) || [];
   const hasReplies = replies.length > 0;
 
+  // Check if pubkey is a valid hex string for npub encoding
+  const isValidHex = /^[0-9a-f]{64}$/i.test(comment.pubkey);
+  const profileUrl = isValidHex ? `/${nip19.npubEncode(comment.pubkey)}` : `/player/${comment.pubkey}`;
+
   return (
     <div className={depth > 0 ? 'ml-6 border-l-2 border-muted pl-4' : ''}>
       <Card className="bg-card/50">
@@ -48,7 +52,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
             {/* Comment Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
-                <Link to={`/${nip19.npubEncode(comment.pubkey)}`}>
+                <Link to={profileUrl}>
                   <Avatar className="h-8 w-8 hover:ring-2 hover:ring-primary/30 transition-all cursor-pointer">
                     <AvatarImage src={metadata?.picture} />
                     <AvatarFallback className="text-xs">
@@ -58,7 +62,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
                 </Link>
                 <div>
                   <Link 
-                    to={`/${nip19.npubEncode(comment.pubkey)}`}
+                    to={profileUrl}
                     className="font-medium text-sm hover:text-primary transition-colors"
                   >
                     {displayName}

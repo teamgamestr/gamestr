@@ -280,13 +280,16 @@ function EmbeddedNote({ eventId }: { eventId: string }) {
 // Helper component to display user mentions
 function NostrMention({ pubkey }: { pubkey: string }) {
   const author = useAuthor(pubkey);
-  const npub = nip19.npubEncode(pubkey);
   const hasRealName = !!author.data?.metadata?.name;
   const displayName = author.data?.metadata?.name ?? genUserName(pubkey);
 
+  // Check if pubkey is a valid hex string for npub encoding
+  const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
+  const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
+
   return (
     <Link 
-      to={`/${npub}`}
+      to={profileUrl}
       className={cn(
         "font-medium hover:underline",
         hasRealName 

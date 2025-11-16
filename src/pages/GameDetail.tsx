@@ -143,14 +143,20 @@ export function GameDetail() {
                     />
                   </div>
                 )}
-                {pubkey && (
-                  <Button variant="outline" size="lg" asChild>
-                    <Link to={`/${nip19.npubEncode(pubkey)}`}>
-                      <User className="mr-2 h-4 w-4" />
-                      By {developerDisplayName}
-                    </Link>
-                  </Button>
-                )}
+                {pubkey && (() => {
+                  // Check if pubkey is a valid hex string (64 characters, all hex)
+                  const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
+                  const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
+                  
+                  return (
+                    <Button variant="outline" size="lg" asChild>
+                      <Link to={profileUrl}>
+                        <User className="mr-2 h-4 w-4" />
+                        By {developerDisplayName}
+                      </Link>
+                    </Button>
+                  );
+                })()}
               </div>
             </div>
           </div>

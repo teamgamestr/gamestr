@@ -105,7 +105,7 @@ function AddressableEventView({ kind, pubkey, identifier }: { kind: number; pubk
               {/* Author Info */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <Link 
-                  to={`/${nip19.npubEncode(event.pubkey)}`}
+                  to={/^[0-9a-f]{64}$/i.test(event.pubkey) ? `/${nip19.npubEncode(event.pubkey)}` : `/player/${event.pubkey}`}
                   className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 >
                   <Avatar className="h-10 w-10">
@@ -231,7 +231,7 @@ function EventView({ eventId }: { eventId: string }) {
               {/* Author Info */}
               <div className="flex items-center justify-between">
                 <Link 
-                  to={`/${nip19.npubEncode(event.pubkey)}`}
+                  to={/^[0-9a-f]{64}$/i.test(event.pubkey) ? `/${nip19.npubEncode(event.pubkey)}` : `/player/${event.pubkey}`}
                   className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 >
                   <Avatar className="h-10 w-10">
@@ -444,10 +444,19 @@ export function NIP19Page() {
     return <NotFound />;
   }
 
+  // Validate that the identifier looks like a NIP-19 identifier before attempting to decode
+  const validPrefixes = ['npub1', 'nprofile1', 'note1', 'nevent1', 'naddr1'];
+  const hasValidPrefix = validPrefixes.some(prefix => identifier.startsWith(prefix));
+  
+  if (!hasValidPrefix) {
+    return <NotFound />;
+  }
+
   let decoded;
   try {
     decoded = nip19.decode(identifier);
-  } catch {
+  } catch (error) {
+    console.error('Failed to decode NIP-19 identifier:', error);
     return <NotFound />;
   }
 
