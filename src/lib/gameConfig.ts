@@ -44,7 +44,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     description: "Classic 8-bit Tetris with a timechain twist!",
     image: "https://i.nostr.build/rwl4S2TucTObXR3T.webp",
     genres: ["arcade", "casual", "retro"],
-    url: "https://blockstr.replit.app",
+    url: "https://blockstr.io",
     developer: "sambonzuki",
     featured: true,
     trending: true,
