@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
+import { filterTestEvents } from '@/lib/testData';
 
 export interface ScoreEvent extends NostrEvent {
   kind: 30762;
@@ -240,10 +241,13 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
         console.warn('Failed to fetch scores from relays, using test data only', error);
       }
 
-      // Add test data if enabled
+      // Handle test data based on toggle
       if (includeTestData) {
         const { ALL_TEST_SCORES } = await import('@/lib/testData');
         events = [...events, ...ALL_TEST_SCORES];
+      } else {
+        // Filter out relay events that have the test tag
+        events = filterTestEvents(events);
       }
 
       // Parse and validate

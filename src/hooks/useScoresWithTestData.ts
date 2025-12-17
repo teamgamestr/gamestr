@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useScores, type LeaderboardPeriod, type ScoreEvent } from './useScores';
-import { ALL_TEST_SCORES, TEST_PLAYER_METADATA } from '@/lib/testData';
+import { ALL_TEST_SCORES, TEST_PLAYER_METADATA, isTestEvent } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { ParsedScore } from './useScores';
 
@@ -30,7 +30,9 @@ export function useScoresWithTestData(options: UseScoresWithTestDataOptions = {}
   // Combine real scores with test data
   const combinedData = useMemo(() => {
     if (!includeTestData) {
-      return realScoresQuery.data;
+      // Filter out relay events that have the test tag
+      const realScores = realScoresQuery.data || [];
+      return realScores.filter(score => !isTestEvent(score.event));
     }
 
     const realScores = realScoresQuery.data || [];
