@@ -3,6 +3,12 @@
  * Maps <developer-pubkey>:<game-identifier> to game metadata
  */
 
+/**
+ * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
+ * This forces cache invalidation in users' browsers
+ */
+export const GAME_CONFIG_VERSION = "2024-12-17-v2";
+
 export interface GameMetadata {
   name: string;
   description: string;
@@ -57,7 +63,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       image: "https://www.spacezappers.com/og-image.png",
       genres: ["arcade", "shooter", "retro"],
       url: "https://www.spacezappers.com/",
-      developer: "NiniMonk05"",
+      developer: "NiniMonk05",
       featured: true,
       trending: true,
       newRelease: true,
