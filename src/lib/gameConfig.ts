@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2024-12-17-v2";
+export const GAME_CONFIG_VERSION = "2024-12-17-v3";
 
 export interface GameMetadata {
   name: string;
@@ -57,9 +57,11 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   //Space Zappers
-  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers": {
+  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers":
+    {
       name: "Space Zappers",
-      description: "A retro Space Invaders arcade game. Pay 21 sats to play. Publish your high scores to the decentralized Nostr leaderboard",
+      description:
+        "A retro Space Invaders arcade game. Pay 21 sats to play. Publish your high scores to the decentralized Nostr leaderboard",
       image: "https://www.spacezappers.com/og-image.png",
       genres: ["arcade", "shooter", "retro"],
       url: "https://www.spacezappers.com/",
