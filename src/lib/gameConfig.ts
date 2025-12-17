@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2024-12-17-v3";
+export const GAME_CONFIG_VERSION = "2024-12-17-v4";
 
 export interface GameMetadata {
   name: string;
@@ -146,6 +146,12 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
 };
+
+// Games to exclude from display (format: "<pubkey>:<game-identifier>")
+// Add game keys here to hide them from the platform
+export const EXCLUDED_GAMES: string[] = [
+  "c4f5e7a75a8ce3683d529cff06368439c529e5243c6b125ba68789198856cac7:blockstr",
+];
 
 // All available genres
 export const GAME_GENRES = [

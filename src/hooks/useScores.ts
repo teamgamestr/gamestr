@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 import { filterTestEvents } from '@/lib/testData';
+import { EXCLUDED_GAMES } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
   kind: 30762;
@@ -288,8 +289,10 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
         }
       });
 
-      // Convert to array and sort by latest activity
+      // Convert to array, filter excluded games, and sort by latest activity
+      const excludedSet = new Set(EXCLUDED_GAMES);
       return Array.from(gamesMap.values())
+        .filter(game => !excludedSet.has(`${game.developerPubkey}:${game.gameIdentifier}`))
         .map(game => ({
           ...game,
           genres: Array.from(game.genres),
