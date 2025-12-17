@@ -85,6 +85,17 @@ Integration is simple - publish kind 30762 events to Nostr with:
 
 Full documentation available at `/developers` route in the app.
 
+## Game Config Cache Invalidation
+
+When you update `src/lib/gameConfig.ts`, you must also update the `GAME_CONFIG_VERSION` constant to force users' browsers to reload the new configuration:
+
+```typescript
+// In src/lib/gameConfig.ts
+export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
+```
+
+This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
+
 ## Recent Changes
 - ✅ Updated Vite config to use port 5000 with 0.0.0.0 host
 - ✅ Enabled `allowedHosts: true` for Replit proxy compatibility
@@ -94,6 +105,7 @@ Full documentation available at `/developers` route in the app.
 - ✅ Verified app loads correctly with all features
 - ✅ Fixed deployment to use production-ready `serve` instead of `vite preview` (Nov 13, 2025)
 - ✅ Removed extra port configuration for autoscale compatibility (Nov 13, 2025)
+- ✅ Added game config versioning for automatic cache invalidation (Dec 17, 2025)
 
 ## Notes
 - This is a frontend-only application (no backend server)
