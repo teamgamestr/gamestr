@@ -69,6 +69,16 @@ No environment variables required for basic functionality. The app uses:
 - Nostr relays for data (configured in-app)
 - Optional: NWC (Nostr Wallet Connect) for zap functionality
 
+### Git SSH Setup
+The `GITHUB_SSH_KEY` secret contains a base64-encoded SSH private key. To set up Git over SSH:
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+echo "$GITHUB_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
+chmod 600 ~/.ssh/id_ed25519
+ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+```
+This needs to be re-run if the environment resets.
+
 ## Test Data
 The app includes comprehensive test data for development:
 - 5 example games with metadata
