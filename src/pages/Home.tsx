@@ -17,7 +17,7 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
-  const [showTestData, setShowTestData] = useState(true);
+  const [showTestData, setShowTestData] = useState(false);
 
   const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000, includeTestData: showTestData });
   const { getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();

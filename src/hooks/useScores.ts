@@ -222,7 +222,7 @@ export function usePlayerScores(
  */
 export function useGamesWithScores(options: { limit?: number; includeTestData?: boolean } = {}) {
   const { nostr } = useNostr();
-  const { limit = 500, includeTestData = true } = options;
+  const { limit = 500, includeTestData = false } = options;
 
   return useQuery({
     queryKey: ['games-with-scores', limit, includeTestData],

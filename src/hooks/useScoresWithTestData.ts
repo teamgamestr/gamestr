@@ -22,7 +22,7 @@ interface UseScoresWithTestDataOptions {
  * Set includeTestData to true to see test scores in development
  */
 export function useScoresWithTestData(options: UseScoresWithTestDataOptions = {}) {
-  const { includeTestData = true, ...scoreOptions } = options;
+  const { includeTestData = false, ...scoreOptions } = options;
   
   // Get real scores from relays
   const realScoresQuery = useScores(scoreOptions);

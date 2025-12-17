@@ -41,7 +41,7 @@ export function GameDetail() {
       mode,
       developerPubkey: pubkey,
       limit: 100,
-      includeTestData: true,
+      includeTestData: false,
     }
   );
 
