@@ -3,12 +3,6 @@
  * Maps <developer-pubkey>:<game-identifier> to game metadata
  */
 
-/**
- * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
- * This forces cache invalidation in users' browsers
- */
-export const GAME_CONFIG_VERSION = "2024-12-17-v2";
-
 export interface GameMetadata {
   name: string;
   description: string;
@@ -59,11 +53,11 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   //Space Zappers
   "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers": {
       name: "Space Zappers",
-      description: "CLightning-powered Space Invaders!",
-      image: "https://r2.primal.net/cache/a/e8/6a/ae86a22e296c2915cf61d9ddc411a6c42774f0496b7e9fd7ff6f1f7c6155acd8.jpg",
-      genres: ["arcade", "casual", "retro"],
+      description: "A retro Space Invaders arcade game. Pay 21 sats to play. Publish your high scores to the decentralized Nostr leaderboard",
+      image: "https://www.spacezappers.com/og-image.png",
+      genres: ["arcade", "shooter", "retro"],
       url: "https://www.spacezappers.com/",
-      developer: "NINIMONK05",
+      developer: "NiniMonk05"",
       featured: true,
       trending: true,
       newRelease: true,
