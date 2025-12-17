@@ -38,7 +38,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // Format: "<developer-pubkey>:<game-identifier>"
 
   //Blockstr
-
   "c70f635895bf0cade4f4c80863fe662a1d6e72153c9be357dc5fa5064c3624de:blockstr": {
     name: "blockstr",
     description: "Classic 8-bit Tetris with a timechain twist!",
@@ -50,6 +49,21 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     trending: true,
     newRelease: true,
   },
+
+  //Space Zappers
+  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc/space-zappers":
+    {
+      name: "Space Zappers",
+      description: "CLightning-powered Space Invaders!",
+      image:
+        "https://r2.primal.net/cache/a/e8/6a/ae86a22e296c2915cf61d9ddc411a6c42774f0496b7e9fd7ff6f1f7c6155acd8.jpg",
+      genres: ["arcade", "casual", "retro"],
+      url: "https://www.spacezappers.com/",
+      developer: "NINIMONK05",
+      featured: true,
+      trending: true,
+      newRelease: true,
+    },
 
   // Snake Game Example (matches test data)
   "test-developer-pubkey-1234567890abcdef:snake-game": {
