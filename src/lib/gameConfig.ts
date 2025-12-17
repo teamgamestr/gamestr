@@ -3,12 +3,6 @@
  * Maps <developer-pubkey>:<game-identifier> to game metadata
  */
 
-/**
- * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
- * This forces cache invalidation in users' browsers
- */
-export const GAME_CONFIG_VERSION = "2024-12-17-v1";
-
 export interface GameMetadata {
   name: string;
   description: string;
@@ -57,7 +51,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   //Space Zappers
-  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc/space-zappers":
+  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers":
     {
       name: "Space Zappers",
       description: "CLightning-powered Space Invaders!",
