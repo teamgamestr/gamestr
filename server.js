@@ -104,7 +104,7 @@ app.get('/game/:pubkey/:gameIdentifier', (req, res) => {
 
 app.use(express.static(distPath));
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.set('Cache-Control', 'no-cache');
   res.send(indexHtml);
 });
