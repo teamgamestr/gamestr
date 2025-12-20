@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useSeoMeta } from '@unhead/react';
 import { type LeaderboardPeriod } from '@/hooks/useScores';
 import { useLeaderboardWithTestData } from '@/hooks/useScoresWithTestData';
 import { useGameConfig } from '@/hooks/useGameConfig';
@@ -27,6 +28,14 @@ export function GameDetail() {
 
   const { getGame } = useGameConfig();
   const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
+
+  useSeoMeta({
+    title: metadata ? `${metadata.name} Leaderboard - Gamestr` : 'Game - Gamestr',
+    description: metadata?.description || 'View the leaderboard for this game on Gamestr.',
+    ogImage: metadata?.image,
+    ogTitle: metadata ? `${metadata.name} Leaderboard` : 'Game Leaderboard',
+    ogDescription: metadata?.description || 'View the leaderboard for this game on Gamestr.',
+  });
   
   // Fetch game developer's profile
   const developerAuthor = useAuthor(pubkey);
