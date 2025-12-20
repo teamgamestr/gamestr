@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm i --silent && vite",
     "build": "npm i --silent && vite build -l error && cp dist/index.html dist/404.html && echo 'Project built successfully!'",
+    "start": "node server.js",
     "test": "npm i --silent && tsc --noEmit && eslint && vitest run --reporter=dot --silent && vite build -l error && cp dist/index.html dist/404.html && echo 'All tests passed!'",
     "deploy": "npm run build && npx -y nostr-deploy-cli deploy --skip-setup"
   },
@@ -43,6 +44,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@tanstack/react-query": "^5.56.2",
+    "@types/express": "^5.0.6",
     "@unhead/addons": "^2.0.10",
     "@unhead/react": "^2.0.10",
     "buffer": "^6.0.3",
@@ -51,6 +53,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "express": "^5.2.1",
     "idb": "^8.0.3",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
