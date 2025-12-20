@@ -22,53 +22,57 @@ const GAME_CONFIG = {
   },
   "test-developer-pubkey-1234567890abcdef:snake-game": {
     name: "Classic Snake",
-    description: "The timeless arcade classic! Eat apples, grow longer, and avoid hitting yourself.",
+    description: "The timeless arcade classic! Eat apples, grow longer, and avoid hitting yourself. How high can you score?",
     image: "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   "test-developer-pubkey-1234567890abcdef:tetris-clone": {
     name: "Block Puzzle Master",
-    description: "Stack falling blocks to clear lines and rack up massive combos.",
+    description: "Stack falling blocks to clear lines and rack up massive combos. A puzzle game that never gets old!",
     image: "https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   "test-developer-pubkey-1234567890abcdef:speed-racer": {
     name: "Speed Racer 3D",
-    description: "Hit the track in this high-octane racing game.",
+    description: "Hit the track in this high-octane racing game. Drift around corners, boost past opponents, and dominate the leaderboards!",
     image: "https://images.pexels.com/photos/1202723/pexels-photo-1202723.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   "test-developer-pubkey-1234567890abcdef:match-three": {
     name: "Gem Crusher",
-    description: "Match colorful gems in this addictive puzzle game.",
+    description: "Match colorful gems in this addictive puzzle game. Create cascading combos and special power-ups!",
     image: "https://images.pexels.com/photos/1670977/pexels-photo-1670977.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   "test-developer-pubkey-1234567890abcdef:space-shooter": {
-    name: "Galaxy Defender",
-    description: "Defend the galaxy from alien invaders in this intense space shooter!",
-    image: "https://images.pexels.com/photos/2156/sky-earth-space-working.jpg?auto=compress&cs=tinysrgb&w=800",
-  },
-  "test-developer-pubkey-1234567890abcdef:platformer": {
-    name: "Jump Quest",
-    description: "A classic platformer adventure. Jump, run, and collect coins!",
-    image: "https://images.pexels.com/photos/163077/mario-yoschi-figures-funny-163077.jpeg?auto=compress&cs=tinysrgb&w=800",
+    name: "Cosmic Defender",
+    description: "Defend Earth from alien invaders in this fast-paced space shooter. Upgrade your ship and save humanity!",
+    image: "https://images.pexels.com/photos/2085831/pexels-photo-2085831.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
 };
 
 const FALLBACK_METADATA = {
-  name: "Gamestr",
-  description: "Compete, share, and celebrate your gaming achievements on the decentralized web.",
+  name: "Unknown Game",
+  description: "No description available. Add metadata to improve this listing.",
   image: "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800",
 };
 
 function getGameMetadata(pubkey, gameIdentifier) {
   const key = `${pubkey}:${gameIdentifier}`;
-  return GAME_CONFIG[key] || FALLBACK_METADATA;
+  console.log(`Looking up game: ${key}`);
+  const metadata = GAME_CONFIG[key];
+  if (metadata) {
+    console.log(`Found game: ${metadata.name}, image: ${metadata.image}`);
+    return metadata;
+  }
+  console.log(`Game not found, using fallback`);
+  return FALLBACK_METADATA;
 }
 
 function injectMetaTags(html, metadata, url) {
-  const title = metadata.name === "Gamestr" 
+  const title = metadata.name === "Unknown Game" 
     ? "Gamestr - Decentralized Gaming Leaderboards on Nostr"
     : `${metadata.name} Leaderboard - Gamestr`;
   const description = metadata.description;
   const image = metadata.image;
+
+  console.log(`Injecting meta tags - title: ${title}, image: ${image}`);
 
   let modifiedHtml = html
     .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
@@ -95,6 +99,7 @@ const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf-8');
 
 app.get('/game/:pubkey/:gameIdentifier', (req, res) => {
   const { pubkey, gameIdentifier } = req.params;
+  console.log(`Game page request: pubkey=${pubkey}, gameIdentifier=${gameIdentifier}`);
   const metadata = getGameMetadata(pubkey, gameIdentifier);
   const url = `https://gamestr.io/game/${pubkey}/${gameIdentifier}`;
   const html = injectMetaTags(indexHtml, metadata, url);
@@ -111,4 +116,5 @@ app.use((req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`Game config loaded with ${Object.keys(GAME_CONFIG).length} games`);
 });
