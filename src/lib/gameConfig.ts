@@ -71,6 +71,20 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
+  //Nostrich Run
+  "277813f913fae89093c5cb443c671c0612144c636a43f08abcde2ef2f43d4978:nostrich-run":
+    {
+      name: "Nostrich Run",
+      description: "Endless Nostrich side-scroller.",
+      image: "https://nostrichrun.whitepaperinteractive.com/logo.png",
+      genres: ["endless", "side-scroller", "arcade"],
+      url: "nostrichrun.whitepaperinteractive.com",
+      developer: "Whitepaper Interactive",
+      featured: false,
+      trending: false,
+      newRelease: true,
+    },
+
   // Snake Game Example (matches test data)
   "test-developer-pubkey-1234567890abcdef:snake-game": {
     name: "Classic Snake",
