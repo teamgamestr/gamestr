@@ -282,7 +282,15 @@ async function loadExistingScoresFromRelays() {
   }
   
   try {
-    const events = await pool.querySync(
+    console.log(`[ScoreBot] Querying relays: ${BOT_CONFIG.subscribeRelays.join(', ')}`);
+    console.log(`[ScoreBot] Looking for scores from ${developerPubkeys.length} developers`);
+    
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout after 15s')), 15000)
+    );
+    
+    const queryPromise = pool.querySync(
       BOT_CONFIG.subscribeRelays,
       {
         kinds: [30762],
@@ -290,6 +298,8 @@ async function loadExistingScoresFromRelays() {
         limit: 500,
       }
     );
+    
+    const events = await Promise.race([queryPromise, timeoutPromise]);
     
     console.log(`[ScoreBot] Fetched ${events.length} existing score events`);
     
