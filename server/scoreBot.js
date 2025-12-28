@@ -281,25 +281,50 @@ async function loadExistingScoresFromRelays() {
     return;
   }
   
+  console.log(`[ScoreBot] Querying relays: ${BOT_CONFIG.subscribeRelays.join(', ')}`);
+  console.log(`[ScoreBot] Looking for scores from ${developerPubkeys.length} developers`);
+  
+  // Use subscription-based approach instead of querySync for reliability
+  const events = [];
+  
   try {
-    console.log(`[ScoreBot] Querying relays: ${BOT_CONFIG.subscribeRelays.join(', ')}`);
-    console.log(`[ScoreBot] Looking for scores from ${developerPubkeys.length} developers`);
-    
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Query timeout after 15s')), 15000)
-    );
-    
-    const queryPromise = pool.querySync(
-      BOT_CONFIG.subscribeRelays,
-      {
-        kinds: [30762],
-        authors: developerPubkeys,
-        limit: 500,
-      }
-    );
-    
-    const events = await Promise.race([queryPromise, timeoutPromise]);
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        console.log(`[ScoreBot] Query timeout reached, collected ${events.length} events`);
+        resolve();
+      }, 10000); // 10 second timeout
+      
+      let eoseCount = 0;
+      const relayCount = BOT_CONFIG.subscribeRelays.length;
+      
+      const sub = pool.subscribeMany(
+        BOT_CONFIG.subscribeRelays,
+        [
+          {
+            kinds: [30762],
+            authors: developerPubkeys,
+            limit: 500,
+          },
+        ],
+        {
+          onevent: (event) => {
+            events.push(event);
+          },
+          oneose: () => {
+            eoseCount++;
+            console.log(`[ScoreBot] EOSE received (${eoseCount}/${relayCount})`);
+            if (eoseCount >= relayCount) {
+              clearTimeout(timeout);
+              sub.close();
+              resolve();
+            }
+          },
+          onerror: (err) => {
+            console.error('[ScoreBot] Subscription error:', err);
+          },
+        }
+      );
+    });
     
     console.log(`[ScoreBot] Fetched ${events.length} existing score events`);
     
