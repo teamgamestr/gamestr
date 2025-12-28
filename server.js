@@ -2,6 +2,7 @@ import express from 'express';
 import { readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { startScoreBot, stopScoreBot, getBotStatus } from './server/scoreBot.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -74,6 +75,12 @@ app.get('/game/:pubkey/:gameIdentifier', (req, res) => {
   res.send(html);
 });
 
+// Bot status endpoint for health checks
+app.get('/api/bot/status', (req, res) => {
+  const status = getBotStatus();
+  res.json(status);
+});
+
 app.use(express.static(distPath));
 
 app.use((req, res) => {
@@ -81,6 +88,26 @@ app.use((req, res) => {
   res.send(indexHtml);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down...');
+  stopScoreBot();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down...');
+  stopScoreBot();
+  process.exit(0);
+});
+
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
+  
+  // Start the score bot
+  try {
+    await startScoreBot();
+  } catch (error) {
+    console.error('Failed to start score bot:', error.message);
+  }
 });

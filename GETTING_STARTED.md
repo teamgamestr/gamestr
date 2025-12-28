@@ -259,6 +259,96 @@ The app supports light and dark mode. Click the sun/moon icon in the header to t
 - `/game/:pubkey/:gameId` - Game leaderboards
 - `/player/:pubkey` - Player profiles
 
+## 🤖 Score Bot Configuration
+
+Gamestr includes an optional score announcement bot that posts kind 1 notes to Nostr when new scores are achieved for configured games.
+
+### Setup
+
+1. **Set the bot's private key** via environment variable:
+
+```bash
+# Required: Bot's private key (hex format, 64 characters)
+export SCORE_BOT_PRIVATE_KEY=your_64_character_hex_private_key
+```
+
+Or create a `.env` file in the project root:
+
+```bash
+SCORE_BOT_PRIVATE_KEY=your_64_character_hex_private_key
+```
+
+2. **Configure relays and templates** in `src/lib/gameConfig.ts`:
+
+```typescript
+export const SCORE_BOT_CONFIG = {
+  // Base URL for score and game links
+  baseUrl: "https://gamestr.io",
+
+  // Relays to publish bot announcements to
+  publishRelays: [
+    "wss://relay.nostr.band",
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+  ],
+
+  // Relays to subscribe to for score events
+  subscribeRelays: ["wss://relay.nostr.band"],
+
+  // Note templates for different score scenarios
+  templates: {
+    newScore: `{playerTag} just scored {score} points in {gameName}! ...`,
+    highScore: `NEW HIGH SCORE! {playerTag} just dethroned {previousHolderTag} ...`,
+    firstHighScore: `NEW HIGH SCORE! {playerTag} just set the first record ...`,
+    topScore: `{playerTag} just cracked the top 3 in {gameName} ...`,
+  },
+};
+```
+
+### Template Variables
+
+Available variables for note templates:
+
+| Variable | Description |
+|----------|-------------|
+| `{playerTag}` | `nostr:npub...` tag for the player |
+| `{gameTag}` | `nostr:npub...` tag for the game developer |
+| `{gameName}` | Human-readable game name |
+| `{score}` | Score value (formatted with commas) |
+| `{scoreRaw}` | Raw score value (no formatting) |
+| `{scoreLink}` | Link to the score on gamestr.io |
+| `{gameLink}` | Link to the game leaderboard |
+| `{level}` | Level/stage (if available) |
+| `{difficulty}` | Difficulty setting (if available) |
+| `{rank}` | Player's rank for high scores |
+| `{previousHolderTag}` | `nostr:npub...` tag for dethroned player (highScore only) |
+| `{previousScore}` | Previous high score value (highScore only) |
+
+### Bot Behavior
+
+- Only announces scores for games defined in `gameConfig.ts`
+- Differentiates between regular scores, top 3, and new high scores
+- Caches high scores in memory to detect new records
+- Tags the player, game developer, and dethroned high score holder in announcements
+- Prevents duplicate announcements on restart
+
+### Bot Status Endpoint
+
+Check bot status at: `GET /api/bot/status`
+
+```json
+{
+  "enabled": true,
+  "running": true,
+  "pubkey": "abc123...",
+  "stats": {
+    "gamesTracked": 3,
+    "totalHighScores": 3,
+    "announcedEvents": 42
+  }
+}
+```
+
 ## 🎉 You're Ready!
 
 You now have a fully functional gaming leaderboard platform running locally with:
@@ -268,6 +358,7 @@ You now have a fully functional gaming leaderboard platform running locally with
 - ✅ Test data for development
 - ✅ Developer tools
 - ✅ Nostr integration
+- ✅ Score announcement bot
 
 Start building, testing, and customizing Gamestr for your needs!
 

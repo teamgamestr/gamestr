@@ -7,7 +7,73 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2024-12-22-v1";
+export const GAME_CONFIG_VERSION = "2024-12-28-v2";
+
+/**
+ * Score Bot Configuration
+ * 
+ * The bot creates kind 1 Nostr notes announcing new scores for configured games.
+ * Set SCORE_BOT_PRIVATE_KEY environment variable to enable the bot.
+ * 
+ * Template variables:
+ * - {playerTag}        - nostr:npub... tag for the player
+ * - {gameTag}          - nostr:npub... tag for the game developer
+ * - {gameName}         - Human-readable game name
+ * - {score}            - Score value (formatted with commas)
+ * - {scoreRaw}         - Raw score value (no formatting)
+ * - {scoreLink}        - Link to the score on the site
+ * - {gameLink}         - Link to the game leaderboard
+ * - {level}            - Level/stage (if available)
+ * - {difficulty}       - Difficulty setting (if available)
+ * - {rank}             - Player's rank for top scores
+ * - {previousHolderTag} - nostr:npub... tag for dethroned high score holder (high scores only)
+ * - {previousScore}    - Previous high score value (high scores only)
+ */
+export const SCORE_BOT_CONFIG = {
+  // Base URL for score and game links
+  baseUrl: "https://gamestr.io",
+
+  // Relays to publish bot announcements to
+  publishRelays: [
+    "wss://relay.nostr.band",
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+  ],
+
+  // Relays to subscribe to for score events
+  subscribeRelays: [
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://relay.primal.net",
+  ],
+
+  // Note templates for different score scenarios
+  templates: {
+    // Template for regular new scores
+    newScore: `{playerTag} just scored {score} points in {gameName}! {gameTag}
+
+Check it out: {scoreLink}`,
+
+    // Template for new high scores (beats previous record)
+    highScore: `NEW HIGH SCORE! {playerTag} just dethroned {previousHolderTag} in {gameName} with {score} points! {gameTag}
+
+The previous record of {previousScore} has been crushed!
+
+{scoreLink}`,
+
+    // Template for first high score (no previous holder)
+    firstHighScore: `NEW HIGH SCORE! {playerTag} just set the first record in {gameName} with {score} points! {gameTag}
+
+This is now the #1 score on the leaderboard!
+
+{scoreLink}`,
+
+    // Template for top 3 scores (but not #1)
+    topScore: `{playerTag} just cracked the top 3 in {gameName} with {score} points! (Rank #{rank}) {gameTag}
+
+{scoreLink}`,
+  },
+};
 
 export interface GameMetadata {
   name: string;
@@ -57,8 +123,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   //Space Zappers
-  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers":
-    {
+  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers": {
       name: "Space Zappers",
       description:
         "A retro Space Invaders arcade game. Pay 21 sats to play. Publish your high scores to the decentralized Nostr leaderboard",
@@ -71,7 +136,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
-  //Nostrich Run
+//Nostrich Run
   "277813f913fae89093c5cb443c671c0612144c636a43f08abcde2ef2f43d4978:nostrich-run":
     {
       name: "Nostrich Run",
@@ -84,6 +149,19 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       trending: false,
       newRelease: true,
     },
+
+  //Sat Snake
+  "277813f913fae89093c5cb443c671c0612144c636a43f08abcde2ef2f43d4978:satsnake": {
+    name: "Sat Snake",
+    description: "Feed the Bitcoin-hungry Snake.",
+    image: "https://satsnake.whitepaperinteractive.com/assets/logo.png",
+    genres: ["mobile", "retro", "casual"],
+    url: "https://satsnake.whitepaperinteractive.com/",
+    developer: "Whitepaper Interactive", 
+    featured: false,
+    trending: true,
+    newRelease: true,
+  },
 
   // Snake Game Example (matches test data)
   "test-developer-pubkey-1234567890abcdef:snake-game": {
