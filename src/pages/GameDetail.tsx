@@ -6,17 +6,18 @@ import { useLeaderboardWithTestData } from '@/hooks/useScoresWithTestData';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
 import { ZapButton } from '@/components/ZapButton';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, TestTube2, User } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
+
 import { formatDistanceToNow } from 'date-fns';
-import { isTestEvent } from '@/lib/testData';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
 
@@ -323,50 +324,34 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
   };
 
   return (
-    <Link
-      to={`/score/${score.event.id}`}
-      className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
-    >
-      {/* Rank */}
-      <div className="flex items-center justify-center w-10">
-        {getRankIcon()}
-      </div>
+    <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
+      <Link
+        to={`/score/${score.event.id}`}
+        className="flex items-center gap-4 flex-1 min-w-0"
+      >
+        {/* Rank */}
+        <div className="flex items-center justify-center w-10">
+          {getRankIcon()}
+        </div>
 
-      {/* Player Info */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Avatar>
-          <AvatarImage src={metadata?.picture} alt={displayName} />
-          <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="font-medium truncate group-hover:text-primary transition-colors">
-            {displayName}
-          </p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
+        {/* Player Info */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Avatar>
+            <AvatarImage src={metadata?.picture} alt={displayName} />
+            <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium truncate group-hover:text-primary transition-colors">
+              {displayName}
+            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Score Details */}
-      <div className="flex items-center gap-4">
-        {isTestEvent(score.event) && (
-          <Badge variant="secondary" className="hidden sm:inline-flex gap-1">
-            <TestTube2 className="h-3 w-3" />
-            Test
-          </Badge>
-        )}
-        {score.difficulty && (
-          <Badge variant="outline" className="hidden sm:inline-flex">
-            {score.difficulty}
-          </Badge>
-        )}
-        {score.level && (
-          <Badge variant="outline" className="hidden md:inline-flex">
-            Level {score.level}
-          </Badge>
-        )}
+        {/* Score Details */}
         <div className="text-right">
           <p className="text-2xl font-bold">{score.score.toLocaleString()}</p>
           {score.duration && (
@@ -375,13 +360,16 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
             </p>
           )}
         </div>
-        <div onClick={(e) => e.preventDefault()}>
-          <ScoreZapButton
-            scoreEvent={score.event as unknown as Event}
-            playerPubkey={score.playerPubkey}
-          />
-        </div>
+      </Link>
+
+      {/* Zap Button - separate from the Link */}
+      <div className="flex items-center">
+        <ScoreZapButton
+          scoreEvent={score.event as unknown as Event}
+          playerPubkey={score.playerPubkey}
+          showCount={true}
+        />
       </div>
-    </Link>
+    </div>
   );
 }

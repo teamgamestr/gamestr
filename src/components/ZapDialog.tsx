@@ -39,6 +39,8 @@ interface ZapDialogProps {
   target: Event;
   children?: React.ReactNode;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const presetAmounts = [
@@ -235,8 +237,10 @@ const ZapContent = forwardRef<HTMLDivElement, ZapContentProps>(({
 ));
 ZapContent.displayName = 'ZapContent';
 
-export function ZapDialog({ target, children, className }: ZapDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ZapDialog({ target, children, className, open: externalOpen, onOpenChange }: ZapDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const { user } = useCurrentUser();
   const { data: author } = useAuthor(target.pubkey);
   const { toast } = useToast();
@@ -434,11 +438,18 @@ export function ZapDialog({ target, children, className }: ZapDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div className={`cursor-pointer ${className || ''}`}>
-          {children}
-        </div>
-      </DialogTrigger>
+      {externalOpen === undefined ? (
+        <DialogTrigger asChild>
+          <div
+            className={`cursor-pointer ${className || ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {children}
+          </div>
+        </DialogTrigger>
+      ) : (
+        children
+      )}
       <DialogContent className="sm:max-w-[425px] max-h-[95vh] overflow-hidden" data-testid="zap-modal">
         <DialogHeader>
           <DialogTitle className="text-lg break-words">
