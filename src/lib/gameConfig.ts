@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2024-12-28-v2";
+export const GAME_CONFIG_VERSION = "2026-02-23-v1";
 
 /**
  * Score Bot Configuration
@@ -237,7 +237,23 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     trending: false,
     newRelease: false,
   },
+
+  // Games without a Nostr pubkey (not yet publishing scores)
+  // Format: "nopubkey:<game-identifier>"
+  "nopubkey:bitcoin-bouncer": {
+    name: "Bitcoin Bouncer",
+    description: "A fun bouncing game where you collect sats while avoiding obstacles. Coming soon to Nostr leaderboards!",
+    image: "https://images.pexels.com/photos/3165335/pexels-photo-3165335.jpeg?auto=compress&cs=tinysrgb&w=800",
+    genres: ["arcade", "casual"],
+    url: "https://example.com/bitcoin-bouncer",
+    developer: "Indie Dev Studio",
+    featured: false,
+    trending: false,
+    newRelease: true,
+  },
 };
+
+export const NO_PUBKEY_PREFIX = "nopubkey";
 
 // Games to exclude from display (format: "<pubkey>:<game-identifier>")
 // Add game keys here to hide them from the platform
@@ -281,7 +297,7 @@ export function getGameMetadata(
 ): GameMetadata {
   const config = customConfig || INITIAL_GAME_CONFIG;
   const key = `${pubkey}:${gameIdentifier}`;
-  return config[key] || FALLBACK_GAME_METADATA;
+  return config[key] || INITIAL_GAME_CONFIG[key] || FALLBACK_GAME_METADATA;
 }
 
 /**
@@ -304,6 +320,25 @@ export function parseGameKey(
   const gameIdentifier = parts.slice(1).join(":"); // Handle identifiers with colons
 
   return { pubkey, gameIdentifier };
+}
+
+/**
+ * Check if a game key represents a game without a Nostr pubkey
+ */
+export function isNoPubkeyGame(pubkey: string): boolean {
+  return pubkey === NO_PUBKEY_PREFIX;
+}
+
+/**
+ * Get all games without a Nostr pubkey from the config
+ */
+export function getNoPubkeyGames(customConfig?: GameConfigMap): Array<{
+  key: string;
+  pubkey: string;
+  gameIdentifier: string;
+  metadata: GameMetadata;
+}> {
+  return getAllGames(customConfig).filter((game) => isNoPubkeyGame(game.pubkey));
 }
 
 /**

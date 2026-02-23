@@ -107,6 +107,10 @@ export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
 This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
 
 ## Recent Changes
+- ✅ Added support for listing games without a Nostr pubkey (Feb 23, 2026)
+  - Games with `nopubkey:<game-identifier>` keys appear in the grid alongside Nostr games
+  - Detail page shows a landing page with "Scores not yet available" message
+  - Use `NO_PUBKEY_PREFIX` constant and `isNoPubkeyGame()` helper
 - ✅ Updated Vite config to use port 5000 with 0.0.0.0 host
 - ✅ Enabled `allowedHosts: true` for Replit proxy compatibility
 - ✅ Configured dev workflow for webview output

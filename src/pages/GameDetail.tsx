@@ -13,13 +13,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User, MessageCircle } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
+import { isNoPubkeyGame } from '@/lib/gameConfig';
 
 export function GameDetail() {
   const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
@@ -29,19 +30,19 @@ export function GameDetail() {
 
   const { getGame } = useGameConfig();
   const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
+  const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
 
   useSeoMeta({
-    title: metadata ? `${metadata.name} Leaderboard - Gamestr` : 'Game - Gamestr',
+    title: metadata ? `${metadata.name}${isNoPubkey ? '' : ' Leaderboard'} - Gamestr` : 'Game - Gamestr',
     description: metadata?.description || 'View the leaderboard for this game on Gamestr.',
     ogImage: metadata?.image,
-    ogTitle: metadata ? `${metadata.name} Leaderboard` : 'Game Leaderboard',
+    ogTitle: metadata ? `${metadata.name}${isNoPubkey ? '' : ' Leaderboard'}` : 'Game Leaderboard',
     ogDescription: metadata?.description || 'View the leaderboard for this game on Gamestr.',
   });
   
-  // Fetch game developer's profile
-  const developerAuthor = useAuthor(pubkey);
+  const developerAuthor = useAuthor(isNoPubkey ? undefined : pubkey);
   const developerMetadata = developerAuthor.data?.metadata;
-  const developerDisplayName = developerMetadata?.name || metadata?.developer || genUserName(pubkey || '');
+  const developerDisplayName = developerMetadata?.name || metadata?.developer || (isNoPubkey ? undefined : genUserName(pubkey || ''));
 
   const { data: scores, isLoading } = useLeaderboardWithTestData(
     gameIdentifier || '',
@@ -52,10 +53,10 @@ export function GameDetail() {
       developerPubkey: pubkey,
       limit: 100,
       includeTestData: false,
+      enabled: !isNoPubkey,
     }
   );
 
-  // Get unique difficulties and modes from scores
   const difficulties = Array.from(new Set(scores?.map(s => s.difficulty).filter(Boolean))) as string[];
   const modes = Array.from(new Set(scores?.map(s => s.mode).filter(Boolean))) as string[];
 
@@ -119,20 +120,22 @@ export function GameDetail() {
               </div>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-4 text-sm">
-                {scores && scores.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-4 w-4 text-yellow-500" />
-                      <span>{scores.length} scores submitted</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4 text-blue-500" />
-                      <span>Top Score: {scores[0].score.toLocaleString()}</span>
-                    </div>
-                  </>
-                )}
-              </div>
+              {!isNoPubkey && (
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {scores && scores.length > 0 && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4 text-yellow-500" />
+                        <span>{scores.length} scores submitted</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4 text-blue-500" />
+                        <span>Top Score: {scores[0].score.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
@@ -144,7 +147,7 @@ export function GameDetail() {
                     </a>
                   </Button>
                 )}
-                {pubkey && developerAuthor.data?.event && (
+                {!isNoPubkey && pubkey && developerAuthor.data?.event && (
                   <div className="cursor-pointer">
                     <ZapButton 
                       target={developerAuthor.data.event as unknown as Event}
@@ -153,8 +156,7 @@ export function GameDetail() {
                     />
                   </div>
                 )}
-                {pubkey && (() => {
-                  // Check if pubkey is a valid hex string (64 characters, all hex)
+                {!isNoPubkey && pubkey && (() => {
                   const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
                   const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
                   
@@ -167,6 +169,11 @@ export function GameDetail() {
                     </Button>
                   );
                 })()}
+                {isNoPubkey && developerDisplayName && (
+                  <Badge variant="secondary" className="text-base px-4 py-2">
+                    By {developerDisplayName}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -174,116 +181,135 @@ export function GameDetail() {
       </div>
 
       <div className="container mx-auto px-4 py-8 space-y-6">
-        {/* Leaderboard Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              {metadata.name} Leaderboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Time Period */}
-            <div>
-              <label className="text-sm font-medium mb-2 block">Time Period</label>
-              <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
-                <TabsList className="grid grid-cols-4 w-full max-w-md">
-                  <TabsTrigger value="daily">Daily</TabsTrigger>
-                  <TabsTrigger value="weekly">Weekly</TabsTrigger>
-                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                  <TabsTrigger value="all-time">All Time</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
-            {/* Difficulty Filter */}
-            {difficulties.length > 0 && (
-              <div>
-                <label className="text-sm font-medium mb-2 block">Difficulty</label>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={difficulty === undefined ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setDifficulty(undefined)}
-                  >
-                    All
-                  </Button>
-                  {difficulties.map((d) => (
-                    <Button
-                      key={d}
-                      variant={difficulty === d ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setDifficulty(d)}
-                    >
-                      {d}
-                    </Button>
-                  ))}
-                </div>
+        {isNoPubkey ? (
+          <Card>
+            <CardContent className="py-16 text-center space-y-6">
+              <MessageCircle className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">Scores not yet available</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  This game hasn't published scores to Nostr yet. Contact the game owner and encourage them to integrate with Gamestr so players can compete on a decentralized leaderboard!
+                </p>
               </div>
-            )}
-
-            {/* Mode Filter */}
-            {modes.length > 0 && (
-              <div>
-                <label className="text-sm font-medium mb-2 block">Mode</label>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={mode === undefined ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setMode(undefined)}
-                  >
-                    All
-                  </Button>
-                  {modes.map((m) => (
-                    <Button
-                      key={m}
-                      variant={mode === m ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setMode(m)}
-                    >
-                      {m}
-                    </Button>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button asChild variant="outline">
+                  <Link to="/developers">
+                    Learn how to integrate
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  {metadata.name} Leaderboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Time Period</label>
+                  <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
+                    <TabsList className="grid grid-cols-4 w-full max-w-md">
+                      <TabsTrigger value="daily">Daily</TabsTrigger>
+                      <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                      <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                      <TabsTrigger value="all-time">All Time</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
 
-        {/* Leaderboard Table */}
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="space-y-4 p-6">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-24" />
+                {difficulties.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Difficulty</label>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={difficulty === undefined ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setDifficulty(undefined)}
+                      >
+                        All
+                      </Button>
+                      {difficulties.map((d) => (
+                        <Button
+                          key={d}
+                          variant={difficulty === d ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setDifficulty(d)}
+                        >
+                          {d}
+                        </Button>
+                      ))}
                     </div>
-                    <Skeleton className="h-6 w-20" />
                   </div>
-                ))}
-              </div>
-            ) : scores && scores.length > 0 ? (
-              <div className="divide-y">
-                {scores.map((score, index) => (
-                  <LeaderboardRow
-                    key={score.event.id}
-                    rank={index + 1}
-                    score={score}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center text-muted-foreground">
-                <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No scores yet. Be the first to play!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                )}
+
+                {modes.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Mode</label>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={mode === undefined ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setMode(undefined)}
+                      >
+                        All
+                      </Button>
+                      {modes.map((m) => (
+                        <Button
+                          key={m}
+                          variant={mode === m ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setMode(m)}
+                        >
+                          {m}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-0">
+                {isLoading ? (
+                  <div className="space-y-4 p-6">
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                    ))}
+                  </div>
+                ) : scores && scores.length > 0 ? (
+                  <div className="divide-y">
+                    {scores.map((score, index) => (
+                      <LeaderboardRow
+                        key={score.event.id}
+                        rank={index + 1}
+                        score={score}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center text-muted-foreground">
+                    <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No scores yet. Be the first to play!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
