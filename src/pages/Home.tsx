@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Search, Gamepad2, Flame, Sparkles, Star, TestTube2 } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -20,7 +20,9 @@ export function Home() {
   const [showTestData, setShowTestData] = useState(false);
 
   const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000, includeTestData: showTestData });
-  const { getGame, getAllGames, getFeatured, getTrending, getNewReleases } = useGameConfig();
+  const { getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();
+
+  const noPubkeyConfigGames = useMemo(() => getNoPubkeyGames(), []);
 
   const games = useMemo(() => {
     const nostrGames = (gamesWithScores || []).map(game => ({
@@ -31,21 +33,16 @@ export function Home() {
       topScore: game.topScore,
     }));
 
-    const noPubkeyGames = getAllGames()
-      .filter(g => isNoPubkeyGame(g.pubkey))
-      .map(g => ({
-        pubkey: g.pubkey,
-        gameIdentifier: g.gameIdentifier,
-        metadata: g.metadata,
-        scoreCount: undefined as number | undefined,
-        topScore: undefined as number | undefined,
-      }));
+    const noPubkeyGames = noPubkeyConfigGames.map(g => ({
+      pubkey: g.pubkey,
+      gameIdentifier: g.gameIdentifier,
+      metadata: g.metadata,
+      scoreCount: undefined as number | undefined,
+      topScore: undefined as number | undefined,
+    }));
 
-    const nostrKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
-    const uniqueNoPubkey = noPubkeyGames.filter(g => !nostrKeys.has(`${g.pubkey}:${g.gameIdentifier}`));
-
-    return [...nostrGames, ...uniqueNoPubkey];
-  }, [gamesWithScores, getGame, getAllGames]);
+    return [...nostrGames, ...noPubkeyGames];
+  }, [gamesWithScores, getGame, noPubkeyConfigGames]);
 
   // Apply filters
   const filteredGames = useMemo(() => {
