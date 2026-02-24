@@ -335,9 +335,7 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
       }>();
 
       parsedScores.forEach(score => {
-        const isK5555 = score.sourceKind === 5555;
-        const devPubkey = isK5555 ? `nopubkey` : score.event.pubkey;
-        const key = `${devPubkey}:${score.gameIdentifier}`;
+        const key = score.gameIdentifier;
         const existing = gamesMap.get(key);
 
         if (existing) {
@@ -353,6 +351,8 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
             score.genres.forEach(g => existing.genres.add(g));
           }
         } else {
+          const isK5555 = score.sourceKind === 5555;
+          const devPubkey = isK5555 ? `nopubkey` : score.event.pubkey;
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
             developerPubkey: devPubkey,
@@ -367,7 +367,7 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
 
       const excludedSet = new Set(EXCLUDED_GAMES);
       return Array.from(gamesMap.values())
-        .filter(game => !excludedSet.has(`${game.developerPubkey}:${game.gameIdentifier}`))
+        .filter(game => !excludedSet.has(`${game.developerPubkey}:${game.gameIdentifier}`) && !excludedSet.has(game.gameIdentifier))
         .map(game => ({
           ...game,
           genres: Array.from(game.genres),
@@ -418,15 +418,15 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
       }>();
 
       parsedScores.forEach(score => {
-        const isK5555 = score.sourceKind === 5555;
-        const devPubkey = isK5555 ? 'nopubkey' : score.event.pubkey;
-        const key = `${devPubkey}:${score.gameIdentifier}`;
+        const key = score.gameIdentifier;
         const existing = gamesMap.get(key);
 
         if (existing) {
           existing.scoreCount++;
           existing.uniquePlayers.add(score.playerPubkey);
         } else {
+          const isK5555 = score.sourceKind === 5555;
+          const devPubkey = isK5555 ? 'nopubkey' : score.event.pubkey;
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
             developerPubkey: devPubkey,
