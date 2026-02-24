@@ -20,16 +20,18 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier } from '@/lib/gameConfig';
 
 export function GameDetail() {
-  const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
+  const { slug: gameIdentifier } = useParams<{ slug: string }>();
   const [period, setPeriod] = useState<LeaderboardPeriod>('all-time');
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [mode, setMode] = useState<string | undefined>();
 
-  const { getGame } = useGameConfig();
-  const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
+  const { getGame, config } = useGameConfig();
+  const resolved = gameIdentifier ? resolveGameByIdentifier(gameIdentifier, config) : null;
+  const pubkey = resolved?.pubkey;
+  const metadata = resolved?.metadata || null;
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
   const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
   const hasLeaderboard = !isNoPubkey || isK5555;
@@ -63,7 +65,7 @@ export function GameDetail() {
   const difficulties = Array.from(new Set(scores?.map(s => s.difficulty).filter(Boolean))) as string[];
   const modes = Array.from(new Set(scores?.map(s => s.mode).filter(Boolean))) as string[];
 
-  if (!pubkey || !gameIdentifier || !metadata) {
+  if (!gameIdentifier || !metadata) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>

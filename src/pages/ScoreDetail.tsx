@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useGameConfig } from '@/hooks/useGameConfig';
+import { resolveGameByIdentifier } from '@/lib/gameConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -131,9 +132,10 @@ export function ScoreDetail() {
     activeNWC
   );
 
-  // Get game metadata
+  const { config } = useGameConfig();
   const gameMetadata = scoreData
-    ? getGame(scoreData.event.pubkey, scoreData.gameIdentifier)
+    ? resolveGameByIdentifier(scoreData.gameIdentifier, config)?.metadata ||
+      getGame(scoreData.event.pubkey, scoreData.gameIdentifier)
     : null;
 
   if (isLoading) {
@@ -186,7 +188,7 @@ export function ScoreDetail() {
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         {/* Back Button */}
         <Button variant="ghost" asChild>
-          <Link to={gameMetadata ? `/game/${scoreData.event.pubkey}/${scoreData.gameIdentifier}` : '/'}>
+          <Link to={gameMetadata ? `/${scoreData.gameIdentifier}` : '/'}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {gameMetadata ? `Back to ${gameMetadata.name}` : 'Back to Home'}
           </Link>
@@ -237,7 +239,7 @@ export function ScoreDetail() {
                     </Link>
                     {gameMetadata && (
                       <Link
-                        to={`/game/${scoreData.event.pubkey}/${scoreData.gameIdentifier}`}
+                        to={`/${scoreData.gameIdentifier}`}
                         className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
                       >
                         <Gamepad2 className="h-4 w-4" />

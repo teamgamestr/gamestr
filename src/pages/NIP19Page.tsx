@@ -438,7 +438,7 @@ function ProfileView({ pubkey }: { pubkey: string }) {
 }
 
 export function NIP19Page() {
-  const { nip19: identifier } = useParams<{ nip19: string }>();
+  const { slug: identifier } = useParams<{ slug: string }>();
 
   if (!identifier) {
     return <NotFound />;

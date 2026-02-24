@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useParams, Navigate } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { Layout } from "./components/Layout";
 
@@ -12,6 +12,23 @@ import Messages from "./pages/Messages";
 import { NIP19Page } from "./pages/NIP19Page";
 import NotFound from "./pages/NotFound";
 
+const NIP19_PREFIXES = ['npub1', 'note1', 'nevent1', 'nprofile1', 'naddr1'];
+
+function DynamicRoute() {
+  const { slug } = useParams<{ slug: string }>();
+  if (!slug) return <NotFound />;
+
+  const isNip19 = NIP19_PREFIXES.some(prefix => slug.startsWith(prefix));
+  if (isNip19) return <NIP19Page />;
+
+  return <GameDetail />;
+}
+
+function LegacyGameRedirect() {
+  const { gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
+  return <Navigate to={`/${gameIdentifier}`} replace />;
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -19,15 +36,13 @@ export function AppRouter() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/game/:pubkey/:gameIdentifier" element={<GameDetail />} />
+          <Route path="/game/:pubkey/:gameIdentifier" element={<LegacyGameRedirect />} />
           <Route path="/score/:eventId" element={<ScoreDetail />} />
           <Route path="/player/:pubkey" element={<PlayerProfile />} />
           <Route path="/developers" element={<Developers />} />
           <Route path="/playground" element={<Playground />} />
           <Route path="/messages" element={<Messages />} />
-          {/* NIP-19 route for npub1, note1, naddr1, nevent1, nprofile1 */}
-          <Route path="/:nip19" element={<NIP19Page />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/:slug" element={<DynamicRoute />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

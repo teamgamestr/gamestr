@@ -21,7 +21,7 @@ export function GameCard({
   topScore,
   className = '',
 }: GameCardProps) {
-  const gameUrl = `/game/${pubkey}/${gameIdentifier}`;
+  const gameUrl = `/${gameIdentifier}`;
 
   return (
     <Link to={gameUrl}>

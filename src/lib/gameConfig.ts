@@ -356,6 +356,40 @@ export function getGameMetadata(
 }
 
 /**
+ * Resolve a game identifier to its metadata and pubkey.
+ * Searches INITIAL_GAME_CONFIG, KIND_5555_GAMES, and custom config.
+ */
+export function resolveGameByIdentifier(
+  gameIdentifier: string,
+  customConfig?: GameConfigMap,
+): { pubkey: string; metadata: GameMetadata } | null {
+  const config = customConfig || INITIAL_GAME_CONFIG;
+
+  for (const [key, metadata] of Object.entries(config)) {
+    const parsed = parseGameKey(key);
+    if (parsed && parsed.gameIdentifier === gameIdentifier) {
+      return { pubkey: parsed.pubkey, metadata };
+    }
+  }
+
+  if (config !== INITIAL_GAME_CONFIG) {
+    for (const [key, metadata] of Object.entries(INITIAL_GAME_CONFIG)) {
+      const parsed = parseGameKey(key);
+      if (parsed && parsed.gameIdentifier === gameIdentifier) {
+        return { pubkey: parsed.pubkey, metadata };
+      }
+    }
+  }
+
+  const k5555 = KIND_5555_GAMES[gameIdentifier];
+  if (k5555) {
+    return { pubkey: NO_PUBKEY_PREFIX, metadata: k5555.metadata };
+  }
+
+  return null;
+}
+
+/**
  * Create a game config key from pubkey and game identifier
  */
 export function createGameKey(pubkey: string, gameIdentifier: string): string {

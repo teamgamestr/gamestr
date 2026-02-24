@@ -107,6 +107,12 @@ export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
 This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
 
 ## Recent Changes
+- ✅ Simplified game URLs to /:gameIdentifier (Feb 24, 2026)
+  - Games are now at /blockstr, /word5, etc. instead of /game/:pubkey/:gameIdentifier
+  - `resolveGameByIdentifier()` maps game names to their pubkey and metadata
+  - DynamicRoute component at `/:slug` distinguishes NIP-19 (npub1, note1, etc.) from game pages
+  - Legacy `/game/:pubkey/:gameIdentifier` URLs redirect to `/:gameIdentifier`
+  - ScoreDetail uses resolveGameByIdentifier for metadata lookup
 - ✅ Added kind 5555 (player-signed) score event support (Feb 24, 2026)
   - New `KIND_5555_GAMES` config in gameConfig.ts with per-game score field and sort direction
   - `validateKind5555()` parses kind 5555 events where player is event.pubkey (no `p` tag)

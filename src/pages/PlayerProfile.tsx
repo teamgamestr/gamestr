@@ -252,7 +252,7 @@ export function PlayerProfile() {
                   return (
                     <Link
                       key={game.gameKey}
-                      to={`/game/${game.pubkey}/${game.gameIdentifier}`}
+                      to={`/${game.gameIdentifier}`}
                       className="flex items-center gap-4 p-4 rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       {/* Game Image */}
