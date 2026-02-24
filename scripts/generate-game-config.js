@@ -126,11 +126,43 @@ if (templatesMatch) {
   if (topScoreMatch) scoreBot.templates.topScore = topScoreMatch[1];
 }
 
+const gamesByIdentifier = {};
+for (const [key, meta] of Object.entries(games)) {
+  const parts = key.split(':');
+  if (parts.length === 2) {
+    gamesByIdentifier[parts[1]] = meta;
+  }
+}
+
+const k5555Match = tsContent.match(/export const KIND_5555_GAMES:\s*Kind5555GamesMap\s*=\s*\{([\s\S]*?)\n\};/);
+if (k5555Match) {
+  const k5555Content = k5555Match[1];
+  const gameBlockRegex = /"([^"]+)":\s*\{[\s\S]*?metadata:\s*\{([\s\S]*?)\}\s*,?\s*\}/g;
+  let k5555m;
+  while ((k5555m = gameBlockRegex.exec(k5555Content)) !== null) {
+    const gameTag = k5555m[1];
+    const metaContent = k5555m[2];
+    const nameMatch = metaContent.match(/name:\s*"([^"]+)"/);
+    const descMatch = metaContent.match(/description:\s*"([^"]+)"/);
+    const imageMatch = metaContent.match(/image:\s*"([^"]+)"/);
+    if (nameMatch && imageMatch) {
+      const entry = {
+        name: nameMatch[1],
+        description: descMatch ? descMatch[1] : '',
+        image: imageMatch[1],
+      };
+      games[`nopubkey:${gameTag}`] = entry;
+      gamesByIdentifier[gameTag] = entry;
+    }
+  }
+}
+
 const output = {
   games,
+  gamesByIdentifier,
   fallback,
   scoreBot,
 };
 
 writeFileSync(outputPath, JSON.stringify(output, null, 2));
-console.log(`Generated game-config.json with ${Object.keys(games).length} games`);
+console.log(`Generated game-config.json with ${Object.keys(games).length} games (${Object.keys(gamesByIdentifier).length} by identifier)`);
