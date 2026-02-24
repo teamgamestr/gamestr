@@ -212,13 +212,6 @@ export function ScoreDetail() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Score Content */}
-            {scoreData.event.content && (
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="text-lg">{scoreData.event.content}</p>
-              </div>
-            )}
-
             {isTestEvent(scoreData.event) && (
               <Badge variant="secondary" className="gap-1">
                 <TestTube2 className="h-3 w-3" />
