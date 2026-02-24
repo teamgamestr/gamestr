@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-24-v1";
+export const GAME_CONFIG_VERSION = "2026-02-24-v2";
 
 /**
  * Score Bot Configuration
@@ -116,6 +116,21 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       developer: "otherstuff.ai",
       featured: false,
       trending: true,
+      newRelease: true,
+    },
+  },
+  "unicornvssnakes": {
+    scoreField: "score",
+    scoreDirection: "desc",
+    metadata: {
+      name: "Unicorn vs Snakes",
+      description: "Who put all these snakes on this 2D plane?!?",
+      image: "https://unicorn.dergigi.com/og.png",
+      genres: ["arcade", "action"],
+      url: "https://unicorn.dergigi.com",
+      developer: "dergigi",
+      featured: false,
+      trending: false,
       newRelease: true,
     },
   },
