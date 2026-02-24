@@ -33,10 +33,11 @@ export function Home() {
       topScore: game.topScore,
     }));
 
+    const nostrGameIdentifiers = new Set(nostrGames.map(g => g.gameIdentifier));
     const nostrGameKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
 
     const noPubkeyGames = noPubkeyConfigGames
-      .filter(g => !nostrGameKeys.has(`${g.pubkey}:${g.gameIdentifier}`))
+      .filter(g => !nostrGameKeys.has(`${g.pubkey}:${g.gameIdentifier}`) && !nostrGameIdentifiers.has(g.gameIdentifier))
       .map(g => ({
         pubkey: g.pubkey,
         gameIdentifier: g.gameIdentifier,

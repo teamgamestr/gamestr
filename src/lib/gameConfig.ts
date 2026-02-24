@@ -444,7 +444,7 @@ export function getAllGames(customConfig?: GameConfigMap): Array<{
 }> {
   const config = customConfig || INITIAL_GAME_CONFIG;
 
-  return Object.entries(config).map(([key, metadata]) => {
+  const configGames = Object.entries(config).map(([key, metadata]) => {
     const parsed = parseGameKey(key);
     return {
       key,
@@ -453,6 +453,18 @@ export function getAllGames(customConfig?: GameConfigMap): Array<{
       metadata,
     };
   });
+
+  const configIdentifiers = new Set(configGames.map(g => g.gameIdentifier));
+  const kind5555Games = getAllKind5555Games()
+    .filter(g => !configIdentifiers.has(g.gameTag))
+    .map(g => ({
+      key: `nopubkey:${g.gameTag}`,
+      pubkey: `nopubkey`,
+      gameIdentifier: g.gameTag,
+      metadata: g.config.metadata,
+    }));
+
+  return [...configGames, ...kind5555Games];
 }
 
 /**
