@@ -11,10 +11,10 @@ export const GAME_CONFIG_VERSION = "2026-02-24-v3";
 
 /**
  * Score Bot Configuration
- * 
+ *
  * The bot creates kind 1 Nostr notes announcing new scores for configured games.
  * Set SCORE_BOT_PRIVATE_KEY environment variable to enable the bot.
- * 
+ *
  * Template variables:
  * - {playerTag}        - nostr:npub... tag for the player
  * - {gameTag}          - nostr:npub... tag for the game developer
@@ -91,7 +91,7 @@ export interface GameConfigMap {
   [key: string]: GameMetadata; // key format: "<pubkey>:<game-identifier>"
 }
 
-export type ScoreDirection = 'desc' | 'asc';
+export type ScoreDirection = "desc" | "asc";
 
 export interface Kind5555GameConfig {
   scoreField: string;
@@ -104,13 +104,15 @@ export interface Kind5555GamesMap {
 }
 
 export const KIND_5555_GAMES: Kind5555GamesMap = {
-  "word5": {
-    scoreField: "result",
-    scoreDirection: "asc",
+  word5: {
+    scoreField: "streak",
+    scoreDirection: "des",
     metadata: {
       name: "Word5",
-      description: "A daily word puzzle game. Guess the 5-letter word in as few tries as possible!",
-      image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+      description:
+        "A daily word puzzle game. Guess the 5-letter word in as few tries as possible!",
+      image:
+        "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
       genres: ["puzzle", "casual"],
       url: "https://word5.otherstuff.ai",
       developer: "otherstuff.ai",
@@ -119,7 +121,7 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       newRelease: true,
     },
   },
-  "unicornvssnakes": {
+  unicornvssnakes: {
     scoreField: "score",
     scoreDirection: "desc",
     metadata: {
@@ -136,7 +138,9 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
   },
 };
 
-export function getKind5555Config(gameTag: string): Kind5555GameConfig | undefined {
+export function getKind5555Config(
+  gameTag: string,
+): Kind5555GameConfig | undefined {
   return KIND_5555_GAMES[gameTag];
 }
 
@@ -186,7 +190,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   //Space Zappers
-  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers": {
+  "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers":
+    {
       name: "Space Zappers",
       description:
         "A retro Space Invaders arcade game. Pay 21 sats to play. Publish your high scores to the decentralized Nostr leaderboard",
@@ -199,7 +204,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
-//Nostrich Run
+  //Nostrich Run
   "277813f913fae89093c5cb443c671c0612144c636a43f08abcde2ef2f43d4978:nostrich-run":
     {
       name: "Nostrich Run",
@@ -220,7 +225,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image: "https://satsnake.whitepaperinteractive.com/assets/logo.png",
     genres: ["mobile", "retro", "casual"],
     url: "https://satsnake.whitepaperinteractive.com/",
-    developer: "Whitepaper Interactive", 
+    developer: "Whitepaper Interactive",
     featured: false,
     trending: true,
     newRelease: true,
@@ -430,7 +435,9 @@ export function getNoPubkeyGames(customConfig?: GameConfigMap): Array<{
   gameIdentifier: string;
   metadata: GameMetadata;
 }> {
-  return getAllGames(customConfig).filter((game) => isNoPubkeyGame(game.pubkey));
+  return getAllGames(customConfig).filter((game) =>
+    isNoPubkeyGame(game.pubkey),
+  );
 }
 
 /**
@@ -444,7 +451,7 @@ export function getAllGames(customConfig?: GameConfigMap): Array<{
 }> {
   const config = customConfig || INITIAL_GAME_CONFIG;
 
-  const configGames = Object.entries(config).map(([key, metadata]) => {
+  return Object.entries(config).map(([key, metadata]) => {
     const parsed = parseGameKey(key);
     return {
       key,
@@ -453,18 +460,6 @@ export function getAllGames(customConfig?: GameConfigMap): Array<{
       metadata,
     };
   });
-
-  const configIdentifiers = new Set(configGames.map(g => g.gameIdentifier));
-  const kind5555Games = getAllKind5555Games()
-    .filter(g => !configIdentifiers.has(g.gameTag))
-    .map(g => ({
-      key: `nopubkey:${g.gameTag}`,
-      pubkey: `nopubkey`,
-      gameIdentifier: g.gameTag,
-      metadata: g.config.metadata,
-    }));
-
-  return [...configGames, ...kind5555Games];
 }
 
 /**
