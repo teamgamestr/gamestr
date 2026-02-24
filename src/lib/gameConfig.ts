@@ -115,7 +115,7 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       url: "https://word5.otherstuff.ai",
       developer: "otherstuff.ai",
       featured: false,
-      trending: true,
+      trending: false,
       newRelease: true,
     },
   },
