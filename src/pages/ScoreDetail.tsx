@@ -22,6 +22,7 @@ import {
   Calendar,
   Gamepad2,
   TestTube2,
+  ShieldCheck,
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -75,10 +76,11 @@ export function ScoreDetail() {
   );
 
   const { config } = useGameConfig();
+  const resolved = scoreData ? resolveGameByIdentifier(scoreData.gameIdentifier, config) : null;
   const gameMetadata = scoreData
-    ? resolveGameByIdentifier(scoreData.gameIdentifier, config)?.metadata ||
-      getGame(scoreData.event.pubkey, scoreData.gameIdentifier)
+    ? resolved?.metadata || getGame(scoreData.event.pubkey, scoreData.gameIdentifier)
     : null;
+  const isVerified = resolved?.pubkey && scoreData && scoreData.event.pubkey === resolved.pubkey;
 
   if (isLoading) {
     return (
@@ -171,7 +173,14 @@ export function ScoreDetail() {
                       to={`/player/${scoreData.playerPubkey}`}
                       className="hover:opacity-80 transition-opacity"
                     >
-                      <h1 className="text-2xl font-bold mb-1">{playerDisplayName}</h1>
+                      <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-bold mb-1">{playerDisplayName}</h1>
+                        {isVerified && (
+                          <span title="Verified: signed by game developer">
+                            <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
+                          </span>
+                        )}
+                      </div>
                     </Link>
                     {gameMetadata && (
                       <Link

@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User, MessageCircle, ShieldCheck } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 
@@ -302,6 +302,7 @@ export function GameDetail() {
                         key={score.event.id}
                         rank={index + 1}
                         score={score}
+                        developerPubkey={pubkey}
                       />
                     ))}
                   </div>
@@ -340,12 +341,14 @@ interface LeaderboardRowProps {
     duration?: number;
     achievements?: string[];
   };
+  developerPubkey?: string;
 }
 
-function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
+function LeaderboardRow({ rank, score, developerPubkey }: LeaderboardRowProps) {
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(score.playerPubkey);
+  const isVerified = developerPubkey && score.event.pubkey === developerPubkey;
 
   const getRankIcon = () => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -372,9 +375,16 @@ function LeaderboardRow({ rank, score }: LeaderboardRowProps) {
             <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="font-medium truncate group-hover:text-primary transition-colors">
-              {displayName}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="font-medium truncate group-hover:text-primary transition-colors">
+                {displayName}
+              </p>
+              {isVerified && (
+                <span title="Verified: signed by game developer">
+                  <ShieldCheck className="h-4 w-4 text-green-500 shrink-0" />
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
