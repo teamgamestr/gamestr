@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 import { filterTestEvents } from '@/lib/testData';
-import { EXCLUDED_GAMES } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, type ScoreDirection } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
-  kind: 30762;
+  kind: number;
 }
 
 export interface ParsedScore {
@@ -22,14 +22,20 @@ export interface ParsedScore {
   version?: string;
   platform?: string;
   genres?: string[];
+  sourceKind?: number;
 }
 
-/**
- * Validate and parse a score event
- */
 function validateScoreEvent(event: NostrEvent): ParsedScore | null {
-  if (event.kind !== 30762) return null;
+  if (event.kind === 30762) {
+    return validateKind30762(event);
+  }
+  if (event.kind === 5555) {
+    return validateKind5555(event);
+  }
+  return null;
+}
 
+function validateKind30762(event: NostrEvent): ParsedScore | null {
   const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
   const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
   const playerTag = event.tags.find(([name]) => name === 'p')?.[1];
@@ -63,7 +69,55 @@ function validateScoreEvent(event: NostrEvent): ParsedScore | null {
     version: versionTag,
     platform: platformTag,
     genres: genreTags.length > 0 ? genreTags : undefined,
+    sourceKind: 30762,
   };
+}
+
+function validateKind5555(event: NostrEvent): ParsedScore | null {
+  let gameTag = event.tags.find(([name]) => name === 'game')?.[1];
+  if (!gameTag) {
+    const tTags = event.tags.filter(([name]) => name === 't').map(([, v]) => v);
+    gameTag = tTags.find(t => getKind5555Config(t));
+  }
+  if (!gameTag) return null;
+
+  const config = getKind5555Config(gameTag);
+  if (!config) return null;
+
+  const scoreTag = event.tags.find(([name]) => name === config.scoreField)?.[1];
+  if (!scoreTag) return null;
+
+  const score = parseInt(scoreTag);
+  if (isNaN(score)) return null;
+
+  const difficultyTag = event.tags.find(([name]) => name === 'difficulty')?.[1];
+  const modeTag = event.tags.find(([name]) => name === 'mode')?.[1];
+  const versionTag = event.tags.find(([name]) => name === 'version')?.[1];
+  const genreTags = event.tags.filter(([name]) => name === 't').map(([, value]) => value);
+
+  return {
+    event: event as ScoreEvent,
+    gameIdentifier: gameTag,
+    score,
+    playerPubkey: event.pubkey,
+    difficulty: difficultyTag,
+    mode: modeTag,
+    version: versionTag,
+    genres: genreTags.length > 0 ? genreTags : undefined,
+    sourceKind: 5555,
+  };
+}
+
+export function getScoreDirection(gameIdentifier: string): ScoreDirection {
+  const config = getKind5555Config(gameIdentifier);
+  return config?.scoreDirection || 'desc';
+}
+
+function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedScore[] {
+  if (direction === 'asc') {
+    return scores.sort((a, b) => a.score - b.score);
+  }
+  return scores.sort((a, b) => b.score - a.score);
 }
 
 export type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly' | 'all-time';
@@ -96,6 +150,7 @@ interface UseScoresOptions {
   limit?: number;
   developerPubkey?: string;
   enabled?: boolean;
+  kind5555Only?: boolean;
 }
 
 /**
@@ -113,69 +168,76 @@ export function useScores(options: UseScoresOptions = {}) {
     limit = 100,
     developerPubkey,
     enabled = true,
+    kind5555Only = false,
   } = options;
 
   return useQuery({
-    queryKey: ['scores', gameIdentifier, playerPubkey, difficulty, mode, genre, period, limit, developerPubkey],
+    queryKey: ['scores', gameIdentifier, playerPubkey, difficulty, mode, genre, period, limit, developerPubkey, kind5555Only],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       
-      const filter: NostrFilter = {
-        kinds: [30762],
-        limit: 1000, // Fetch more events since we'll filter in JS
-      };
+      const filters: NostrFilter[] = [];
 
-      // Add time filter for period
       const since = getPeriodTimestamp(period);
-      if (since) {
-        filter.since = since;
+
+      if (!kind5555Only) {
+        const filter30762: NostrFilter = {
+          kinds: [30762],
+          limit: 1000,
+        };
+        if (since) filter30762.since = since;
+        if (playerPubkey) filter30762['#p'] = [playerPubkey];
+        if (genre) filter30762['#t'] = [genre];
+        if (developerPubkey) filter30762.authors = [developerPubkey];
+        filters.push(filter30762);
       }
 
-      // Only add filters that relays can actually index
-      // Relays only index single-letter tags and special fields like 'authors'
-      
-      // Add player filter (p is a single-letter tag)
-      if (playerPubkey) {
-        filter['#p'] = [playerPubkey];
+      if (gameIdentifier && isKind5555Game(gameIdentifier)) {
+        const filter5555: NostrFilter = {
+          kinds: [5555],
+          '#t': [gameIdentifier],
+          limit: 1000,
+        };
+        if (since) filter5555.since = since;
+        if (playerPubkey) filter5555.authors = [playerPubkey];
+        filters.push(filter5555);
+      } else if (kind5555Only) {
+        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        if (kind5555Tags.length > 0) {
+          const filter5555: NostrFilter = {
+            kinds: [5555],
+            '#t': kind5555Tags,
+            limit: 1000,
+          };
+          if (since) filter5555.since = since;
+          if (playerPubkey) filter5555.authors = [playerPubkey];
+          filters.push(filter5555);
+        }
       }
 
-      // Add genre filter (t is a single-letter tag)
-      if (genre) {
-        filter['#t'] = [genre];
-      }
+      if (filters.length === 0) return [];
 
-      // Add developer filter
-      if (developerPubkey) {
-        filter.authors = [developerPubkey];
-      }
+      const events = await nostr.query(filters, { signal });
 
-      const events = await nostr.query([filter], { signal });
-
-      // Validate and parse events
       let parsedScores = events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null)
-        .filter(score => score.state !== 'invalidated'); // Filter out invalidated scores
+        .filter(score => score.state !== 'invalidated');
 
-      // Filter by game identifier in JavaScript
       if (gameIdentifier) {
         parsedScores = parsedScores.filter(score => score.gameIdentifier === gameIdentifier);
       }
 
-      // Filter by difficulty in JavaScript
       if (difficulty) {
         parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
       }
 
-      // Filter by mode in JavaScript
       if (mode) {
         parsedScores = parsedScores.filter(score => score.mode === mode);
       }
 
-      // Sort by score descending and limit results
-      return parsedScores
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit);
+      const direction = gameIdentifier ? getScoreDirection(gameIdentifier) : 'desc';
+      return sortScores(parsedScores, direction).slice(0, limit);
     },
     enabled,
   });
@@ -232,31 +294,36 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
       
       let events: NostrEvent[] = [];
       
-      // Try to fetch from relays, but don't fail if it times out
       try {
-        events = await nostr.query([{
-          kinds: [30762],
-          limit,
-        }], { signal });
+        const filters: NostrFilter[] = [
+          { kinds: [30762], limit },
+        ];
+
+        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        if (kind5555Tags.length > 0) {
+          filters.push({
+            kinds: [5555],
+            '#t': kind5555Tags,
+            limit,
+          });
+        }
+
+        events = await nostr.query(filters, { signal });
       } catch (error) {
         console.warn('Failed to fetch scores from relays, using test data only', error);
       }
 
-      // Handle test data based on toggle
       if (includeTestData) {
         const { ALL_TEST_SCORES } = await import('@/lib/testData');
         events = [...events, ...ALL_TEST_SCORES];
       } else {
-        // Filter out relay events that have the test tag
         events = filterTestEvents(events);
       }
 
-      // Parse and validate
       const parsedScores = events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null);
 
-      // Group by game and developer
       const gamesMap = new Map<string, {
         gameIdentifier: string;
         developerPubkey: string;
@@ -264,15 +331,23 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
         topScore: number;
         latestTimestamp: number;
         genres: Set<string>;
+        sourceKind: number;
       }>();
 
       parsedScores.forEach(score => {
-        const key = `${score.event.pubkey}:${score.gameIdentifier}`;
+        const isK5555 = score.sourceKind === 5555;
+        const devPubkey = isK5555 ? `nopubkey` : score.event.pubkey;
+        const key = `${devPubkey}:${score.gameIdentifier}`;
         const existing = gamesMap.get(key);
 
         if (existing) {
           existing.scoreCount++;
-          existing.topScore = Math.max(existing.topScore, score.score);
+          const direction = getScoreDirection(score.gameIdentifier);
+          if (direction === 'asc') {
+            existing.topScore = Math.min(existing.topScore, score.score);
+          } else {
+            existing.topScore = Math.max(existing.topScore, score.score);
+          }
           existing.latestTimestamp = Math.max(existing.latestTimestamp, score.event.created_at);
           if (score.genres) {
             score.genres.forEach(g => existing.genres.add(g));
@@ -280,16 +355,16 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
         } else {
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
-            developerPubkey: score.event.pubkey,
+            developerPubkey: devPubkey,
             scoreCount: 1,
             topScore: score.score,
             latestTimestamp: score.event.created_at,
             genres: new Set(score.genres || []),
+            sourceKind: score.sourceKind || 30762,
           });
         }
       });
 
-      // Convert to array, filter excluded games, and sort by latest activity
       const excludedSet = new Set(EXCLUDED_GAMES);
       return Array.from(gamesMap.values())
         .filter(game => !excludedSet.has(`${game.developerPubkey}:${game.gameIdentifier}`))
@@ -315,17 +390,26 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const since = Math.floor(Date.now() / 1000) - (days * 86400);
       
-      const events = await nostr.query([{
-        kinds: [30762],
-        since,
-        limit: 1000,
-      }], { signal });
+      const filters: NostrFilter[] = [
+        { kinds: [30762], since, limit: 1000 },
+      ];
+
+      const kind5555Tags = Object.keys(KIND_5555_GAMES);
+      if (kind5555Tags.length > 0) {
+        filters.push({
+          kinds: [5555],
+          '#t': kind5555Tags,
+          since,
+          limit: 1000,
+        });
+      }
+
+      const events = await nostr.query(filters, { signal });
 
       const parsedScores = events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null);
 
-      // Group by game and count activity
       const gamesMap = new Map<string, {
         gameIdentifier: string;
         developerPubkey: string;
@@ -334,7 +418,9 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
       }>();
 
       parsedScores.forEach(score => {
-        const key = `${score.event.pubkey}:${score.gameIdentifier}`;
+        const isK5555 = score.sourceKind === 5555;
+        const devPubkey = isK5555 ? 'nopubkey' : score.event.pubkey;
+        const key = `${devPubkey}:${score.gameIdentifier}`;
         const existing = gamesMap.get(key);
 
         if (existing) {
@@ -343,21 +429,20 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
         } else {
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
-            developerPubkey: score.event.pubkey,
+            developerPubkey: devPubkey,
             scoreCount: 1,
             uniquePlayers: new Set([score.playerPubkey]),
           });
         }
       });
 
-      // Convert to array and sort by activity
       return Array.from(gamesMap.values())
         .map(game => ({
           gameIdentifier: game.gameIdentifier,
           developerPubkey: game.developerPubkey,
           scoreCount: game.scoreCount,
           playerCount: game.uniquePlayers.size,
-          trendingScore: game.scoreCount * game.uniquePlayers.size, // Simple trending algorithm
+          trendingScore: game.scoreCount * game.uniquePlayers.size,
         }))
         .sort((a, b) => b.trendingScore - a.trendingScore)
         .slice(0, limit);

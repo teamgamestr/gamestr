@@ -20,7 +20,7 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game } from '@/lib/gameConfig';
 
 export function GameDetail() {
   const { pubkey, gameIdentifier } = useParams<{ pubkey: string; gameIdentifier: string }>();
@@ -31,16 +31,18 @@ export function GameDetail() {
   const { getGame } = useGameConfig();
   const metadata = pubkey && gameIdentifier ? getGame(pubkey, gameIdentifier) : null;
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
+  const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
+  const hasLeaderboard = !isNoPubkey || isK5555;
 
   useSeoMeta({
-    title: metadata ? `${metadata.name}${isNoPubkey ? '' : ' Leaderboard'} - Gamestr` : 'Game - Gamestr',
+    title: metadata ? `${metadata.name}${hasLeaderboard ? ' Leaderboard' : ''} - Gamestr` : 'Game - Gamestr',
     description: metadata?.description || 'View the leaderboard for this game on Gamestr.',
     ogImage: metadata?.image,
-    ogTitle: metadata ? `${metadata.name}${isNoPubkey ? '' : ' Leaderboard'}` : 'Game Leaderboard',
+    ogTitle: metadata ? `${metadata.name}${hasLeaderboard ? ' Leaderboard' : ''}` : 'Game Leaderboard',
     ogDescription: metadata?.description || 'View the leaderboard for this game on Gamestr.',
   });
   
-  const developerAuthor = useAuthor(isNoPubkey ? undefined : pubkey);
+  const developerAuthor = useAuthor(isNoPubkey && !isK5555 ? undefined : (isK5555 ? undefined : pubkey));
   const developerMetadata = developerAuthor.data?.metadata;
   const developerDisplayName = developerMetadata?.name || metadata?.developer || (isNoPubkey ? undefined : genUserName(pubkey || ''));
 
@@ -50,10 +52,11 @@ export function GameDetail() {
     {
       difficulty,
       mode,
-      developerPubkey: pubkey,
+      developerPubkey: isK5555 ? undefined : pubkey,
       limit: 100,
       includeTestData: false,
-      enabled: !isNoPubkey,
+      enabled: hasLeaderboard,
+      kind5555Only: isK5555,
     }
   );
 
@@ -120,7 +123,7 @@ export function GameDetail() {
               </div>
 
               {/* Stats */}
-              {!isNoPubkey && (
+              {hasLeaderboard && (
                 <div className="flex flex-wrap gap-4 text-sm">
                   {scores && scores.length > 0 && (
                     <>
@@ -147,7 +150,7 @@ export function GameDetail() {
                     </a>
                   </Button>
                 )}
-                {!isNoPubkey && pubkey && developerAuthor.data?.event && (
+                {hasLeaderboard && !isK5555 && pubkey && developerAuthor.data?.event && (
                   <div className="cursor-pointer">
                     <ZapButton 
                       target={developerAuthor.data.event as unknown as Event}
@@ -156,7 +159,7 @@ export function GameDetail() {
                     />
                   </div>
                 )}
-                {!isNoPubkey && pubkey && (() => {
+                {hasLeaderboard && !isK5555 && pubkey && (() => {
                   const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
                   const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
                   
@@ -181,7 +184,7 @@ export function GameDetail() {
       </div>
 
       <div className="container mx-auto px-4 py-8 space-y-6">
-        {isNoPubkey ? (
+        {!hasLeaderboard ? (
           <Card>
             <CardContent className="py-16 text-center space-y-6">
               <MessageCircle className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />

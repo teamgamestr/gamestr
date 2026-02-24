@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Search, Gamepad2, Flame, Sparkles, Star, TestTube2 } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, isKind5555Game } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -33,13 +33,17 @@ export function Home() {
       topScore: game.topScore,
     }));
 
-    const noPubkeyGames = noPubkeyConfigGames.map(g => ({
-      pubkey: g.pubkey,
-      gameIdentifier: g.gameIdentifier,
-      metadata: g.metadata,
-      scoreCount: undefined as number | undefined,
-      topScore: undefined as number | undefined,
-    }));
+    const nostrGameKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
+
+    const noPubkeyGames = noPubkeyConfigGames
+      .filter(g => !nostrGameKeys.has(`${g.pubkey}:${g.gameIdentifier}`))
+      .map(g => ({
+        pubkey: g.pubkey,
+        gameIdentifier: g.gameIdentifier,
+        metadata: g.metadata,
+        scoreCount: undefined as number | undefined,
+        topScore: undefined as number | undefined,
+      }));
 
     return [...nostrGames, ...noPubkeyGames];
   }, [gamesWithScores, getGame, noPubkeyConfigGames]);

@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-23-v1";
+export const GAME_CONFIG_VERSION = "2026-02-24-v1";
 
 /**
  * Score Bot Configuration
@@ -89,6 +89,54 @@ export interface GameMetadata {
 
 export interface GameConfigMap {
   [key: string]: GameMetadata; // key format: "<pubkey>:<game-identifier>"
+}
+
+export type ScoreDirection = 'desc' | 'asc';
+
+export interface Kind5555GameConfig {
+  scoreField: string;
+  scoreDirection: ScoreDirection;
+  metadata: GameMetadata;
+}
+
+export interface Kind5555GamesMap {
+  [gameTag: string]: Kind5555GameConfig;
+}
+
+export const KIND_5555_GAMES: Kind5555GamesMap = {
+  "word5": {
+    scoreField: "result",
+    scoreDirection: "asc",
+    metadata: {
+      name: "Word5",
+      description: "A daily word puzzle game. Guess the 5-letter word in as few tries as possible!",
+      image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+      genres: ["puzzle", "casual"],
+      url: "https://word5.otherstuff.ai",
+      developer: "otherstuff.ai",
+      featured: false,
+      trending: true,
+      newRelease: true,
+    },
+  },
+};
+
+export function getKind5555Config(gameTag: string): Kind5555GameConfig | undefined {
+  return KIND_5555_GAMES[gameTag];
+}
+
+export function isKind5555Game(gameTag: string): boolean {
+  return gameTag in KIND_5555_GAMES;
+}
+
+export function getAllKind5555Games(): Array<{
+  gameTag: string;
+  config: Kind5555GameConfig;
+}> {
+  return Object.entries(KIND_5555_GAMES).map(([gameTag, config]) => ({
+    gameTag,
+    config,
+  }));
 }
 
 // Default fallback metadata for unknown games
@@ -297,7 +345,14 @@ export function getGameMetadata(
 ): GameMetadata {
   const config = customConfig || INITIAL_GAME_CONFIG;
   const key = `${pubkey}:${gameIdentifier}`;
-  return config[key] || INITIAL_GAME_CONFIG[key] || FALLBACK_GAME_METADATA;
+
+  if (config[key]) return config[key];
+  if (INITIAL_GAME_CONFIG[key]) return INITIAL_GAME_CONFIG[key];
+
+  const k5555 = KIND_5555_GAMES[gameIdentifier];
+  if (k5555) return k5555.metadata;
+
+  return FALLBACK_GAME_METADATA;
 }
 
 /**

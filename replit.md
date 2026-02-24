@@ -107,6 +107,14 @@ export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
 This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
 
 ## Recent Changes
+- ✅ Added kind 5555 (player-signed) score event support (Feb 24, 2026)
+  - New `KIND_5555_GAMES` config in gameConfig.ts with per-game score field and sort direction
+  - `validateKind5555()` parses kind 5555 events where player is event.pubkey (no `p` tag)
+  - `getScoreDirection()` and `sortScores()` support ascending (lower = better) sorting
+  - `useScores`, `useGamesWithScores`, `useTrendingGames` all query both kind 30762 and kind 5555
+  - GameDetail page shows leaderboards for kind 5555 games (not "scores unavailable")
+  - Word5 is the first kind 5555 game configured (puzzle, ascending scores)
+  - Kind 5555 events can use `game` tag or `t` tag for game identification
 - ✅ Added support for listing games without a Nostr pubkey (Feb 23, 2026)
   - Games with `nopubkey:<game-identifier>` keys appear in the grid alongside Nostr games
   - Detail page shows a landing page with "Scores not yet available" message

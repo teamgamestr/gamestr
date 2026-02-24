@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useScores, type LeaderboardPeriod, type ScoreEvent } from './useScores';
+import { useScores, type LeaderboardPeriod, type ScoreEvent, getScoreDirection } from './useScores';
 import { ALL_TEST_SCORES, TEST_PLAYER_METADATA, isTestEvent } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { ParsedScore } from './useScores';
@@ -14,7 +14,8 @@ interface UseScoresWithTestDataOptions {
   limit?: number;
   developerPubkey?: string;
   enabled?: boolean;
-  includeTestData?: boolean; // New option to include test data
+  kind5555Only?: boolean;
+  includeTestData?: boolean;
 }
 
 /**
@@ -118,8 +119,11 @@ export function useScoresWithTestData(options: UseScoresWithTestDataOptions = {}
       };
     });
 
-    // Combine and sort by score
     const combined = [...realScores, ...parsedTestScores];
+    const direction = scoreOptions.gameIdentifier ? getScoreDirection(scoreOptions.gameIdentifier) : 'desc';
+    if (direction === 'asc') {
+      return combined.sort((a, b) => a.score - b.score).slice(0, scoreOptions.limit || 100);
+    }
     return combined.sort((a, b) => b.score - a.score).slice(0, scoreOptions.limit || 100);
   }, [realScoresQuery.data, includeTestData, scoreOptions]);
 
@@ -155,6 +159,8 @@ export function useLeaderboardWithTestData(
     limit?: number;
     developerPubkey?: string;
     includeTestData?: boolean;
+    enabled?: boolean;
+    kind5555Only?: boolean;
   } = {}
 ) {
   return useScoresWithTestData({
