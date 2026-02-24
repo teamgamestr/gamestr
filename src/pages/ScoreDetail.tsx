@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useGameConfig } from '@/hooks/useGameConfig';
+import { validateScoreEvent } from '@/hooks/useScores';
 import { resolveGameByIdentifier } from '@/lib/gameConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,61 +32,6 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { isTestEvent, ALL_TEST_SCORES } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
-
-interface ParsedScore {
-  event: NostrEvent;
-  gameIdentifier: string;
-  score: number;
-  playerPubkey: string;
-  state?: string;
-  level?: string;
-  difficulty?: string;
-  mode?: string;
-  duration?: number;
-  achievements?: string[];
-  version?: string;
-  platform?: string;
-  genres?: string[];
-}
-
-function validateScoreEvent(event: NostrEvent): ParsedScore | null {
-  if (event.kind !== 30762) return null;
-
-  const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
-  const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
-  const playerTag = event.tags.find(([name]) => name === 'p')?.[1];
-
-  if (!gameTag || !scoreTag || !playerTag) return null;
-
-  const score = parseInt(scoreTag);
-  if (isNaN(score)) return null;
-
-  const stateTag = event.tags.find(([name]) => name === 'state')?.[1];
-  const levelTag = event.tags.find(([name]) => name === 'level')?.[1];
-  const difficultyTag = event.tags.find(([name]) => name === 'difficulty')?.[1];
-  const modeTag = event.tags.find(([name]) => name === 'mode')?.[1];
-  const durationTag = event.tags.find(([name]) => name === 'duration')?.[1];
-  const achievementsTag = event.tags.find(([name]) => name === 'achievements')?.[1];
-  const versionTag = event.tags.find(([name]) => name === 'version')?.[1];
-  const platformTag = event.tags.find(([name]) => name === 'platform')?.[1];
-  const genreTags = event.tags.filter(([name]) => name === 't').map(([, value]) => value);
-
-  return {
-    event,
-    gameIdentifier: gameTag,
-    score,
-    playerPubkey: playerTag,
-    state: stateTag,
-    level: levelTag,
-    difficulty: difficultyTag,
-    mode: modeTag,
-    duration: durationTag ? parseInt(durationTag) : undefined,
-    achievements: achievementsTag ? achievementsTag.split(',').map(a => a.trim()) : undefined,
-    version: versionTag,
-    platform: platformTag,
-    genres: genreTags.length > 0 ? genreTags : undefined,
-  };
-}
 
 export function ScoreDetail() {
   const { eventId } = useParams<{ eventId: string }>();

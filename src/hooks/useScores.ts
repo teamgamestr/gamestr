@@ -25,7 +25,7 @@ export interface ParsedScore {
   sourceKind?: number;
 }
 
-function validateScoreEvent(event: NostrEvent): ParsedScore | null {
+export function validateScoreEvent(event: NostrEvent): ParsedScore | null {
   if (event.kind === 30762) {
     return validateKind30762(event);
   }
