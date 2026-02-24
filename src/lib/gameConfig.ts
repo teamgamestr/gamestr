@@ -106,7 +106,7 @@ export interface Kind5555GamesMap {
 export const KIND_5555_GAMES: Kind5555GamesMap = {
   word5: {
     scoreField: "streak",
-    scoreDirection: "des",
+    scoreDirection: "desc",
     metadata: {
       name: "Word5",
       description:

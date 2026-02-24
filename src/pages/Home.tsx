@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Search, Gamepad2, Flame, Sparkles, Star, TestTube2 } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, isKind5555Game } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, isKind5555Game, getAllKind5555Games, NO_PUBKEY_PREFIX } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -23,6 +23,7 @@ export function Home() {
   const { getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();
 
   const noPubkeyConfigGames = useMemo(() => getNoPubkeyGames(), []);
+  const kind5555ConfigGames = useMemo(() => getAllKind5555Games(), []);
 
   const games = useMemo(() => {
     const nostrGames = (gamesWithScores || []).map(game => ({
@@ -34,10 +35,9 @@ export function Home() {
     }));
 
     const nostrGameIdentifiers = new Set(nostrGames.map(g => g.gameIdentifier));
-    const nostrGameKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
 
     const noPubkeyGames = noPubkeyConfigGames
-      .filter(g => !nostrGameKeys.has(`${g.pubkey}:${g.gameIdentifier}`) && !nostrGameIdentifiers.has(g.gameIdentifier))
+      .filter(g => !nostrGameIdentifiers.has(g.gameIdentifier))
       .map(g => ({
         pubkey: g.pubkey,
         gameIdentifier: g.gameIdentifier,
@@ -46,8 +46,18 @@ export function Home() {
         topScore: undefined as number | undefined,
       }));
 
-    return [...nostrGames, ...noPubkeyGames];
-  }, [gamesWithScores, getGame, noPubkeyConfigGames]);
+    const kind5555Fallbacks = kind5555ConfigGames
+      .filter(g => !nostrGameIdentifiers.has(g.gameTag))
+      .map(g => ({
+        pubkey: NO_PUBKEY_PREFIX,
+        gameIdentifier: g.gameTag,
+        metadata: g.config.metadata,
+        scoreCount: undefined as number | undefined,
+        topScore: undefined as number | undefined,
+      }));
+
+    return [...nostrGames, ...noPubkeyGames, ...kind5555Fallbacks];
+  }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames]);
 
   // Apply filters
   const filteredGames = useMemo(() => {
