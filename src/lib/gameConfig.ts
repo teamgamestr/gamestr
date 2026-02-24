@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-24-v2";
+export const GAME_CONFIG_VERSION = "2026-02-24-v3";
 
 /**
  * Score Bot Configuration
@@ -302,18 +302,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // Games without a Nostr pubkey (not yet publishing scores)
-  // Format: "nopubkey:<game-identifier>"
-  "nopubkey:bitcoin-bouncer": {
-    name: "Bitcoin Bouncer",
-    description: "A fun bouncing game where you collect sats while avoiding obstacles. Coming soon to Nostr leaderboards!",
-    image: "https://images.pexels.com/photos/3165335/pexels-photo-3165335.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["arcade", "casual"],
-    url: "https://example.com/bitcoin-bouncer",
-    developer: "Indie Dev Studio",
-    featured: false,
-    trending: false,
-    newRelease: true,
-  },
 };
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
