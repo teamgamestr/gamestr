@@ -70,14 +70,16 @@ No environment variables required for basic functionality. The app uses:
 - Optional: NWC (Nostr Wallet Connect) for zap functionality
 
 ### Git SSH Setup
-The `GITHUB_SSH_KEY` secret contains a base64-encoded SSH private key. To set up Git over SSH:
+The `GITHUB_SSH_KEY` secret contains a base64-encoded SSH private key for GitHub (authenticates as `dadofsambonzuki`).
+
+**At the start of each session, run:**
 ```bash
-mkdir -p ~/.ssh && chmod 700 ~/.ssh
-echo "$GITHUB_SSH_KEY" | base64 -d > ~/.ssh/id_ed25519
-chmod 600 ~/.ssh/id_ed25519
-ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+bash scripts/setup-ssh.sh
 ```
-This needs to be re-run if the environment resets.
+
+This script (in `scripts/setup-ssh.sh`) decodes the key, writes it to `~/.ssh/id_ed25519`, adds GitHub to known_hosts, and configures `~/.ssh/config`. It must be re-run when the environment resets (e.g., new session).
+
+The git remote uses SSH: `git@github.com:teamgamestr/gamestr.git`
 
 ## Test Data
 The app includes comprehensive test data for development:
