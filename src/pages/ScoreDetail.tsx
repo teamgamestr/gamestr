@@ -18,13 +18,9 @@ import {
   ArrowLeft,
   Trophy,
   Clock,
-  Target,
   Zap,
-  MessageSquare,
   Calendar,
   Gamepad2,
-  Award,
-  Timer,
   TestTube2,
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
@@ -122,12 +118,6 @@ export function ScoreDetail() {
       </div>
     );
   }
-
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}m ${secs}s`;
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -229,107 +219,17 @@ export function ScoreDetail() {
               </div>
             )}
 
-            {/* Score Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {!gameMetadata?.image && (
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 text-center">
-                    <Target className="h-5 w-5 mx-auto mb-2 text-primary" />
-                    <p className="text-2xl font-bold">{scoreData.score.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">Score</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {scoreData.level && (
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 text-center">
-                    <Trophy className="h-5 w-5 mx-auto mb-2 text-yellow-500" />
-                    <p className="text-2xl font-bold">{scoreData.level}</p>
-                    <p className="text-xs text-muted-foreground">Level</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {scoreData.duration && (
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 text-center">
-                    <Timer className="h-5 w-5 mx-auto mb-2 text-blue-500" />
-                    <p className="text-2xl font-bold">{formatDuration(scoreData.duration)}</p>
-                    <p className="text-xs text-muted-foreground">Duration</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {totalSats > 0 && (
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4 text-center">
-                    <Zap className="h-5 w-5 mx-auto mb-2 text-orange-500" />
-                    <p className="text-2xl font-bold">{totalSats.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">Sats Zapped</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Badges Section */}
-            <div className="flex flex-wrap gap-2">
-              {isTestEvent(scoreData.event) && (
-                <Badge variant="secondary" className="gap-1">
-                  <TestTube2 className="h-3 w-3" />
-                  Test Data
-                </Badge>
-              )}
-              {scoreData.difficulty && (
-                <Badge variant="outline">
-                  <Award className="h-3 w-3 mr-1" />
-                  {scoreData.difficulty}
-                </Badge>
-              )}
-              {scoreData.mode && (
-                <Badge variant="outline">
-                  <Gamepad2 className="h-3 w-3 mr-1" />
-                  {scoreData.mode}
-                </Badge>
-              )}
-              {scoreData.platform && (
-                <Badge variant="outline">{scoreData.platform}</Badge>
-              )}
-              {scoreData.version && (
-                <Badge variant="outline">v{scoreData.version}</Badge>
-              )}
-              {scoreData.state && scoreData.state !== 'active' && (
-                <Badge variant={scoreData.state === 'verified' ? 'default' : 'destructive'}>
-                  {scoreData.state}
-                </Badge>
-              )}
-            </div>
-
-            {/* Achievements */}
-            {scoreData.achievements && scoreData.achievements.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Achievements Unlocked
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {scoreData.achievements.map((achievement) => (
-                    <Badge key={achievement} variant="secondary">
-                      {achievement}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+            {isTestEvent(scoreData.event) && (
+              <Badge variant="secondary" className="gap-1">
+                <TestTube2 className="h-3 w-3" />
+                Test Data
+              </Badge>
             )}
 
-            {/* Game Genres */}
-            {scoreData.genres && scoreData.genres.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {scoreData.genres.map((genre) => (
-                  <Badge key={genre} variant="outline">
-                    {genre}
-                  </Badge>
-                ))}
+            {totalSats > 0 && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Zap className="h-4 w-4 text-orange-500" />
+                <span className="font-medium">{totalSats.toLocaleString()} sats zapped</span>
               </div>
             )}
 
