@@ -332,6 +332,33 @@ export function ScoreDetail() {
                 ))}
               </div>
             )}
+
+            {/* All Event Tags */}
+            {scoreData.event.tags.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-muted-foreground">Event Tags</h3>
+                <div className="rounded-lg border bg-muted/30 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="text-left px-4 py-2 font-medium text-muted-foreground w-1/4">Tag</th>
+                        <th className="text-left px-4 py-2 font-medium text-muted-foreground">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scoreData.event.tags.map((tag, index) => (
+                        <tr key={index} className="border-b last:border-0">
+                          <td className="px-4 py-2 font-mono text-xs text-primary">{tag[0]}</td>
+                          <td className="px-4 py-2 font-mono text-xs break-all">
+                            {tag.slice(1).join(', ')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
