@@ -44,6 +44,7 @@ export function Developers() {
     ["d", "my-awesome-game:player-pubkey:level-12"],
     ["game", "my-awesome-game"],
     ["score", "15000"],
+    ["p", "the-players-own-pubkey"],
     ["state", "active"],
     ["level", "12"],
     ["difficulty", "hard"],
@@ -121,6 +122,7 @@ publishScore('player-pubkey-here', 15000, {
         ['d', \`my-awesome-game:\${playerPubkey}:\${metadata.level || 'default'}\`],
         ['game', 'my-awesome-game'],
         ['score', score.toString()],
+        ['p', playerPubkey],
         ['state', 'active'],
         ['t', 'arcade'],
       ],
@@ -319,7 +321,7 @@ publish_score(
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <p className="text-muted-foreground">
-                    Players sign their own score events using their personal Nostr keypair. The player's pubkey goes in both the event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> field and is the signer. No <code className="bg-muted px-1 py-0.5 rounded">p</code> tag is needed.
+                    Players sign their own score events using their personal Nostr keypair. The player's pubkey goes in the event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> field as the signer, and also in the <code className="bg-muted px-1 py-0.5 rounded">p</code> tag.
                   </p>
                   <ul className="space-y-1.5 text-muted-foreground">
                     <li className="flex items-start gap-2">
@@ -469,7 +471,7 @@ publish_score(
 
               <TabsContent value="player-signed" className="space-y-4">
                 <p className="text-sm text-muted-foreground mt-2">
-                  The event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> is the player's own pubkey. No <code className="bg-muted px-1 py-0.5 rounded">p</code> tag is needed since the player is the signer.
+                  The event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> is the player's own pubkey. The <code className="bg-muted px-1 py-0.5 rounded">p</code> tag should also contain the player's pubkey.
                 </p>
                 <div className="relative">
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
@@ -495,16 +497,12 @@ publish_score(
             </Tabs>
 
             <div className="space-y-2">
-              <h4 className="font-semibold">Required Tags (both approaches):</h4>
+              <h4 className="font-semibold">Required Tags:</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li><code className="bg-muted px-1 py-0.5 rounded">d</code> - Unique identifier (format: game-id:player-pubkey:level)</li>
                 <li><code className="bg-muted px-1 py-0.5 rounded">game</code> - Your game identifier</li>
                 <li><code className="bg-muted px-1 py-0.5 rounded">score</code> - The numeric score value</li>
-              </ul>
-
-              <h4 className="font-semibold mt-4">Required for Game Dev Signed only:</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li><code className="bg-muted px-1 py-0.5 rounded">p</code> - Player's Nostr pubkey (identifies the player when the game dev signs the event)</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded">p</code> - Player's Nostr pubkey</li>
               </ul>
 
               <h4 className="font-semibold mt-4">Optional Tags:</h4>
