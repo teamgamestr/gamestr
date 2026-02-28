@@ -255,7 +255,7 @@ export const NO_PUBKEY_PREFIX = "nopubkey";
 export const EXCLUDED_GAMES: string[] = [
   "blockstr",
   "nostrich-run",
-  "Nostrich%20Run",
+  "Nostrich Run",
   "zap-raptor",
   "bitcoin-space-invaders",
 ];
