@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-28-v4";
+export const GAME_CONFIG_VERSION = "2026-02-28-v5";
 
 /**
  * Score Bot Configuration
