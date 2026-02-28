@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2 } from 'lucide-react';
+import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function Developers() {
@@ -15,7 +15,7 @@ export function Developers() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const exampleEvent = `{
+  const gamedevSignedEvent = `{
   "kind": 30762,
   "pubkey": "your-game-developer-pubkey",
   "created_at": ${Math.floor(Date.now() / 1000)},
@@ -35,7 +35,26 @@ export function Developers() {
   ]
 }`;
 
-  const jsExample = `import { SimplePool, getPublicKey, finalizeEvent } from 'nostr-tools';
+  const playerSignedEvent = `{
+  "kind": 30762,
+  "pubkey": "the-players-own-pubkey",
+  "created_at": ${Math.floor(Date.now() / 1000)},
+  "content": "New high score achieved!",
+  "tags": [
+    ["d", "my-awesome-game:player-pubkey:level-12"],
+    ["game", "my-awesome-game"],
+    ["score", "15000"],
+    ["state", "active"],
+    ["level", "12"],
+    ["difficulty", "hard"],
+    ["mode", "single-player"],
+    ["duration", "180"],
+    ["t", "arcade"],
+    ["t", "casual"]
+  ]
+}`;
+
+  const jsGamedevExample = `import { SimplePool, getPublicKey, finalizeEvent } from 'nostr-tools';
 
 // Initialize Nostr connection
 const pool = new SimplePool();
@@ -45,7 +64,7 @@ const relays = ['wss://relay.nostr.band', 'wss://relay.damus.io'];
 const gamePrivateKey = 'your-game-private-key-hex';
 const gamePubkey = getPublicKey(gamePrivateKey);
 
-// Function to publish a score
+// Function to publish a score (game dev signed = verified)
 async function publishScore(playerPubkey, score, metadata = {}) {
   const event = {
     kind: 30762,
@@ -72,7 +91,7 @@ async function publishScore(playerPubkey, score, metadata = {}) {
   const signedEvent = finalizeEvent(event, gamePrivateKey);
   await Promise.any(pool.publish(relays, signedEvent));
   
-  console.log('Score published!', signedEvent.id);
+  console.log('Verified score published!', signedEvent.id);
   return signedEvent;
 }
 
@@ -84,7 +103,46 @@ publishScore('player-pubkey-here', 15000, {
   achievements: ['speed-demon', 'perfectionist']
 });`;
 
-  const pythonExample = `import time
+  const jsPlayerExample = `// Player-signed scores using a NIP-07 browser extension (e.g., Alby)
+  import { SimplePool } from 'nostr-tools';
+
+  const pool = new SimplePool();
+  const relays = ['wss://relay.nostr.band', 'wss://relay.damus.io'];
+
+  async function publishPlayerScore(score, metadata = {}) {
+    // Get the player's pubkey from their browser extension
+    const playerPubkey = await window.nostr.getPublicKey();
+
+    const event = {
+      kind: 30762,
+      created_at: Math.floor(Date.now() / 1000),
+      content: metadata.message || 'New score achieved!',
+      tags: [
+        ['d', \`my-awesome-game:\${playerPubkey}:\${metadata.level || 'default'}\`],
+        ['game', 'my-awesome-game'],
+        ['score', score.toString()],
+        ['state', 'active'],
+        ['t', 'arcade'],
+      ],
+    };
+
+    if (metadata.level) event.tags.push(['level', metadata.level.toString()]);
+    if (metadata.difficulty) event.tags.push(['difficulty', metadata.difficulty]);
+
+    // Player signs the event with their own key
+    const signedEvent = await window.nostr.signEvent(event);
+    await Promise.any(pool.publish(relays, signedEvent));
+
+    console.log('Player score published!', signedEvent.id);
+    return signedEvent;
+  }
+
+  publishPlayerScore(15000, {
+    level: 12,
+    difficulty: 'hard',
+  });`;
+
+    const pythonExample = `import time
 import json
 from nostr.key import PrivateKey
 from nostr.event import Event, EventKind
@@ -208,8 +266,83 @@ publish_score(
           </Card>
         </div>
 
-        {/* Quick Start Section */}
+        {/* Signing Approaches */}
         <Card id="quick-start">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5" />
+              How Score Signing Works
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <p className="text-muted-foreground">
+              There are two ways to sign and publish score events on Gamestr. You can use a dedicated game developer pubkey, or let players sign their own scores with their personal pubkey.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-2 border-green-500/30 bg-green-500/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ShieldCheck className="h-5 w-5 text-green-500" />
+                    Game Developer Pubkey
+                  </CardTitle>
+                  <Badge variant="outline" className="w-fit border-green-500/50 text-green-600">Verified Scores</Badge>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <p className="text-muted-foreground">
+                    Your game server signs score events using a dedicated game developer keypair. The game's pubkey goes in the event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> field, and the player's pubkey goes in the <code className="bg-muted px-1 py-0.5 rounded">p</code> tag.
+                  </p>
+                  <ul className="space-y-1.5 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      Scores are displayed as <strong className="text-green-600">verified</strong> on Gamestr
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      Game developer controls score submissions
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      Best for server-side games or games with anti-cheat
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-blue-500/30 bg-blue-500/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5 text-blue-500" />
+                    Player Pubkey
+                  </CardTitle>
+                  <Badge variant="outline" className="w-fit border-blue-500/50 text-blue-600">Player-Signed</Badge>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <p className="text-muted-foreground">
+                    Players sign their own score events using their personal Nostr keypair. The player's pubkey goes in both the event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> field and is the signer. No <code className="bg-muted px-1 py-0.5 rounded">p</code> tag is needed.
+                  </p>
+                  <ul className="space-y-1.5 text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                      No server-side key management needed
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                      Players publish directly from the client
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                      Best for web-based or casual games
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Start Section */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Rocket className="h-5 w-5" />
@@ -223,10 +356,9 @@ publish_score(
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Create a Nostr Identity</h3>
+                  <h3 className="font-semibold mb-1">Choose Your Signing Approach</h3>
                   <p className="text-sm text-muted-foreground">
-                    Generate a Nostr keypair for your game. This will be used to sign score events.
-                    Keep your private key (nsec) secret!
+                    Decide whether your game will use a <strong>game developer pubkey</strong> (server signs scores, shown as verified) or a <strong>player pubkey</strong> (players sign their own scores).
                   </p>
                 </div>
               </div>
@@ -234,6 +366,19 @@ publish_score(
               <div className="flex items-start gap-3">
                 <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex-shrink-0">
                   2
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">Create a Nostr Identity</h3>
+                  <p className="text-sm text-muted-foreground">
+                    If using a game developer pubkey, generate a dedicated Nostr keypair for your game and keep the private key (nsec) secret.
+                    If using player pubkeys, players will sign with their own Nostr identity (e.g., via a NIP-07 browser extension like Alby).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex-shrink-0">
+                  3
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Choose Your Game Identifier</h3>
@@ -246,20 +391,20 @@ publish_score(
 
               <div className="flex items-start gap-3">
                 <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex-shrink-0">
-                  3
+                  4
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Publish Score Events</h3>
                   <p className="text-sm text-muted-foreground">
                     When a player achieves a score, create and publish a kind 30762 addressable event to Nostr relays.
-                    See code examples below.
+                    See code examples below for both approaches.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-sm font-bold flex-shrink-0">
-                  4
+                  5
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Add Game Metadata</h3>
@@ -283,37 +428,83 @@ publish_score(
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Score events use kind 30762 (addressable replaceable) and follow this structure:
+              Score events use kind 30762 (addressable replaceable). The structure differs slightly depending on your signing approach:
             </p>
 
-            <div className="relative">
-              <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                <code>{exampleEvent}</code>
-              </pre>
-              <Button
-                size="sm"
-                variant="outline"
-                className="absolute top-2 right-2"
-                onClick={() => copyCode(exampleEvent, 'example-event')}
-              >
-                {copiedCode === 'example-event' ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  'Copy'
-                )}
-              </Button>
-            </div>
+            <Tabs defaultValue="gamedev-signed">
+              <TabsList className="grid w-full grid-cols-2 max-w-md">
+                <TabsTrigger value="gamedev-signed">Game Dev Signed</TabsTrigger>
+                <TabsTrigger value="player-signed">Player Signed</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="gamedev-signed" className="space-y-4">
+                <div className="flex items-center gap-2 mt-2">
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium text-green-600">Scores appear as verified on Gamestr</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  The event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> is the game developer's pubkey. The player is identified via the <code className="bg-muted px-1 py-0.5 rounded">p</code> tag.
+                </p>
+                <div className="relative">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                    <code>{gamedevSignedEvent}</code>
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2"
+                    onClick={() => copyCode(gamedevSignedEvent, 'gamedev-event')}
+                  >
+                    {copiedCode === 'gamedev-event' ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      'Copy'
+                    )}
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="player-signed" className="space-y-4">
+                <p className="text-sm text-muted-foreground mt-2">
+                  The event <code className="bg-muted px-1 py-0.5 rounded">pubkey</code> is the player's own pubkey. No <code className="bg-muted px-1 py-0.5 rounded">p</code> tag is needed since the player is the signer.
+                </p>
+                <div className="relative">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                    <code>{playerSignedEvent}</code>
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2"
+                    onClick={() => copyCode(playerSignedEvent, 'player-event')}
+                  >
+                    {copiedCode === 'player-event' ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      'Copy'
+                    )}
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
 
             <div className="space-y-2">
-              <h4 className="font-semibold">Required Tags:</h4>
+              <h4 className="font-semibold">Required Tags (both approaches):</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
-                <li><code className="bg-muted px-1 py-0.5 rounded">d</code> - Unique identifier (format: game:timestamp:random)</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded">d</code> - Unique identifier (format: game-id:player-pubkey:level)</li>
                 <li><code className="bg-muted px-1 py-0.5 rounded">game</code> - Your game identifier</li>
                 <li><code className="bg-muted px-1 py-0.5 rounded">score</code> - The numeric score value</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded">p</code> - Player's Nostr pubkey</li>
+              </ul>
+
+              <h4 className="font-semibold mt-4">Required for Game Dev Signed only:</h4>
+              <ul className="space-y-1 text-sm text-muted-foreground">
+                <li><code className="bg-muted px-1 py-0.5 rounded">p</code> - Player's Nostr pubkey (identifies the player when the game dev signs the event)</li>
               </ul>
 
               <h4 className="font-semibold mt-4">Optional Tags:</h4>
@@ -335,27 +526,62 @@ publish_score(
             <CardTitle>Code Examples</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="javascript">
-              <TabsList className="grid w-full grid-cols-2 max-w-md">
-                <TabsTrigger value="javascript">JavaScript</TabsTrigger>
-                <TabsTrigger value="python">Python</TabsTrigger>
+            <Tabs defaultValue="js-gamedev">
+              <TabsList className="grid w-full grid-cols-3 max-w-lg">
+                <TabsTrigger value="js-gamedev">JS (Game Dev)</TabsTrigger>
+                <TabsTrigger value="js-player">JS (Player)</TabsTrigger>
+                <TabsTrigger value="python">Python (Game Dev)</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="javascript" className="space-y-4">
+              <TabsContent value="js-gamedev" className="space-y-4">
+                <div className="flex items-center gap-2 mt-2">
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium text-green-600">Game dev signed - scores appear as verified</span>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Using <code className="bg-muted px-1 py-0.5 rounded">nostr-tools</code> library:
+                  Using <code className="bg-muted px-1 py-0.5 rounded">nostr-tools</code> library with a game developer keypair:
                 </p>
                 <div className="relative">
                   <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                    <code>{jsExample}</code>
+                    <code>{jsGamedevExample}</code>
                   </pre>
                   <Button
                     size="sm"
                     variant="outline"
                     className="absolute top-2 right-2"
-                    onClick={() => copyCode(jsExample, 'js-example')}
+                    onClick={() => copyCode(jsGamedevExample, 'js-gamedev-example')}
                   >
-                    {copiedCode === 'js-example' ? (
+                    {copiedCode === 'js-gamedev-example' ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      'Copy'
+                    )}
+                  </Button>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="js-player" className="space-y-4">
+                <div className="flex items-center gap-2 mt-2">
+                  <User className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm font-medium text-blue-600">Player signed - no server key needed</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Using a NIP-07 browser extension (e.g., Alby) for player-signed scores:
+                </p>
+                <div className="relative">
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+                    <code>{jsPlayerExample}</code>
+                  </pre>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-2 right-2"
+                    onClick={() => copyCode(jsPlayerExample, 'js-player-example')}
+                  >
+                    {copiedCode === 'js-player-example' ? (
                       <>
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Copied!
@@ -368,6 +594,10 @@ publish_score(
               </TabsContent>
 
               <TabsContent value="python" className="space-y-4">
+                <div className="flex items-center gap-2 mt-2">
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-medium text-green-600">Game dev signed - scores appear as verified</span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Using <code className="bg-muted px-1 py-0.5 rounded">python-nostr</code> library:
                 </p>
@@ -430,7 +660,13 @@ publish_score(
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <strong>Keep keys secure:</strong> Never expose your game's private key in client-side code
+                  <strong>Keep keys secure:</strong> Never expose your game's private key in client-side code. If you can't run a server, consider using player-signed scores instead
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <strong>Use a game dev pubkey for verified scores:</strong> Scores signed by a registered game developer pubkey are displayed with a verified badge, giving players more confidence in the leaderboard
                 </div>
               </li>
             </ul>
