@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-24-v4";
+export const GAME_CONFIG_VERSION = "2026-02-28-v1";
 
 /**
  * Score Bot Configuration
@@ -116,6 +116,21 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       genres: ["puzzle", "casual"],
       url: "https://word5.otherstuff.ai",
       developer: "otherstuff.ai",
+      featured: false,
+      trending: false,
+      newRelease: true,
+    },
+  },
+  wordswithzaps: {
+    scoreField: "score",
+    scoreDirection: "desc",
+    metadata: {
+      name: "Words With Zaps",
+      description: "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
+      image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+      genres: ["puzzle", "casual"],
+      url: "",
+      developer: "",
       featured: false,
       trending: false,
       newRelease: true,
