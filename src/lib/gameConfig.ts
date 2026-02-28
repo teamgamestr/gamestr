@@ -250,12 +250,11 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
 
-// Games to exclude from display (format: "<pubkey>:<game-identifier>")
-// Add game keys here to hide them from the platform
+// Games to exclude from display (by game name/identifier)
+// Add game identifiers here to hide them from the platform
 export const EXCLUDED_GAMES: string[] = [
-  "c4f5e7a75a8ce3683d529cff06368439c529e5243c6b125ba68789198856cac7:blockstr",
-  "1ac4b360846e806952f2dd5a25d7af11287bacea731b69e8db63589bd7e97bbe:nostrich-run",
-  "b9c858d8f59c4dd8f6ef62de02948b72e8502a3c82d79c2bcc4c8305e2989c6f:nostrich-run",
+  "blockstr",
+  "nostrich-run",
 ];
 
 // All available genres

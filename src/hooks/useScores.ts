@@ -361,7 +361,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
 
       const excludedSet = new Set(EXCLUDED_GAMES);
       return Array.from(gamesMap.values())
-        .filter(game => !excludedSet.has(`${game.developerPubkey}:${game.gameIdentifier}`) && !excludedSet.has(game.gameIdentifier))
+        .filter(game => !excludedSet.has(game.gameIdentifier))
         .map(game => ({
           ...game,
           genres: Array.from(game.genres),
