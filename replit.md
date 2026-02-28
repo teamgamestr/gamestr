@@ -60,7 +60,7 @@ Gamestr is a social gaming score platform built on the Nostr protocol. It enable
 ## Available Scripts
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
-- `npm test` - Run TypeScript, ESLint, and build checks
+- `npm test` - Run TypeScript, ESLint, Vitest, and build checks
 - `npm run deploy` - Deploy to Nostr
 
 ## Environment Setup
