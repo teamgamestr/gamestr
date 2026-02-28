@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-28-v3";
+export const GAME_CONFIG_VERSION = "2026-02-28-v4";
 
 /**
  * Score Bot Configuration
@@ -253,8 +253,6 @@ export const NO_PUBKEY_PREFIX = "nopubkey";
 // Games to exclude from display (by game name/identifier)
 // Add game identifiers here to hide them from the platform
 export const EXCLUDED_GAMES: string[] = [
-  "blockstr",
-  "nostrich-run",
   "Nostrich Run",
   "zap-raptor",
   "bitcoin-space-invaders",
