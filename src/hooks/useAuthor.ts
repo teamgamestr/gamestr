@@ -12,23 +12,6 @@ export function useAuthor(pubkey: string | undefined) {
         return {};
       }
 
-      // Check if this is a test player first
-      const { getTestPlayerMetadata, isTestPlayer } = await import('@/lib/testData');
-      
-      if (isTestPlayer(pubkey)) {
-        const testMetadata = await getTestPlayerMetadata(pubkey, nostr);
-        
-        if (testMetadata) {
-          try {
-            const metadata = n.json().pipe(n.metadata()).parse(testMetadata.content);
-            return { metadata, event: testMetadata };
-          } catch {
-            return { event: testMetadata };
-          }
-        }
-      }
-
-      // Otherwise query from relay
       try {
         const [event] = await nostr.query(
           [{ kinds: [0], authors: [pubkey!], limit: 1 }],
@@ -50,7 +33,7 @@ export function useAuthor(pubkey: string | undefined) {
         return {};
       }
     },
-    staleTime: 5 * 60 * 1000, // Keep cached data fresh for 5 minutes
-    retry: 1, // Reduce retries since we have test data fallback
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 }

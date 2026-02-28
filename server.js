@@ -64,7 +64,7 @@ function injectMetaTags(html, metadata, url) {
 
 const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf-8');
 
-const STATIC_ROUTES = ['/score', '/player', '/developers', '/playground', '/messages', '/api', '/assets'];
+const STATIC_ROUTES = ['/score', '/player', '/developers', '/messages', '/api', '/assets'];
 const NIP19_PREFIXES = ['npub1', 'note1', 'nevent1', 'nprofile1', 'naddr1'];
 
 app.get('/game/:pubkey/:gameIdentifier', (req, res) => {

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
-import { type LeaderboardPeriod } from '@/hooks/useScores';
-import { useLeaderboardWithTestData } from '@/hooks/useScoresWithTestData';
+import { type LeaderboardPeriod, useLeaderboard } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
 import { ZapButton } from '@/components/ZapButton';
@@ -49,7 +48,7 @@ export function GameDetail() {
   const developerMetadata = developerAuthor.data?.metadata;
   const developerDisplayName = developerMetadata?.name || metadata?.developer || (isNoPubkey ? undefined : genUserName(pubkey || ''));
 
-  const { data: scores, isLoading } = useLeaderboardWithTestData(
+  const { data: scores, isLoading } = useLeaderboard(
     gameIdentifier || '',
     period,
     {
@@ -57,7 +56,6 @@ export function GameDetail() {
       mode,
       developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
       limit: 100,
-      includeTestData: false,
       enabled: hasLeaderboard,
       kind5555Only: isK5555,
     }

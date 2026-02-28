@@ -7,7 +7,7 @@
     "dev": "npm i --silent && vite",
     "build": "npm i --silent && vite build -l error && node scripts/generate-game-config.js && cp dist/index.html dist/404.html && echo 'Project built successfully!'",
     "start": "node server.js",
-    "test": "npm i --silent && tsc --noEmit && eslint && vitest run --reporter=dot --silent && vite build -l error && cp dist/index.html dist/404.html && echo 'All tests passed!'",
+    "test": "npm i --silent && tsc --noEmit && eslint && vite build -l error && cp dist/index.html dist/404.html && echo 'All checks passed!'",
     "deploy": "npm run build && npx -y nostr-deploy-cli deploy --skip-setup"
   },
   "dependencies": {

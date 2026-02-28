@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LoginArea } from '@/components/auth/LoginArea';
-import { Gamepad2, Code2, FlaskConical } from 'lucide-react';
+import { Gamepad2, Code2 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Moon, Sun } from 'lucide-react';
 
@@ -27,12 +27,6 @@ export function Header() {
               <Link to="/developers">
                 <Code2 className="mr-2 h-4 w-4" />
                 Developers
-              </Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link to="/playground">
-                <FlaskConical className="mr-2 h-4 w-4" />
-                Playground
               </Link>
             </Button>
           </nav>

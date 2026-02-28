@@ -21,12 +21,10 @@ import {
   Zap,
   Calendar,
   Gamepad2,
-  TestTube2,
   ShieldCheck,
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
-import { isTestEvent, ALL_TEST_SCORES } from '@/lib/testData';
 import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
 
@@ -42,14 +40,7 @@ export function ScoreDetail() {
     queryFn: async (c) => {
       if (!eventId) return null;
 
-      // First check test data
-      const testEvent = ALL_TEST_SCORES.find(event => event.id === eventId);
-      if (testEvent) {
-        const parsed = validateScoreEvent(testEvent);
-        return parsed;
-      }
-
-      // Then try to fetch from relays
+      // Fetch from relays
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const events = await nostr.query([{ ids: [eventId] }], { signal });
 
@@ -221,13 +212,6 @@ export function ScoreDetail() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {isTestEvent(scoreData.event) && (
-              <Badge variant="secondary" className="gap-1">
-                <TestTube2 className="h-3 w-3" />
-                Test Data
-              </Badge>
-            )}
-
             {totalSats > 0 && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4 text-orange-500" />

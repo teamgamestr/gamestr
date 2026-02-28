@@ -163,9 +163,6 @@ publish_score(
               <Button size="lg" variant="secondary" asChild>
                 <a href="#quick-start">Get Started</a>
               </Button>
-              <Button size="lg" variant="outline" className="bg-white/10 border-white/30 hover:bg-white/20" asChild>
-                <Link to="/playground">Try Playground</Link>
-              </Button>
             </div>
           </div>
         </div>
@@ -268,7 +265,7 @@ publish_score(
                   <h3 className="font-semibold mb-1">Add Game Metadata</h3>
                   <p className="text-sm text-muted-foreground">
                     Submit your game's metadata (name, description, image, genres) to appear on Gamestr.
-                    You can do this through the playground or contact us.
+                    Contact us to get your game listed.
                   </p>
                 </div>
               </div>
@@ -447,15 +444,6 @@ publish_score(
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
-              <Button variant="outline" className="h-auto py-4 justify-start" asChild>
-                <Link to="/playground">
-                  <div className="text-left">
-                    <div className="font-semibold">Event Playground</div>
-                    <div className="text-sm text-muted-foreground">Test score events in your browser</div>
-                  </div>
-                </Link>
-              </Button>
-
               <Button variant="outline" className="h-auto py-4 justify-start" asChild>
                 <a href="https://github.com/nostr-protocol/nips" target="_blank" rel="noopener noreferrer">
                   <div className="text-left">

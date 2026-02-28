@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
-import { filterTestEvents } from '@/lib/testData';
 import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
@@ -254,6 +253,8 @@ export function useLeaderboard(
     mode?: string;
     limit?: number;
     developerPubkey?: string;
+    enabled?: boolean;
+    kind5555Only?: boolean;
   } = {}
 ) {
   return useScores({
@@ -283,12 +284,12 @@ export function usePlayerScores(
 /**
  * Get all games with scores
  */
-export function useGamesWithScores(options: { limit?: number; includeTestData?: boolean } = {}) {
+export function useGamesWithScores(options: { limit?: number } = {}) {
   const { nostr } = useNostr();
-  const { limit = 500, includeTestData = false } = options;
+  const { limit = 500 } = options;
 
   return useQuery({
-    queryKey: ['games-with-scores', limit, includeTestData],
+    queryKey: ['games-with-scores', limit],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       
@@ -310,14 +311,7 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
 
         events = await nostr.query(filters, { signal });
       } catch (error) {
-        console.warn('Failed to fetch scores from relays, using test data only', error);
-      }
-
-      if (includeTestData) {
-        const { ALL_TEST_SCORES } = await import('@/lib/testData');
-        events = [...events, ...ALL_TEST_SCORES];
-      } else {
-        events = filterTestEvents(events);
+        console.warn('Failed to fetch scores from relays', error);
       }
 
       const parsedScores = events

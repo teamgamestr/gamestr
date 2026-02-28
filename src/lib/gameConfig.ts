@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-28-v1";
+export const GAME_CONFIG_VERSION = "2026-02-28-v2";
 
 /**
  * Score Bot Configuration
@@ -230,81 +230,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     featured: false,
     trending: true,
     newRelease: true,
-  },
-
-  // Snake Game Example (matches test data)
-  "test-developer-pubkey-1234567890abcdef:snake-game": {
-    name: "Classic Snake",
-    description:
-      "The timeless arcade classic! Eat apples, grow longer, and avoid hitting yourself. How high can you score?",
-    image:
-      "https://images.pexels.com/photos/163036/mario-luigi-yoschi-figures-163036.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["arcade", "casual", "retro"],
-    url: "https://example.com/snake",
-    developer: "Example Dev",
-    featured: true,
-    trending: true,
-    newRelease: false,
-  },
-
-  // Tetris Example (matches test data)
-  "test-developer-pubkey-1234567890abcdef:tetris-clone": {
-    name: "Block Puzzle Master",
-    description:
-      "Stack falling blocks to clear lines and rack up massive combos. A puzzle game that never gets old!",
-    image:
-      "https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["puzzle", "arcade", "retro"],
-    url: "https://example.com/tetris",
-    developer: "Example Dev",
-    featured: true,
-    trending: false,
-    newRelease: false,
-  },
-
-  // Racing Game Example (matches test data)
-  "test-developer-pubkey-1234567890abcdef:speed-racer": {
-    name: "Speed Racer 3D",
-    description:
-      "Hit the track in this high-octane racing game. Drift around corners, boost past opponents, and dominate the leaderboards!",
-    image:
-      "https://images.pexels.com/photos/1202723/pexels-photo-1202723.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["racing", "action", "3d"],
-    url: "https://example.com/racer",
-    developer: "Example Dev",
-    featured: false,
-    trending: true,
-    newRelease: true,
-  },
-
-  // Puzzle Game Example (matches test data)
-  "test-developer-pubkey-1234567890abcdef:match-three": {
-    name: "Gem Crusher",
-    description:
-      "Match colorful gems in this addictive puzzle game. Create cascading combos and special power-ups!",
-    image:
-      "https://images.pexels.com/photos/1670977/pexels-photo-1670977.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["puzzle", "casual", "match-3"],
-    url: "https://example.com/gems",
-    developer: "Example Dev",
-    featured: false,
-    trending: false,
-    newRelease: true,
-  },
-
-  // FPS Example (matches test data)
-  "test-developer-pubkey-1234567890abcdef:space-shooter": {
-    name: "Cosmic Defender",
-    description:
-      "Defend Earth from alien invaders in this fast-paced space shooter. Upgrade your ship and save humanity!",
-    image:
-      "https://images.pexels.com/photos/2085831/pexels-photo-2085831.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["shooter", "action", "sci-fi"],
-    url: "https://example.com/shooter",
-    developer: "Example Dev",
-    featured: true,
-    trending: false,
-    newRelease: false,
   },
 
   // Player-signed games (kind 30762, no developer pubkey)
