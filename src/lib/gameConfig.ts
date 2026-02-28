@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-28-v2";
+export const GAME_CONFIG_VERSION = "2026-02-28-v3";
 
 /**
  * Score Bot Configuration
@@ -235,8 +235,9 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
-    description: "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
-    image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+    description:
+      "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
+    image: "https://wordswithzaps.top/wwz_gamestr.png",
     genres: ["puzzle", "casual"],
     url: "",
     developer: "",
