@@ -85,6 +85,7 @@ export interface GameMetadata {
   featured?: boolean;
   trending?: boolean;
   newRelease?: boolean;
+  playerSigned?: boolean;
 }
 
 export interface GameConfigMap {
@@ -116,21 +117,6 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       genres: ["puzzle", "casual"],
       url: "https://word5.otherstuff.ai",
       developer: "otherstuff.ai",
-      featured: false,
-      trending: false,
-      newRelease: true,
-    },
-  },
-  wordswithzaps: {
-    scoreField: "score",
-    scoreDirection: "desc",
-    metadata: {
-      name: "Words With Zaps",
-      description: "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
-      image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
-      genres: ["puzzle", "casual"],
-      url: "",
-      developer: "",
       featured: false,
       trending: false,
       newRelease: true,
@@ -321,7 +307,19 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
 
-  // Games without a Nostr pubkey (not yet publishing scores)
+  // Player-signed games (kind 30762, no developer pubkey)
+  "nopubkey:wordswithzaps": {
+    name: "Words With Zaps",
+    description: "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
+    image: "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+    genres: ["puzzle", "casual"],
+    url: "",
+    developer: "",
+    featured: false,
+    trending: false,
+    newRelease: true,
+    playerSigned: true,
+  },
 };
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
@@ -439,6 +437,12 @@ export function parseGameKey(
  */
 export function isNoPubkeyGame(pubkey: string): boolean {
   return pubkey === NO_PUBKEY_PREFIX;
+}
+
+export function isPlayerSignedGame(gameIdentifier: string): boolean {
+  const key = `${NO_PUBKEY_PREFIX}:${gameIdentifier}`;
+  const metadata = INITIAL_GAME_CONFIG[key];
+  return metadata?.playerSigned === true;
 }
 
 /**

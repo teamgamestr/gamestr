@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 import { filterTestEvents } from '@/lib/testData';
-import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, type ScoreDirection } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
   kind: number;
@@ -352,7 +352,7 @@ export function useGamesWithScores(options: { limit?: number; includeTestData?: 
           }
         } else {
           const isK5555 = score.sourceKind === 5555;
-          const devPubkey = isK5555 ? `nopubkey` : score.event.pubkey;
+          const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
             developerPubkey: devPubkey,
@@ -426,7 +426,7 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
           existing.uniquePlayers.add(score.playerPubkey);
         } else {
           const isK5555 = score.sourceKind === 5555;
-          const devPubkey = isK5555 ? 'nopubkey' : score.event.pubkey;
+          const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
           gamesMap.set(key, {
             gameIdentifier: score.gameIdentifier,
             developerPubkey: devPubkey,

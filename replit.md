@@ -109,6 +109,11 @@ export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
 This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
 
 ## Recent Changes
+- ✅ Added Words With Zaps as a player-signed kind 30762 game (Feb 28, 2026)
+  - New `playerSigned` flag in GameMetadata for games where players sign their own 30762 events
+  - Added `isPlayerSignedGame()` helper in gameConfig.ts
+  - GameDetail shows leaderboard for playerSigned nopubkey games (not "scores unavailable")
+  - useGamesWithScores/useTrendingGames correctly group player-signed 30762 scores under nopubkey
 - ✅ Simplified game URLs to /:gameIdentifier (Feb 24, 2026)
   - Games are now at /blockstr, /word5, etc. instead of /game/:pubkey/:gameIdentifier
   - `resolveGameByIdentifier()` maps game names to their pubkey and metadata

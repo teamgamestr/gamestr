@@ -34,7 +34,8 @@ export function GameDetail() {
   const metadata = resolved?.metadata || null;
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
   const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
-  const hasLeaderboard = !isNoPubkey || isK5555;
+  const isPlayerSigned = metadata?.playerSigned === true;
+  const hasLeaderboard = !isNoPubkey || isK5555 || isPlayerSigned;
 
   useSeoMeta({
     title: metadata ? `${metadata.name}${hasLeaderboard ? ' Leaderboard' : ''} - Gamestr` : 'Game - Gamestr',
@@ -44,7 +45,7 @@ export function GameDetail() {
     ogDescription: metadata?.description || 'View the leaderboard for this game on Gamestr.',
   });
   
-  const developerAuthor = useAuthor(isNoPubkey && !isK5555 ? undefined : (isK5555 ? undefined : pubkey));
+  const developerAuthor = useAuthor(isNoPubkey ? undefined : pubkey);
   const developerMetadata = developerAuthor.data?.metadata;
   const developerDisplayName = developerMetadata?.name || metadata?.developer || (isNoPubkey ? undefined : genUserName(pubkey || ''));
 
@@ -54,7 +55,7 @@ export function GameDetail() {
     {
       difficulty,
       mode,
-      developerPubkey: isK5555 ? undefined : pubkey,
+      developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
       limit: 100,
       includeTestData: false,
       enabled: hasLeaderboard,
@@ -161,7 +162,7 @@ export function GameDetail() {
                     />
                   </div>
                 )}
-                {hasLeaderboard && !isK5555 && pubkey && (() => {
+                {hasLeaderboard && !isK5555 && !isPlayerSigned && pubkey && !isNoPubkey && (() => {
                   const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
                   const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
                   
