@@ -80,6 +80,7 @@ export interface GameMetadata {
   trending?: boolean;
   newRelease?: boolean;
   playerSigned?: boolean;
+  leaderboards?: LeaderboardConfig[];
 }
 
 export interface GameConfigMap {
@@ -87,6 +88,14 @@ export interface GameConfigMap {
 }
 
 export type ScoreDirection = "desc" | "asc";
+
+export interface LeaderboardConfig {
+  label: string;
+  scoreTag: string;
+  direction: ScoreDirection;
+  displayTag?: string;
+  displayLabel?: string;
+}
 
 export interface Kind5555GameConfig {
   scoreField: string;
@@ -239,6 +248,10 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     trending: true,
     newRelease: true,
     playerSigned: true,
+    leaderboards: [
+      { label: "Score", scoreTag: "score", direction: "desc" },
+      { label: "Highest Word", scoreTag: "score:highestword", direction: "desc", displayTag: "highestword", displayLabel: "Word" },
+    ],
   },
 };
 

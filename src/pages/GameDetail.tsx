@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
-import { type LeaderboardPeriod, useLeaderboard } from '@/hooks/useScores';
+import { type LeaderboardPeriod, type ParsedScore, useLeaderboard, useMultiLeaderboard } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
 import { ZapButton } from '@/components/ZapButton';
@@ -19,7 +19,7 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, type LeaderboardConfig } from '@/lib/gameConfig';
 
 export function GameDetail() {
   const { slug: gameIdentifier } = useParams<{ slug: string }>();
@@ -62,7 +62,13 @@ export function GameDetail() {
     || (isNoPubkey ? undefined : genUserName(pubkey || ''));
   const developerProfileUrl = isDeveloperNpub && metadata?.developer ? `/${metadata.developer}` : undefined;
 
-  const { data: scores, isLoading } = useLeaderboard(
+  const hasMultiLeaderboard = (metadata?.leaderboards?.length ?? 0) > 1;
+  const leaderboardConfigs: LeaderboardConfig[] = metadata?.leaderboards || [
+    { label: "Score", scoreTag: "score", direction: "desc" },
+  ];
+  const [activeBoard, setActiveBoard] = useState(0);
+
+  const singleLeaderboard = useLeaderboard(
     gameIdentifier || '',
     period,
     {
@@ -70,10 +76,29 @@ export function GameDetail() {
       mode,
       developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
       limit: 100,
-      enabled: hasLeaderboard,
+      enabled: hasLeaderboard && !hasMultiLeaderboard,
       kind5555Only: isK5555,
     }
   );
+
+  const multiLeaderboard = useMultiLeaderboard(
+    gameIdentifier || '',
+    leaderboardConfigs,
+    period,
+    {
+      difficulty,
+      mode,
+      developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
+      limit: 100,
+      enabled: hasLeaderboard && hasMultiLeaderboard,
+      kind5555Only: isK5555,
+    }
+  );
+
+  const scores = hasMultiLeaderboard
+    ? multiLeaderboard.data?.[0]?.scores
+    : singleLeaderboard.data;
+  const isLoading = hasMultiLeaderboard ? multiLeaderboard.isLoading : singleLeaderboard.isLoading;
 
   const difficulties = Array.from(new Set(scores?.map(s => s.difficulty).filter(Boolean))) as string[];
   const modes = Array.from(new Set(scores?.map(s => s.mode).filter(Boolean))) as string[];
@@ -305,41 +330,45 @@ export function GameDetail() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-0">
-                {isLoading ? (
-                  <div className="space-y-4 p-6">
-                    {Array.from({ length: 10 }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-24" />
-                        </div>
-                        <Skeleton className="h-6 w-20" />
-                      </div>
-                    ))}
+            {hasMultiLeaderboard ? (
+              <>
+                <div className="md:hidden">
+                  <Tabs value={String(activeBoard)} onValueChange={(v) => setActiveBoard(Number(v))}>
+                    <TabsList className={`grid w-full`} style={{ gridTemplateColumns: `repeat(${leaderboardConfigs.length}, 1fr)` }}>
+                      {leaderboardConfigs.map((lb, i) => (
+                        <TabsTrigger key={i} value={String(i)}>{lb.label}</TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                  <div className="mt-4">
+                    <LeaderboardPanel
+                      boardData={multiLeaderboard.data?.[activeBoard]}
+                      isLoading={multiLeaderboard.isLoading}
+                      developerPubkey={pubkey}
+                      gameIdentifier={gameIdentifier}
+                    />
                   </div>
-                ) : scores && scores.length > 0 ? (
-                  <div className="divide-y">
-                    {scores.map((score, index) => (
-                      <LeaderboardRow
-                        key={score.event.id}
-                        rank={index + 1}
-                        score={score}
-                        developerPubkey={pubkey}
-                        gameIdentifier={gameIdentifier}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-12 text-center text-muted-foreground">
-                    <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No scores yet. Be the first to play!</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+                <div className="hidden md:grid gap-6" style={{ gridTemplateColumns: `repeat(${leaderboardConfigs.length}, 1fr)` }}>
+                  {leaderboardConfigs.map((_, i) => (
+                    <LeaderboardPanel
+                      key={i}
+                      boardData={multiLeaderboard.data?.[i]}
+                      isLoading={multiLeaderboard.isLoading}
+                      developerPubkey={pubkey}
+                      gameIdentifier={gameIdentifier}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <LeaderboardPanel
+                boardData={scores ? { config: leaderboardConfigs[0], scores } : undefined}
+                isLoading={isLoading}
+                developerPubkey={pubkey}
+                gameIdentifier={gameIdentifier}
+              />
+            )}
           </>
         )}
       </div>
@@ -347,31 +376,76 @@ export function GameDetail() {
   );
 }
 
-interface LeaderboardRowProps {
-  rank: number;
-  score: {
-    event: {
-      id: string;
-      pubkey: string;
-      created_at: number;
-      kind: number;
-      tags: string[][];
-      content: string;
-      sig: string;
-    };
-    score: number;
-    playerPubkey: string;
-    level?: string;
-    difficulty?: string;
-    mode?: string;
-    duration?: number;
-    achievements?: string[];
-  };
+interface LeaderboardPanelProps {
+  boardData?: { config: LeaderboardConfig; scores: ParsedScore[] };
+  isLoading: boolean;
   developerPubkey?: string;
   gameIdentifier?: string;
 }
 
-function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier }: LeaderboardRowProps) {
+function LeaderboardPanel({ boardData, isLoading, developerPubkey, gameIdentifier }: LeaderboardPanelProps) {
+  const config = boardData?.config;
+  const scores = boardData?.scores;
+
+  return (
+    <Card>
+      {config && (
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            {config.label}
+          </CardTitle>
+        </CardHeader>
+      )}
+      <CardContent className="p-0">
+        {isLoading ? (
+          <div className="space-y-4 p-6">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-6 w-20" />
+              </div>
+            ))}
+          </div>
+        ) : scores && scores.length > 0 ? (
+          <div className="divide-y">
+            {scores.map((score, index) => (
+              <LeaderboardRow
+                key={score.event.id}
+                rank={index + 1}
+                score={score}
+                developerPubkey={developerPubkey}
+                gameIdentifier={gameIdentifier}
+                showDisplayValue={!!config?.displayTag}
+                displayLabel={config?.displayLabel}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center text-muted-foreground">
+            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No scores yet. Be the first to play!</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface LeaderboardRowProps {
+  rank: number;
+  score: ParsedScore;
+  developerPubkey?: string;
+  gameIdentifier?: string;
+  showDisplayValue?: boolean;
+  displayLabel?: string;
+}
+
+function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier, showDisplayValue, displayLabel }: LeaderboardRowProps) {
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(score.playerPubkey);
@@ -422,7 +496,12 @@ function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier }: Leader
         {/* Score Details */}
         <div className="text-right">
           <p className="text-2xl font-bold">{score.score.toLocaleString()}</p>
-          {score.duration && (
+          {showDisplayValue && score.displayValue && (
+            <p className="text-xs text-muted-foreground">
+              {displayLabel ? `${displayLabel}: ` : ''}{score.displayValue}
+            </p>
+          )}
+          {!showDisplayValue && score.duration && (
             <p className="text-xs text-muted-foreground">
               {Math.floor(score.duration / 60)}m {score.duration % 60}s
             </p>

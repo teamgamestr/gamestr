@@ -94,7 +94,21 @@ export const GAME_CONFIG_VERSION = "YYYY-MM-DD-vN";  // e.g., "2024-12-17-v2"
 
 This version is stored in users' local storage and compared on each page load. When the version changes, the cached config is automatically replaced with the new defaults.
 
+## Multi-Leaderboard Support
+Games can define multiple leaderboards via the `leaderboards` array in `GameMetadata` (in `src/lib/gameConfig.ts`). Each `LeaderboardConfig` specifies:
+- `label`: Display name (e.g., "Score", "Highest Word")
+- `scoreTag`: The Nostr event tag to read the score from (e.g., "score", "score:highestword")
+- `direction`: Sort direction ("asc" or "desc")
+- `displayTag` (optional): Extra tag to show alongside the score (e.g., "highestword")
+- `displayLabel` (optional): Label for the display value (e.g., "Word")
+
+On desktop, multiple leaderboards display side-by-side. On mobile, they use tabs. Games without a `leaderboards` config use the standard single leaderboard. The `useMultiLeaderboard` hook (in `src/hooks/useScores.ts`) fetches and parses scores for all configured boards.
+
 ## Recent Changes
+- ✅ Added multi-leaderboard support for games (Mar 2, 2026)
+  - Words With Zaps configured with Score and Highest Word boards
+  - Desktop: side-by-side layout; Mobile: tabbed interface
+  - LeaderboardPanel component with displayValue support
 - ✅ Removed playground, demo games, and test functionality (Feb 28, 2026)
   - Deleted Playground page and route
   - Removed 5 demo games (snake-game, tetris-clone, speed-racer, match-three, space-shooter)

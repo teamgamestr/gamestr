@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
-import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
   kind: number;
@@ -23,6 +23,13 @@ export interface ParsedScore {
   platform?: string;
   genres?: string[];
   sourceKind?: number;
+  displayValue?: string;
+}
+
+export interface LeaderboardResult {
+  config: LeaderboardConfig;
+  scores: ParsedScore[];
+  isLoading: boolean;
 }
 
 export function validateScoreEvent(event: NostrEvent): ParsedScore | null {
@@ -442,5 +449,148 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
         .sort((a, b) => b.trendingScore - a.trendingScore)
         .slice(0, limit);
     },
+  });
+}
+
+function parseEventWithScoreTag(
+  event: NostrEvent,
+  scoreTag: string,
+  displayTag?: string,
+): ParsedScore | null {
+  if (event.kind === 30762) {
+    const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
+    const scoreValue = event.tags.find(([name]) => name === scoreTag)?.[1];
+    const playerTag = event.tags.find(([name]) => name === 'p')?.[1];
+
+    if (!gameTag || !scoreValue || !playerTag) return null;
+
+    const score = parseInt(scoreValue);
+    if (isNaN(score)) return null;
+
+    const stateTag = event.tags.find(([name]) => name === 'state')?.[1];
+    if (stateTag === 'invalidated') return null;
+
+    const displayValue = displayTag
+      ? event.tags.find(([name]) => name === displayTag)?.[1]
+      : undefined;
+
+    return {
+      event: event as ScoreEvent,
+      gameIdentifier: gameTag,
+      score,
+      playerPubkey: playerTag,
+      state: stateTag,
+      difficulty: event.tags.find(([name]) => name === 'difficulty')?.[1],
+      mode: event.tags.find(([name]) => name === 'mode')?.[1],
+      sourceKind: 30762,
+      displayValue,
+    };
+  }
+
+  if (event.kind === 5555) {
+    let gameTag = event.tags.find(([name]) => name === 'game')?.[1];
+    if (!gameTag) {
+      const tTags = event.tags.filter(([name]) => name === 't').map(([, v]) => v);
+      gameTag = tTags.find(t => getKind5555Config(t));
+    }
+    if (!gameTag) return null;
+
+    const scoreValue = event.tags.find(([name]) => name === scoreTag)?.[1];
+    if (!scoreValue) return null;
+
+    const score = parseInt(scoreValue);
+    if (isNaN(score)) return null;
+
+    const displayValue = displayTag
+      ? event.tags.find(([name]) => name === displayTag)?.[1]
+      : undefined;
+
+    return {
+      event: event as ScoreEvent,
+      gameIdentifier: gameTag,
+      score,
+      playerPubkey: event.pubkey,
+      difficulty: event.tags.find(([name]) => name === 'difficulty')?.[1],
+      mode: event.tags.find(([name]) => name === 'mode')?.[1],
+      sourceKind: 5555,
+      displayValue,
+    };
+  }
+
+  return null;
+}
+
+export function useMultiLeaderboard(
+  gameIdentifier: string,
+  leaderboards: LeaderboardConfig[],
+  period: LeaderboardPeriod = 'all-time',
+  options: {
+    difficulty?: string;
+    mode?: string;
+    limit?: number;
+    developerPubkey?: string;
+    enabled?: boolean;
+    kind5555Only?: boolean;
+  } = {}
+) {
+  const { nostr } = useNostr();
+  const {
+    difficulty,
+    mode,
+    limit = 100,
+    developerPubkey,
+    enabled = true,
+    kind5555Only = false,
+  } = options;
+
+  return useQuery({
+    queryKey: ['multi-leaderboard', gameIdentifier, leaderboards.map(l => l.scoreTag).join(','), period, difficulty, mode, limit, developerPubkey, kind5555Only],
+    queryFn: async (c) => {
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const filters: NostrFilter[] = [];
+      const since = getPeriodTimestamp(period);
+
+      if (!kind5555Only) {
+        const filter30762: NostrFilter = {
+          kinds: [30762],
+          limit: 1000,
+        };
+        if (since) filter30762.since = since;
+        if (developerPubkey) filter30762.authors = [developerPubkey];
+        filters.push(filter30762);
+      }
+
+      if (gameIdentifier && isKind5555Game(gameIdentifier)) {
+        const filter5555: NostrFilter = {
+          kinds: [5555],
+          '#t': [gameIdentifier],
+          limit: 1000,
+        };
+        if (since) filter5555.since = since;
+        filters.push(filter5555);
+      }
+
+      if (filters.length === 0) return leaderboards.map(config => ({ config, scores: [] as ParsedScore[] }));
+
+      const events = await nostr.query(filters, { signal });
+
+      return leaderboards.map(config => {
+        let parsedScores = events
+          .map(e => parseEventWithScoreTag(e, config.scoreTag, config.displayTag))
+          .filter((score): score is ParsedScore => score !== null)
+          .filter(score => score.gameIdentifier === gameIdentifier);
+
+        if (difficulty) {
+          parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
+        }
+        if (mode) {
+          parsedScores = parsedScores.filter(score => score.mode === mode);
+        }
+
+        const sorted = sortScores(parsedScores, config.direction);
+        return { config, scores: sorted.slice(0, limit) };
+      });
+    },
+    enabled,
   });
 }
