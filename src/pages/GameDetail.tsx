@@ -46,7 +46,21 @@ export function GameDetail() {
   
   const developerAuthor = useAuthor(isNoPubkey ? undefined : pubkey);
   const developerMetadata = developerAuthor.data?.metadata;
-  const developerDisplayName = developerMetadata?.name || metadata?.developer || (isNoPubkey ? undefined : genUserName(pubkey || ''));
+  
+  // Check if metadata.developer is an npub and fetch its metadata
+  const isDeveloperNpub = metadata?.developer?.startsWith('npub') ?? false;
+  const developerNpubHex = isDeveloperNpub && metadata?.developer 
+    ? (() => { try { return nip19.decode(metadata.developer).data as string; } catch { return undefined; } })()
+    : undefined;
+  const developerNpubAuthor = useAuthor(developerNpubHex);
+  const developerNpubMetadata = developerNpubAuthor.data?.metadata;
+  
+  // Use resolved name from Nostr if available, fallback to config value
+  const developerDisplayName = developerMetadata?.name 
+    || developerNpubMetadata?.name 
+    || metadata?.developer 
+    || (isNoPubkey ? undefined : genUserName(pubkey || ''));
+  const developerProfileUrl = isDeveloperNpub && metadata?.developer ? `/${metadata.developer}` : undefined;
 
   const { data: scores, isLoading } = useLeaderboard(
     gameIdentifier || '',
@@ -174,9 +188,18 @@ export function GameDetail() {
                   );
                 })()}
                 {isNoPubkey && developerDisplayName && (
-                  <Badge variant="secondary" className="text-base px-4 py-2">
-                    By {developerDisplayName}
-                  </Badge>
+                  developerProfileUrl ? (
+                    <Button variant="outline" size="lg" asChild>
+                      <Link to={developerProfileUrl}>
+                        <User className="mr-2 h-4 w-4" />
+                        By {developerDisplayName}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Badge variant="secondary" className="text-base px-4 py-2">
+                      By {developerDisplayName}
+                    </Badge>
+                  )
                 )}
               </div>
             </div>

@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-02-28-v5";
+export const GAME_CONFIG_VERSION = "2026-01-02-v1";
 
 /**
  * Score Bot Configuration
@@ -199,7 +199,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       image: "https://www.spacezappers.com/og-image.png",
       genres: ["arcade", "shooter", "retro"],
       url: "https://www.spacezappers.com/",
-      developer: "NiniMonk05",
+      developer: "npub1sfpeyr9k5jms37q4900mw9q4vze4xwhdxd4avdxjml8rqgjkre8s4lcq9l",
       featured: true,
       trending: true,
       newRelease: true,
@@ -239,10 +239,10 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
     image: "https://wordswithzaps.top/wwz_gamestr.png",
     genres: ["puzzle", "casual"],
-    url: "",
-    developer: "",
-    featured: false,
-    trending: false,
+    url: "https://wordswithzaps.to",
+    developer: "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
+    featured: true,
+    trending: true,
     newRelease: true,
     playerSigned: true,
   },

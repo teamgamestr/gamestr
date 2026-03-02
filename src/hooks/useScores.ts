@@ -12,6 +12,7 @@ export interface ParsedScore {
   gameIdentifier: string;
   score: number;
   playerPubkey: string;
+  developerPubkey?: string;
   state?: string;
   level?: string;
   difficulty?: string;
