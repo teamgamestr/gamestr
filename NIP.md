@@ -1,4 +1,4 @@
-# NIP-762: Game Scores
+# NIP-XX: Game Scores
 
 `draft` `optional`
 
