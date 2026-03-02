@@ -37,6 +37,7 @@ export function AppRouter() {
           <Route path="/" element={<Home />} />
           <Route path="/game/:pubkey/:gameIdentifier" element={<LegacyGameRedirect />} />
           <Route path="/score/:eventId" element={<ScoreDetail />} />
+          <Route path="/score/:pubkey/:gameIdentifier/:eventId" element={<ScoreDetail />} />
           <Route path="/player/:pubkey" element={<PlayerProfile />} />
           <Route path="/developers" element={<Developers />} />
           <Route path="/messages" element={<Messages />} />

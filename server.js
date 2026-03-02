@@ -41,10 +41,10 @@ function getGameMetadataByIdentifier(gameIdentifier) {
   return GAMES_BY_IDENTIFIER[gameIdentifier] || FALLBACK_METADATA;
 }
 
-function injectMetaTags(html, metadata, url) {
-  const title = metadata.name === "Unknown Game" 
+function injectMetaTags(html, metadata, url, titleOverride) {
+  const title = titleOverride || (metadata.name === "Unknown Game" 
     ? "Gamestr - Decentralized Gaming Leaderboards on Nostr"
-    : `${metadata.name} Leaderboard - Gamestr`;
+    : `Play ${metadata.name} on Gamestr`);
   const description = metadata.description;
   const image = metadata.image;
 
@@ -64,7 +64,7 @@ function injectMetaTags(html, metadata, url) {
 
 const indexHtml = readFileSync(join(distPath, 'index.html'), 'utf-8');
 
-const STATIC_ROUTES = ['/score', '/player', '/developers', '/messages', '/api', '/assets'];
+const STATIC_ROUTES = ['/player', '/developers', '/messages', '/api', '/assets'];
 const NIP19_PREFIXES = ['npub1', 'note1', 'nevent1', 'nprofile1', 'naddr1'];
 
 app.get('/game/:pubkey/:gameIdentifier', (req, res) => {
@@ -84,6 +84,18 @@ app.use((req, res) => {
   const path = req.path;
   if (path === '/') {
     return res.send(indexHtml);
+  }
+
+  const scoreMatch = path.match(/^\/score\/([^/]+)\/([^/]+)\/([^/]+)$/);
+  if (scoreMatch) {
+    const gameIdentifier = scoreMatch[2];
+    if (GAMES_BY_IDENTIFIER[gameIdentifier]) {
+      const metadata = getGameMetadataByIdentifier(gameIdentifier);
+      const url = `https://gamestr.io${path}`;
+      const title = `See ${metadata.name} score on Gamestr`;
+      const html = injectMetaTags(indexHtml, metadata, url, title);
+      return res.send(html);
+    }
   }
 
   const slug = path.slice(1).split('/')[0];
