@@ -174,32 +174,35 @@ export function GameDetail() {
                     />
                   </div>
                 )}
-                {hasLeaderboard && !isK5555 && !isPlayerSigned && pubkey && !isNoPubkey && (() => {
+                {/* Server/Game Developer Button - "From xxx" */}
+                {pubkey && !isNoPubkey && (() => {
                   const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
                   const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
+                  const displayName = developerMetadata?.name || genUserName(pubkey);
                   
                   return (
                     <Button variant="outline" size="lg" asChild>
                       <Link to={profileUrl}>
                         <User className="mr-2 h-4 w-4" />
-                        By {developerDisplayName}
+                        From {displayName}
                       </Link>
                     </Button>
                   );
                 })()}
-                {isNoPubkey && developerDisplayName && (
-                  developerProfileUrl ? (
-                    <Button variant="outline" size="lg" asChild>
-                      <Link to={developerProfileUrl}>
-                        <User className="mr-2 h-4 w-4" />
-                        By {developerDisplayName}
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Badge variant="secondary" className="text-base px-4 py-2">
-                      By {developerDisplayName}
-                    </Badge>
-                  )
+                
+                {/* Game Metadata Developer Button - "By xxx" */}
+                {isDeveloperNpub && developerProfileUrl && (
+                  <Button variant="outline" size="lg" asChild>
+                    <Link to={developerProfileUrl}>
+                      <User className="mr-2 h-4 w-4" />
+                      By {developerNpubMetadata?.name || metadata?.developer}
+                    </Link>
+                  </Button>
+                )}
+                {metadata?.developer && !isDeveloperNpub && (
+                  <Badge variant="secondary" className="text-base px-4 py-2">
+                    By {metadata.developer}
+                  </Badge>
                 )}
               </div>
             </div>
