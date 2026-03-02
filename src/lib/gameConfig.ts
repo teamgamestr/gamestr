@@ -4,12 +4,6 @@
  */
 
 /**
- * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
- * This forces cache invalidation in users' browsers
- */
-export const GAME_CONFIG_VERSION = "2026-03-02-v1";
-
-/**
  * Score Bot Configuration
  *
  * The bot creates kind 1 Nostr notes announcing new scores for configured games.
@@ -131,7 +125,7 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       image: "https://unicorn.dergigi.com/og.png",
       genres: ["arcade", "action"],
       url: "https://unicorn.dergigi.com",
-      developer: "dergigi",
+      developer: "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc",
       featured: false,
       trending: false,
       newRelease: true,
@@ -239,7 +233,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
     image: "https://wordswithzaps.top/wwz_gamestr.png",
     genres: ["puzzle", "casual"],
-    url: "https://wordswithzaps.to",
+    url: "https://wordswithzaps.top",
     developer: "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
     featured: true,
     trending: true,
@@ -247,6 +241,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     playerSigned: true,
   },
 };
+
+// Generate a hash from game configuration content
+// This ensures version changes automatically when config is modified
+function generateConfigHash(config: GameConfigMap): string {
+  const configString = JSON.stringify(config);
+  let hash = 0;
+  for (let i = 0; i < configString.length; i++) {
+    const char = configString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(16).slice(0, 8);
+}
+
+// Auto-generated config version based on content hash
+export const GAME_CONFIG_VERSION = generateConfigHash(INITIAL_GAME_CONFIG);
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
 
