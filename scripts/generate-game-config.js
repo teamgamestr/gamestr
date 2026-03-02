@@ -137,11 +137,11 @@ for (const [key, meta] of Object.entries(games)) {
 const k5555Match = tsContent.match(/export const KIND_5555_GAMES:\s*Kind5555GamesMap\s*=\s*\{([\s\S]*?)\n\};/);
 if (k5555Match) {
   const k5555Content = k5555Match[1];
-  const gameBlockRegex = /"([^"]+)":\s*\{[\s\S]*?metadata:\s*\{([\s\S]*?)\}\s*,?\s*\}/g;
+  const gameBlockRegex = /(?:"([^"]+)"|(\w+)):\s*\{[\s\S]*?metadata:\s*\{([\s\S]*?)\}\s*,?\s*\}/g;
   let k5555m;
   while ((k5555m = gameBlockRegex.exec(k5555Content)) !== null) {
-    const gameTag = k5555m[1];
-    const metaContent = k5555m[2];
+    const gameTag = k5555m[1] || k5555m[2];
+    const metaContent = k5555m[3];
     const nameMatch = metaContent.match(/name:\s*"([^"]+)"/);
     const descMatch = metaContent.match(/description:\s*"([^"]+)"/);
     const imageMatch = metaContent.match(/image:\s*"([^"]+)"/);
