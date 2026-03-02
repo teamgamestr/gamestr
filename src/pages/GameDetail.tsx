@@ -328,6 +328,7 @@ export function GameDetail() {
                         rank={index + 1}
                         score={score}
                         developerPubkey={pubkey}
+                        gameIdentifier={gameIdentifier}
                       />
                     ))}
                   </div>
@@ -367,9 +368,10 @@ interface LeaderboardRowProps {
     achievements?: string[];
   };
   developerPubkey?: string;
+  gameIdentifier?: string;
 }
 
-function LeaderboardRow({ rank, score, developerPubkey }: LeaderboardRowProps) {
+function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier }: LeaderboardRowProps) {
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(score.playerPubkey);
@@ -385,7 +387,7 @@ function LeaderboardRow({ rank, score, developerPubkey }: LeaderboardRowProps) {
   return (
     <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
       <Link
-        to={`/score/${score.event.id}`}
+        to={`/score/${developerPubkey || '_'}/${gameIdentifier || '_'}/${score.event.id}`}
         className="flex items-center gap-4 flex-1 min-w-0"
       >
         {/* Rank */}
