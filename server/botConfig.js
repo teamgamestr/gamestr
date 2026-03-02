@@ -192,22 +192,22 @@ export function formatScore(num) {
 /**
  * Build a score link URL
  * 
- * @param {string} developerPubkey - The game developer's pubkey
+ * @param {string} developerPubkey - The game developer's pubkey (unused, kept for API compat)
  * @param {string} gameIdentifier - The game identifier
  * @param {string} eventId - The score event ID
  * @returns {string} Full URL to the score
  */
 export function buildScoreLink(developerPubkey, gameIdentifier, eventId) {
-  return `${BOT_CONFIG.baseUrl}/score/${developerPubkey}/${gameIdentifier}/${eventId}`;
+  return `${BOT_CONFIG.baseUrl}/${gameIdentifier}/score/${eventId}`;
 }
 
 /**
  * Build a game leaderboard link URL
  * 
- * @param {string} developerPubkey - The game developer's pubkey
+ * @param {string} developerPubkey - The game developer's pubkey (unused, kept for API compat)
  * @param {string} gameIdentifier - The game identifier
  * @returns {string} Full URL to the game leaderboard
  */
 export function buildGameLink(developerPubkey, gameIdentifier) {
-  return `${BOT_CONFIG.baseUrl}/game/${developerPubkey}/${gameIdentifier}`;
+  return `${BOT_CONFIG.baseUrl}/${gameIdentifier}`;
 }

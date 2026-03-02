@@ -312,7 +312,7 @@ export function PlayerProfile() {
                   return (
                     <Link
                       key={score.event.id}
-                      to={`/score/${score.developerPubkey || '_'}/${score.gameIdentifier}/${score.event.id}`}
+                      to={`/${score.gameIdentifier}/score/${score.event.id}`}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">

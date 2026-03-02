@@ -86,9 +86,21 @@ app.use((req, res) => {
     return res.send(indexHtml);
   }
 
-  const scoreMatch = path.match(/^\/score\/([^/]+)\/([^/]+)\/([^/]+)$/);
-  if (scoreMatch) {
-    const gameIdentifier = scoreMatch[2];
+  const newScoreMatch = path.match(/^\/([^/]+)\/score\/([^/]+)$/);
+  if (newScoreMatch) {
+    const gameIdentifier = newScoreMatch[1];
+    if (GAMES_BY_IDENTIFIER[gameIdentifier]) {
+      const metadata = getGameMetadataByIdentifier(gameIdentifier);
+      const url = `https://gamestr.io${path}`;
+      const title = `See ${metadata.name} score on Gamestr`;
+      const html = injectMetaTags(indexHtml, metadata, url, title);
+      return res.send(html);
+    }
+  }
+
+  const legacyScoreMatch = path.match(/^\/score\/([^/]+)\/([^/]+)\/([^/]+)$/);
+  if (legacyScoreMatch) {
+    const gameIdentifier = legacyScoreMatch[2];
     if (GAMES_BY_IDENTIFIER[gameIdentifier]) {
       const metadata = getGameMetadataByIdentifier(gameIdentifier);
       const url = `https://gamestr.io${path}`;
