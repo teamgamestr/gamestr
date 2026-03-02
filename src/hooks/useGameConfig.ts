@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import {
   type GameMetadata,
@@ -41,15 +41,15 @@ export function useGameConfig() {
     }
   }, [storedVersion, setCustomConfig, setStoredVersion]);
 
-  const addGame = (pubkey: string, gameIdentifier: string, metadata: GameMetadata) => {
+  const addGame = useCallback((pubkey: string, gameIdentifier: string, metadata: GameMetadata) => {
     const key = createGameKey(pubkey, gameIdentifier);
     setCustomConfig(prev => ({
       ...prev,
       [key]: metadata,
     }));
-  };
+  }, [setCustomConfig]);
 
-  const updateGame = (pubkey: string, gameIdentifier: string, metadata: Partial<GameMetadata>) => {
+  const updateGame = useCallback((pubkey: string, gameIdentifier: string, metadata: Partial<GameMetadata>) => {
     const key = createGameKey(pubkey, gameIdentifier);
     const existing = customConfig[key];
     
@@ -65,24 +65,30 @@ export function useGameConfig() {
         ...metadata,
       },
     }));
-  };
+  }, [customConfig, setCustomConfig]);
 
-  const removeGame = (pubkey: string, gameIdentifier: string) => {
+  const removeGame = useCallback((pubkey: string, gameIdentifier: string) => {
     const key = createGameKey(pubkey, gameIdentifier);
     setCustomConfig(prev => {
       const newConfig = { ...prev };
       delete newConfig[key];
       return newConfig;
     });
-  };
+  }, [setCustomConfig]);
 
-  const getGame = (pubkey: string, gameIdentifier: string): GameMetadata => {
+  const getGame = useCallback((pubkey: string, gameIdentifier: string): GameMetadata => {
     return getGameMetadata(pubkey, gameIdentifier, customConfig);
-  };
+  }, [customConfig]);
 
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     setCustomConfig(INITIAL_GAME_CONFIG);
-  };
+  }, [setCustomConfig]);
+
+  const getAllGamesMemo = useCallback(() => getAllGames(customConfig), [customConfig]);
+  const filterByGenreMemo = useCallback((genre: string) => filterGamesByGenre(genre, customConfig), [customConfig]);
+  const getFeaturedMemo = useCallback(() => getFeaturedGames(customConfig), [customConfig]);
+  const getTrendingMemo = useCallback(() => getTrendingGames(customConfig), [customConfig]);
+  const getNewReleasesMemo = useCallback(() => getNewReleaseGames(customConfig), [customConfig]);
 
   return {
     config: customConfig,
@@ -91,11 +97,11 @@ export function useGameConfig() {
     updateGame,
     removeGame,
     getGame,
-    getAllGames: () => getAllGames(customConfig),
-    filterByGenre: (genre: string) => filterGamesByGenre(genre, customConfig),
-    getFeatured: () => getFeaturedGames(customConfig),
-    getTrending: () => getTrendingGames(customConfig),
-    getNewReleases: () => getNewReleaseGames(customConfig),
+    getAllGames: getAllGamesMemo,
+    filterByGenre: filterByGenreMemo,
+    getFeatured: getFeaturedMemo,
+    getTrending: getTrendingMemo,
+    getNewReleases: getNewReleasesMemo,
     resetToDefaults,
   };
 }

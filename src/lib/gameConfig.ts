@@ -7,7 +7,7 @@
  * Config version - UPDATE THIS whenever you modify INITIAL_GAME_CONFIG
  * This forces cache invalidation in users' browsers
  */
-export const GAME_CONFIG_VERSION = "2026-01-02-v1";
+export const GAME_CONFIG_VERSION = "2026-01-02-v3";
 
 /**
  * Score Bot Configuration
@@ -184,10 +184,10 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image: "https://i.nostr.build/rwl4S2TucTObXR3T.webp",
     genres: ["arcade", "casual", "retro"],
     url: "https://blockstr.io",
-    developer: "sambonzuki",
+    developer: "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
     featured: true,
-    trending: true,
-    newRelease: true,
+    trending: false,
+    newRelease: false,
   },
 
   //Space Zappers
@@ -201,8 +201,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://www.spacezappers.com/",
       developer: "npub1sfpeyr9k5jms37q4900mw9q4vze4xwhdxd4avdxjml8rqgjkre8s4lcq9l",
       featured: true,
-      trending: true,
-      newRelease: true,
+      trending: false,
+      newRelease: false,
     },
 
   //Nostrich Run
@@ -216,7 +216,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       developer: "Whitepaper Interactive",
       featured: false,
       trending: false,
-      newRelease: true,
+      newRelease: false,
     },
 
   //Sat Snake
@@ -228,8 +228,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     url: "https://satsnake.whitepaperinteractive.com/",
     developer: "Whitepaper Interactive",
     featured: false,
-    trending: true,
-    newRelease: true,
+    trending: false,
+    newRelease: false,
   },
 
   // Player-signed games (kind 30762, no developer pubkey)
