@@ -235,6 +235,19 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
 
+  // BTC Proof of Play
+  "f02da534c04a14ec5d11bec66b494543e3f6aa839a5f7e8a756475e6601ae18a:btc-proof-of-play": {
+    name: "BTC Proof of Play",
+    description: "BTC Proof of Play",
+    image:
+      "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800",
+    genres: ["uncategorized"],
+    developer: "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
+    featured: false,
+    trending: false,
+    newRelease: true,
+  },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
