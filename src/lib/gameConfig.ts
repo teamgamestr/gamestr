@@ -247,7 +247,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       image:
         "https://images.squarespace-cdn.com/content/v1/68d64bc3e0c99d41729d22a1/de8349cc-e14d-4b6d-a5c3-b79e8062006d/BTCG+Logo+V2_cropped.png?format=800w",
       genres: ["card", "strategy", "player v player"],
-      url: "https://btcproofofplay.xyz/",
+      url: "https://btcproofofplay.itch.io/btcproofofplay",
       developer:
         "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
       featured: true,
