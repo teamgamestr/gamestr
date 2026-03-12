@@ -238,10 +238,10 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // BTC Proof of Play
   "f02da534c04a14ec5d11bec66b494543e3f6aa839a5f7e8a756475e6601ae18a:btc-proof-of-play": {
     name: "BTC Proof of Play",
-    description: "BTC Proof of Play",
+    description: "BTC: Proof of Play is a 1v1 Bitcoin-inspired strategy card game where players build decks, battle head-to-head, earn Sparks and Shards, unlock cards and cosmetics, and optionally use Lightning for tips and purchases. It is Bitcoin-themed, but it is not built on a blockchain and does not use NFTs or on-chain gameplay. Bitcoin ONLY.",
     image:
-      "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["uncategorized"],
+      "https://images.squarespace-cdn.com/content/v1/68d64bc3e0c99d41729d22a1/de8349cc-e14d-4b6d-a5c3-b79e8062006d/BTCG+Logo+V2_cropped.png?format=800w",
+    genres: ["card","strategy","player v player"],
     developer: "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
     featured: true,
     trending: false,
@@ -254,7 +254,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     description:
       "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
     image: "https://wordswithzaps.top/wwz_gamestr.png",
-    genres: ["puzzle", "casual"],
+    genres: ["puzzle", "casual","player v player"],
     url: "https://wordswithzaps.top",
     developer: "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
     featured: true,
