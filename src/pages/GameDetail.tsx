@@ -220,7 +220,7 @@ export function GameDetail() {
                   <Button variant="outline" size="lg" asChild>
                     <Link to={developerProfileUrl}>
                       <User className="mr-2 h-4 w-4" />
-                      By {developerNpubMetadata?.name || metadata?.developer}
+                      By {developerNpubMetadata?.name || (developerNpubHex ? genUserName(developerNpubHex) : metadata?.developer)}
                     </Link>
                   </Button>
                 )}
