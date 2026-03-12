@@ -134,7 +134,8 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       image: "https://unicorn.dergigi.com/og.png",
       genres: ["arcade", "action"],
       url: "https://unicorn.dergigi.com",
-      developer: "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc",
+      developer:
+        "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc",
       featured: false,
       trending: false,
       newRelease: true,
@@ -187,7 +188,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image: "https://i.nostr.build/rwl4S2TucTObXR3T.webp",
     genres: ["arcade", "casual", "retro"],
     url: "https://blockstr.io",
-    developer: "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
+    developer:
+      "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
     featured: true,
     trending: false,
     newRelease: false,
@@ -202,7 +204,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       image: "https://www.spacezappers.com/og-image.png",
       genres: ["arcade", "shooter", "retro"],
       url: "https://www.spacezappers.com/",
-      developer: "npub1sfpeyr9k5jms37q4900mw9q4vze4xwhdxd4avdxjml8rqgjkre8s4lcq9l",
+      developer:
+        "npub1sfpeyr9k5jms37q4900mw9q4vze4xwhdxd4avdxjml8rqgjkre8s4lcq9l",
       featured: true,
       trending: false,
       newRelease: false,
@@ -236,17 +239,21 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // BTC Proof of Play
-  "f02da534c04a14ec5d11bec66b494543e3f6aa839a5f7e8a756475e6601ae18a:btc-proof-of-play": {
-    name: "BTC Proof of Play",
-    description: "BTC: Proof of Play is a 1v1 Bitcoin-inspired strategy card game where players build decks, battle head-to-head, earn Sparks and Shards, unlock cards and cosmetics, and optionally use Lightning for tips and purchases. It is Bitcoin-themed, but it is not built on a blockchain and does not use NFTs or on-chain gameplay. Bitcoin ONLY.",
-    image:
-      "https://images.squarespace-cdn.com/content/v1/68d64bc3e0c99d41729d22a1/de8349cc-e14d-4b6d-a5c3-b79e8062006d/BTCG+Logo+V2_cropped.png?format=800w",
-    genres: ["card","strategy","player v player"],
-    developer: "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
-    featured: true,
-    trending: false,
-    newRelease: true,
-  },
+  "f02da534c04a14ec5d11bec66b494543e3f6aa839a5f7e8a756475e6601ae18a:btc-proof-of-play":
+    {
+      name: "BTC Proof of Play",
+      description:
+        "BTC: Proof of Play is a 1v1 Bitcoin-inspired strategy card game where players build decks, battle head-to-head, earn Sparks and Shards, unlock cards and cosmetics, and optionally use Lightning for tips and purchases. It is Bitcoin-themed, but it is not built on a blockchain and does not use NFTs or on-chain gameplay. Bitcoin ONLY.",
+      image:
+        "https://images.squarespace-cdn.com/content/v1/68d64bc3e0c99d41729d22a1/de8349cc-e14d-4b6d-a5c3-b79e8062006d/BTCG+Logo+V2_cropped.png?format=800w",
+      genres: ["card", "strategy", "player v player"],
+      url: "https://btcproofofplay.xyz/",
+      developer:
+        "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
+      featured: true,
+      trending: false,
+      newRelease: true,
+    },
 
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
@@ -254,16 +261,23 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     description:
       "A competitive word game powered by zaps. Form words, score points, and zap your way to victory!",
     image: "https://wordswithzaps.top/wwz_gamestr.png",
-    genres: ["puzzle", "casual","player v player"],
+    genres: ["puzzle", "casual", "player v player"],
     url: "https://wordswithzaps.top",
-    developer: "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
+    developer:
+      "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
     featured: true,
     trending: true,
     newRelease: true,
     playerSigned: true,
     leaderboards: [
       { label: "Score", scoreTag: "score", direction: "desc" },
-      { label: "Highest Word", scoreTag: "score:highestword", direction: "desc", displayTag: "highestword", displayLabel: "Word" },
+      {
+        label: "Highest Word",
+        scoreTag: "score:highestword",
+        direction: "desc",
+        displayTag: "highestword",
+        displayLabel: "Word",
+      },
     ],
   },
 };
@@ -275,7 +289,7 @@ function generateConfigHash(config: GameConfigMap): string {
   let hash = 0;
   for (let i = 0; i < configString.length; i++) {
     const char = configString.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return Math.abs(hash).toString(16).slice(0, 8);
