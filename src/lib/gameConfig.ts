@@ -243,7 +243,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800",
     genres: ["uncategorized"],
     developer: "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
-    featured: false,
+    featured: true,
     trending: false,
     newRelease: true,
   },

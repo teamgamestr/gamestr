@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Gamepad2, Flame, Sparkles, Star } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, isKind5555Game, getAllKind5555Games, NO_PUBKEY_PREFIX } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, isKind5555Game, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -20,6 +20,7 @@ export function Home() {
 
   const noPubkeyConfigGames = useMemo(() => getNoPubkeyGames(), []);
   const kind5555ConfigGames = useMemo(() => getAllKind5555Games(), []);
+  const allConfigGames = useMemo(() => getAllGames(), []);
 
   const games = useMemo(() => {
     const nostrGames = (gamesWithScores || []).map(game => ({
@@ -52,8 +53,19 @@ export function Home() {
         topScore: undefined as number | undefined,
       }));
 
-    return [...nostrGames, ...noPubkeyGames, ...kind5555Fallbacks];
-  }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames]);
+    const nostrGameKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
+    const configOnlyGames = allConfigGames
+      .filter(g => !isNoPubkeyGame(g.pubkey) && !nostrGameKeys.has(`${g.pubkey}:${g.gameIdentifier}`))
+      .map(g => ({
+        pubkey: g.pubkey,
+        gameIdentifier: g.gameIdentifier,
+        metadata: g.metadata,
+        scoreCount: undefined as number | undefined,
+        topScore: undefined as number | undefined,
+      }));
+
+    return [...nostrGames, ...noPubkeyGames, ...kind5555Fallbacks, ...configOnlyGames];
+  }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames, allConfigGames]);
 
   // Apply filters
   const filteredGames = useMemo(() => {
