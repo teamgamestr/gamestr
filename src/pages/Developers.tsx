@@ -6,11 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight } from 'lucide-react';
+import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight, Hash } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { validateScoreEvent } from '@/hooks/useScores';
 import type { NostrEvent } from '@nostrify/nostrify';
+
+function SectionAnchor({ id }: { id: string }) {
+  return (
+    <a
+      href={`#${id}`}
+      className="ml-1 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity text-muted-foreground"
+      aria-label="Link to this section"
+    >
+      <Hash className="h-4 w-4" />
+    </a>
+  );
+}
 
 export function Developers() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -253,7 +265,7 @@ publish_score(
 
       <div className="container mx-auto px-4 py-12 space-y-12">
         {/* Benefits Section */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div id="overview" className="grid md:grid-cols-3 gap-6">
           <Card>
             <CardHeader>
               <Zap className="h-8 w-8 text-yellow-500 mb-2" />
@@ -292,11 +304,12 @@ publish_score(
         </div>
 
         {/* Signing Approaches */}
-        <Card id="quick-start">
+        <Card id="signing">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="group flex items-center gap-2">
               <Rocket className="h-5 w-5" />
               How Score Signing Works
+              <SectionAnchor id="signing" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -367,11 +380,12 @@ publish_score(
         </Card>
 
         {/* Quick Start Section */}
-        <Card>
+        <Card id="quick-start">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="group flex items-center gap-2">
               <Rocket className="h-5 w-5" />
               Quick Start Guide
+              <SectionAnchor id="quick-start" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -444,11 +458,12 @@ publish_score(
         </Card>
 
         {/* Event Structure */}
-        <Card>
+        <Card id="event-structure">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="group flex items-center gap-2">
               <Code2 className="h-5 w-5" />
               Score Event Structure (Kind 30762)
+              <SectionAnchor id="event-structure" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -542,9 +557,12 @@ publish_score(
         </Card>
 
         {/* Code Examples */}
-        <Card>
+        <Card id="code-examples">
           <CardHeader>
-            <CardTitle>Code Examples</CardTitle>
+            <CardTitle className="group flex items-center gap-2">
+              Code Examples
+              <SectionAnchor id="code-examples" />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="js-gamedev">
@@ -648,9 +666,12 @@ publish_score(
         </Card>
 
         {/* Best Practices */}
-        <Card>
+        <Card id="best-practices">
           <CardHeader>
-            <CardTitle>Best Practices</CardTitle>
+            <CardTitle className="group flex items-center gap-2">
+              Best Practices
+              <SectionAnchor id="best-practices" />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -695,9 +716,12 @@ publish_score(
         </Card>
 
         {/* Resources */}
-        <Card>
+        <Card id="resources">
           <CardHeader>
-            <CardTitle>Resources</CardTitle>
+            <CardTitle className="group flex items-center gap-2">
+              Resources
+              <SectionAnchor id="resources" />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
@@ -732,11 +756,12 @@ publish_score(
         </Card>
 
         {/* Recent Score Events */}
-        <Card>
+        <Card id="recent-events">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="group flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
               Recent Score Events
+              <SectionAnchor id="recent-events" />
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               Live kind 30762 score events from the Nostr network. Click any event to inspect its full detail and tags.
