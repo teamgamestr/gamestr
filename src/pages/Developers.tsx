@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight, Hash } from 'lucide-react';
+import { Code2, Rocket, Shield, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight, Hash } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { validateScoreEvent } from '@/hooks/useScores';
@@ -292,12 +292,12 @@ publish_score(
 
           <Card>
             <CardHeader>
-              <BarChart3 className="h-8 w-8 text-blue-500 mb-2" />
-              <CardTitle>Built-in Analytics</CardTitle>
+              <Zap className="h-8 w-8 text-orange-500 mb-2" />
+              <CardTitle>Social</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Track player engagement, top scores, and game activity automatically.
+                Leverage Nostr for social interactions and Bitcoin micropayments.
               </p>
             </CardContent>
           </Card>
