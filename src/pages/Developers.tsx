@@ -1,13 +1,36 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNostr } from '@nostrify/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Code2, Rocket, Shield, BarChart3, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { validateScoreEvent } from '@/hooks/useScores';
+import type { NostrEvent } from '@nostrify/nostrify';
 
 export function Developers() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const { nostr } = useNostr();
+
+  const { data: recentEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['recent-score-events-dev'],
+    queryFn: async (c) => {
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(5000)]);
+      const events: NostrEvent[] = await nostr.query(
+        [{ kinds: [30762], limit: 20 }],
+        { signal },
+      );
+      return events
+        .sort((a, b) => b.created_at - a.created_at)
+        .slice(0, 10)
+        .map(e => ({ event: e, parsed: validateScoreEvent(e) }))
+        .filter(({ parsed }) => parsed !== null);
+    },
+  });
 
   const copyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -705,6 +728,79 @@ publish_score(
                 </Link>
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Score Events */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Recent Score Events
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Live kind 30762 score events from the Nostr network. Click any event to inspect its full detail and tags.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {eventsLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : !recentEvents || recentEvents.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground">
+                <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p>No score events found yet.</p>
+              </div>
+            ) : (
+              <div className="divide-y rounded-lg border overflow-hidden">
+                {recentEvents.map(({ event, parsed }) => {
+                  if (!parsed) return null;
+                  const shortPubkey = event.pubkey.slice(0, 8) + '…' + event.pubkey.slice(-4);
+                  const shortId = event.id.slice(0, 8) + '…';
+                  const allTags = event.tags;
+                  return (
+                    <Link
+                      key={event.id}
+                      to={`/score/${event.id}`}
+                      className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/50 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+                          <Trophy className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold text-sm truncate">{parsed.gameIdentifier}</span>
+                            <Badge variant="secondary" className="text-xs shrink-0">
+                              {parsed.score.toLocaleString()} pts
+                            </Badge>
+                            {allTags.map(([name, value]) =>
+                              name !== 'game' && name !== 'score' && name !== 'd' ? (
+                                <Badge key={`${name}-${value}`} variant="outline" className="text-xs shrink-0 font-mono">
+                                  {name}: {value}
+                                </Badge>
+                              ) : null
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                            <span className="font-mono truncate">by {shortPubkey}</span>
+                            <span className="flex items-center gap-1 shrink-0">
+                              <Clock className="h-3 w-3" />
+                              {formatDistanceToNow(new Date(event.created_at * 1000), { addSuffix: true })}
+                            </span>
+                            <span className="font-mono text-muted-foreground/60">id: {shortId}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-muted-foreground flex-shrink-0 transition-colors" />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
