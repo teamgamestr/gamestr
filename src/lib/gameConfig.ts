@@ -271,18 +271,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
-  // Asteroid Sats - pubkey unknown, update when confirmed
-  "nopubkey:asteroid-sats": {
-    name: "Asteroid Sats",
-    description: "Asteroid Sats",
-    image:
-      "https://images.pexels.com/photos/998641/pexels-photo-998641.jpeg?auto=compress&cs=tinysrgb&w=800",
-    genres: ["arcade", "shooter"],
-    featured: false,
-    trending: false,
-    newRelease: true,
-  },
-
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
@@ -334,6 +322,7 @@ export const EXCLUDED_GAMES: string[] = [
   "Nostrich Run",
   "zap-raptor",
   "bitcoin-space-invaders",
+  "astroid-sats",
 ];
 
 // All available genres
