@@ -261,7 +261,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       name: "Pallasite",
       description:
         "Shoot rocks, stack sats. A cosmic arcade shooter with Lightning sats and Nostr leaderboards.",
-      image: "https://pallasite.app/og.png",
+      image: "https://pallasite.app/icon-512.png",
       genres: ["arcade", "shooter", "action"],
       url: "https://pallasite.app",
       developer:
