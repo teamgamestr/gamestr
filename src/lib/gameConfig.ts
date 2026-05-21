@@ -218,7 +218,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       description: "Endless Nostrich side-scroller.",
       image: "https://nostrichrun.whitepaperinteractive.com/logo.png",
       genres: ["endless", "side-scroller", "arcade"],
-      url: "nostrichrun.whitepaperinteractive.com",
+      url: "https://nostrichrun.whitepaperinteractive.com",
       developer: "Whitepaper Interactive",
       featured: false,
       trending: false,
