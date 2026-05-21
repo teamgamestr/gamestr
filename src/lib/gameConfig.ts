@@ -265,7 +265,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "shooter", "action"],
       url: "https://pallasite.app",
       developer:
-        "npub1l2ffr5pcl5wnu3pexe8j38ew2wny58fjwahw2tqqpkjna0r33nwqemey56",
+        "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
       featured: true,
       trending: true,
       newRelease: true,
