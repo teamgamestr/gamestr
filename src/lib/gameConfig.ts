@@ -255,6 +255,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
+  // Pallasite
+  "fa9291d038fd1d3e4439364f289f2e53a64a1d32776ee52c000da53ebc718cdc:pallasite":
+    {
+      name: "Pallasite",
+      description:
+        "Shoot rocks, stack sats. A cosmic arcade shooter with Lightning sats and Nostr leaderboards.",
+      image: "https://pallasite.app/og.png",
+      genres: ["arcade", "shooter", "action"],
+      url: "https://pallasite.app",
+      developer:
+        "npub1l2ffr5pcl5wnu3pexe8j38ew2wny58fjwahw2tqqpkjna0r33nwqemey56",
+      featured: true,
+      trending: true,
+      newRelease: true,
+    },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
