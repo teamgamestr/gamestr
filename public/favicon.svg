@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#7c3aed"/>
+  <!-- Controller body -->
+  <rect x="12" y="30" width="76" height="42" rx="16" fill="#fff"/>
+  <!-- Left grip -->
+  <rect x="12" y="52" width="24" height="24" rx="12" fill="#fff"/>
+  <!-- Right grip -->
+  <rect x="64" y="52" width="24" height="24" rx="12" fill="#fff"/>
+  <!-- D-pad vertical -->
+  <rect x="28" y="38" width="7" height="20" rx="2" fill="#7c3aed"/>
+  <!-- D-pad horizontal -->
+  <rect x="23" y="43" width="17" height="7" rx="2" fill="#7c3aed"/>
+  <!-- Face buttons -->
+  <circle cx="68" cy="43" r="4" fill="#f59e0b"/>
+  <circle cx="76" cy="51" r="4" fill="#10b981"/>
+  <circle cx="60" cy="51" r="4" fill="#ef4444"/>
+  <circle cx="68" cy="59" r="4" fill="#3b82f6"/>
+  <!-- Center buttons -->
+  <rect x="43" y="46" width="6" height="5" rx="2" fill="#d1d5db"/>
+  <rect x="51" y="46" width="6" height="5" rx="2" fill="#d1d5db"/>
+</svg>
