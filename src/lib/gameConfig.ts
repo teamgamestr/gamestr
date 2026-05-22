@@ -322,7 +322,7 @@ export const EXCLUDED_GAMES: string[] = [
   "Nostrich Run",
   "zap-raptor",
   "bitcoin-space-invaders",
-  "astroid-sats",
+  "asteroid-sats",
 ];
 
 // All available genres
