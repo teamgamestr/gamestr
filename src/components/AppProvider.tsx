@@ -9,14 +9,13 @@ interface AppProviderProps {
   storageKey: string;
   /** Default app configuration */
   defaultConfig: AppConfig;
-  /** Optional list of preset relays to display in the RelaySelector */
+  /** List of relays the client connects to */
   presetRelays?: { name: string; url: string }[];
 }
 
 // Zod schema for AppConfig validation
 const AppConfigSchema = z.object({
   theme: z.enum(['dark', 'light', 'system']),
-  relayUrl: z.string().url(),
 }) satisfies z.ZodType<AppConfig>;
 
 export function AppProvider(props: AppProviderProps) {

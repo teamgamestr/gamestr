@@ -1,7 +1,6 @@
 import { GameCard } from './GameCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-import { RelaySelector } from '@/components/RelaySelector';
 import type { GameMetadata } from '@/lib/gameConfig';
 
 interface Game {
@@ -50,10 +49,6 @@ export function GamesGrid({ games, isLoading, emptyMessage = 'No games found' }:
               <p className="text-muted-foreground text-lg">
                 {emptyMessage}
               </p>
-              <p className="text-sm text-muted-foreground">
-                Try switching to a different relay to discover more games
-              </p>
-              <RelaySelector className="w-full" />
             </div>
           </CardContent>
         </Card>
