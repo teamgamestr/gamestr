@@ -4,7 +4,11 @@ import { useSeoMeta } from '@unhead/react';
 import { type LeaderboardPeriod, type ParsedScore, useLeaderboard, useMultiLeaderboard } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useDMContext } from '@/contexts/DMContext';
+import { MESSAGE_PROTOCOL } from '@/lib/dmConstants';
 import { ZapButton } from '@/components/ZapButton';
+import { useToast } from '@/hooks/useToast';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User, MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Trophy, Medal, Award, Clock, Target, User, MessageCircle, ShieldCheck, Flag, CheckCircle2 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 
@@ -21,20 +25,51 @@ import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
 import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, FALLBACK_GAME_METADATA, type LeaderboardConfig } from '@/lib/gameConfig';
 
+const GAMESTR_PUBKEY = '5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453';
+
 export function GameDetail() {
   const { slug: gameIdentifier } = useParams<{ slug: string }>();
   const [period, setPeriod] = useState<LeaderboardPeriod>('all-time');
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [mode, setMode] = useState<string | undefined>();
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
+
+  const { user } = useCurrentUser();
+  const { sendMessage } = useDMContext();
+  const { toast } = useToast();
 
   const { getGame, config } = useGameConfig();
   const resolved = gameIdentifier ? resolveGameByIdentifier(gameIdentifier, config) : null;
+  const isUnknownGame = !resolved;
   const pubkey = resolved?.pubkey;
   const metadata = resolved?.metadata || (gameIdentifier ? FALLBACK_GAME_METADATA : null);
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
   const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
   const isPlayerSigned = metadata?.playerSigned === true;
   const hasLeaderboard = !isNoPubkey || isK5555 || isPlayerSigned;
+
+  const handleClaim = async () => {
+    if (!user) {
+      toast({ title: 'Log in first', description: 'You need to be logged in to claim a game.', variant: 'destructive' });
+      return;
+    }
+    setIsClaiming(true);
+    try {
+      const message = `Hi Gamestr! I'd like to claim the game "${gameIdentifier}" and add it to the directory.\n\nGame identifier: ${gameIdentifier}\nPage: ${window.location.href}`;
+      await sendMessage({
+        recipientPubkey: GAMESTR_PUBKEY,
+        content: message,
+        protocol: MESSAGE_PROTOCOL.NIP17,
+      });
+      setClaimed(true);
+      toast({ title: 'Claim sent!', description: "We'll be in touch to verify your game." });
+    } catch {
+      toast({ title: 'Failed to send', description: 'Could not send claim request. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   useSeoMeta({
     title: metadata ? `${metadata.name}${hasLeaderboard ? ' Leaderboard' : ''} - Gamestr` : 'Game - Gamestr',
@@ -228,6 +263,27 @@ export function GameDetail() {
                   <Badge variant="secondary" className="text-base px-4 py-2">
                     By {metadata.developer}
                   </Badge>
+                )}
+
+                {/* Claim this game — only for unknown games */}
+                {isUnknownGame && (
+                  claimed ? (
+                    <Button variant="outline" size="lg" disabled className="gap-2 text-green-500 border-green-500/40">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Claim Sent
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="gap-2"
+                      onClick={handleClaim}
+                      disabled={isClaiming}
+                    >
+                      <Flag className="h-4 w-4" />
+                      {isClaiming ? 'Sending…' : 'Claim this game'}
+                    </Button>
+                  )
                 )}
               </div>
             </div>
