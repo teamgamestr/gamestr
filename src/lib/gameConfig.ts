@@ -81,6 +81,7 @@ export interface GameMetadata {
   newRelease?: boolean;
   playerSigned?: boolean;
   leaderboards?: LeaderboardConfig[];
+  leaderboardSplit?: LeaderboardSplitConfig;
 }
 
 export interface GameConfigMap {
@@ -89,12 +90,122 @@ export interface GameConfigMap {
 
 export type ScoreDirection = "desc" | "asc";
 
+/**
+ * How a board's score value is displayed.
+ * - "number": formatted with thousands separators (default)
+ * - "time": numeric value interpreted as a duration and rendered as m:ss(.xx)
+ */
+export type ScoreFormat = "number" | "time";
+
 export interface LeaderboardConfig {
   label: string;
   scoreTag: string;
   direction: ScoreDirection;
   displayTag?: string;
   displayLabel?: string;
+  /** Restrict this board to events whose `filterTag` equals `filterValue`. */
+  filterTag?: string;
+  filterValue?: string;
+  /** How to render the score value (defaults to "number"). */
+  scoreFormat?: ScoreFormat;
+  /** Input units for the score when scoreFormat is "time" (defaults to "s"). */
+  scoreUnit?: "ms" | "s";
+}
+
+/**
+ * Declares a set of per-value leaderboards split by a single event tag.
+ * Example: BTC Rally splits the `score` (lap time) by the `level` tag, one
+ * board per track. Each entry in `values` becomes its own LeaderboardConfig.
+ */
+export interface LeaderboardSplitConfig {
+  /** Event tag whose value selects the board, e.g. "level". */
+  splitTag: string;
+  /** Tag the score is read from (defaults to "score"). */
+  scoreTag?: string;
+  direction: ScoreDirection;
+  scoreFormat?: ScoreFormat;
+  scoreUnit?: "ms" | "s";
+  /** Layout hint for the UI. "tabs" renders a scrollable tab row. */
+  layout?: "tabs" | "grid";
+  /** Ordered list of split values mapped to friendly labels. */
+  values: { value: string; label: string }[];
+}
+
+/**
+ * Format a raw score value for display according to a board's preferences.
+ * "time" interprets the value as a duration (in scoreUnit, default "s") and
+ * renders it as m:ss.xx (or s.xx under a minute). Everything else uses commas.
+ */
+export function formatScoreValue(
+  value: number,
+  prefs?: { scoreFormat?: ScoreFormat; scoreUnit?: "ms" | "s" },
+): string {
+  if (prefs?.scoreFormat === "time") {
+    const totalSeconds = prefs.scoreUnit === "ms" ? value / 1000 : value;
+    if (!isFinite(totalSeconds) || totalSeconds < 0) return value.toLocaleString();
+    // Round to centiseconds first so rounding carries into minutes correctly
+    // (e.g. 119.999s -> "2:00.00", never "1:60.00").
+    const totalCentis = Math.round(totalSeconds * 100);
+    const minutes = Math.floor(totalCentis / 6000);
+    const seconds = (totalCentis % 6000) / 100;
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toFixed(2).padStart(5, "0")}`;
+    }
+    return `${seconds.toFixed(2)}s`;
+  }
+  return value.toLocaleString();
+}
+
+/**
+ * Derive the score display preferences for a game from its metadata.
+ * Reads from `leaderboardSplit`, or a single `leaderboards` entry. Returns
+ * undefined when the game uses the default numeric display.
+ */
+export function getScoreDisplayPrefs(
+  metadata?: Pick<GameMetadata, "leaderboards" | "leaderboardSplit">,
+): { scoreFormat?: ScoreFormat; scoreUnit?: "ms" | "s"; direction?: ScoreDirection } | undefined {
+  if (!metadata) return undefined;
+  if (metadata.leaderboardSplit) {
+    return {
+      scoreFormat: metadata.leaderboardSplit.scoreFormat,
+      scoreUnit: metadata.leaderboardSplit.scoreUnit,
+      direction: metadata.leaderboardSplit.direction,
+    };
+  }
+  if (metadata.leaderboards?.length === 1) {
+    return {
+      scoreFormat: metadata.leaderboards[0].scoreFormat,
+      scoreUnit: metadata.leaderboards[0].scoreUnit,
+      direction: metadata.leaderboards[0].direction,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Resolve the list of leaderboard boards for a game's metadata.
+ * Prefers an explicit `leaderboards` array; otherwise expands a
+ * `leaderboardSplit` declaration into one board per split value.
+ */
+export function resolveLeaderboards(
+  metadata: Pick<GameMetadata, "leaderboards" | "leaderboardSplit">,
+): LeaderboardConfig[] {
+  if (metadata.leaderboards && metadata.leaderboards.length > 0) {
+    return metadata.leaderboards;
+  }
+  const split = metadata.leaderboardSplit;
+  if (split && split.values.length > 0) {
+    return split.values.map((v) => ({
+      label: v.label,
+      scoreTag: split.scoreTag ?? "score",
+      direction: split.direction,
+      filterTag: split.splitTag,
+      filterValue: v.value,
+      scoreFormat: split.scoreFormat,
+      scoreUnit: split.scoreUnit,
+    }));
+  }
+  return [];
 }
 
 export interface Kind5555GameConfig {
@@ -284,6 +395,23 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     featured: true,
     trending: false,
     newRelease: true,
+    leaderboardSplit: {
+      splitTag: "level",
+      scoreTag: "score",
+      direction: "asc",
+      scoreFormat: "time",
+      scoreUnit: "ms",
+      layout: "tabs",
+      values: [
+        { value: "VillageScene_V2", label: "Satoshi Village" },
+        { value: "RaceTrackScene_V2", label: "ZBD Speedway" },
+        { value: "FrontierScene_V2", label: "Klondike" },
+        { value: "RainbowRoadScene_V2", label: "Ritchie's Road" },
+        { value: "Halloween_V2", label: "PUMP'kin Crypt" },
+        { value: "ArtScene_V2", label: "Atelier" },
+        { value: "TokyoScene_V2", label: "Tokyo" },
+      ],
+    },
   },
 
   // Player-signed games (kind 30762, no developer pubkey)

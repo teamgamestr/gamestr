@@ -104,7 +104,29 @@ Games can define multiple leaderboards via the `leaderboards` array in `GameMeta
 
 On desktop, multiple leaderboards display side-by-side. On mobile, they use tabs. Games without a `leaderboards` config use the standard single leaderboard. The `useMultiLeaderboard` hook (in `src/hooks/useScores.ts`) fetches and parses scores for all configured boards.
 
+`LeaderboardConfig` also supports two display preferences (used by both `leaderboards` and `leaderboardSplit`):
+- `filterTag` + `filterValue` (optional): Restrict a board to events whose `filterTag` equals `filterValue` (used to split boards by level/track).
+- `scoreFormat` (optional): `"number"` (default, thousands-separated) or `"time"` (value rendered as `m:ss.xx` / `s.xx`).
+- `scoreUnit` (optional): Input units for `"time"` — `"ms"` or `"s"` (default `"s"`).
+
+## Per-Level (Split) Leaderboards
+Two orthogonal axes describe a game's boards:
+1. **Score *what*** → multiple metrics on the same events, via `leaderboards: LeaderboardConfig[]` (different `scoreTag` per board). Example: Words With Zaps (Score + Highest Word).
+2. **Score *where*** → one metric split into a board per tag value, via `leaderboardSplit` on `GameMetadata`. Example: BTC Rally splits lap time (`score` tag, milliseconds, `direction: "asc"`) by the `level` tag into one board per track.
+
+`LeaderboardSplitConfig` fields:
+- `splitTag`: Event tag whose value selects the board (e.g., "level").
+- `scoreTag` (optional, default "score"), `direction`, `scoreFormat`, `scoreUnit`.
+- `layout` (optional): `"tabs"` renders a horizontally scrollable track selector (best for many values); `"grid"` reuses the side-by-side layout.
+- `values`: Ordered list of `{ value, label }` mapping raw tag values to friendly names.
+
+`resolveLeaderboards(metadata)` (in `src/lib/gameConfig.ts`) expands either config into a `LeaderboardConfig[]`. `formatScoreValue(value, prefs)` and `getScoreDisplayPrefs(metadata)` apply the display preferences consistently across GameDetail, ScoreDetail, and PlayerProfile (including direction-aware "best" scores for `asc` games).
+
 ## Recent Changes
+- ✅ Added per-level (split) leaderboards and score display preferences (Jun 7, 2026)
+  - BTC Rally configured with 7 per-track boards (scrollable tab selector), time-formatted scores (ms), lower-is-better
+  - New `leaderboardSplit` config + `scoreFormat`/`scoreUnit`/`filterTag` on `LeaderboardConfig`
+  - Time formatting applied across GameDetail, ScoreDetail, and PlayerProfile
 - ✅ Added multi-leaderboard support for games (Mar 2, 2026)
   - Words With Zaps configured with Score and Highest Word boards
   - Desktop: side-by-side layout; Mobile: tabbed interface

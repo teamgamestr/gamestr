@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink, MessageSquare, Calendar } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
+import { formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 
@@ -70,6 +71,7 @@ export function PlayerProfile() {
       totalScores: number;
       averageScore: number;
       latestTimestamp: number;
+      prefs?: ReturnType<typeof getScoreDisplayPrefs>;
     }>();
 
     scores.forEach(score => {
@@ -95,15 +97,20 @@ export function PlayerProfile() {
       }
     });
 
-    // Calculate averages
+    // Calculate averages and direction-aware best score
     gamesMap.forEach(game => {
       const sum = game.scores.reduce((acc, s) => acc + s.score, 0);
       game.averageScore = Math.round(sum / game.scores.length);
+
+      const prefs = getScoreDisplayPrefs(getGame(game.pubkey, game.gameIdentifier));
+      game.prefs = prefs;
+      const values = game.scores.map(s => s.score);
+      game.topScore = prefs?.direction === 'asc' ? Math.min(...values) : Math.max(...values);
     });
 
     return Array.from(gamesMap.values())
       .sort((a, b) => b.latestTimestamp - a.latestTimestamp);
-  }, [scores]);
+  }, [scores, getGame]);
 
   // Calculate overall stats
   const totalGames = gameStats.length;
@@ -270,7 +277,7 @@ export function PlayerProfile() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>{game.totalScores} scores</span>
                           <span>•</span>
-                          <span>Avg: {game.averageScore.toLocaleString()}</span>
+                          <span>Avg: {formatScoreValue(game.averageScore, game.prefs)}</span>
                         </div>
                       </div>
 
@@ -279,7 +286,7 @@ export function PlayerProfile() {
                         <div className="flex items-center gap-2">
                           <Trophy className="h-4 w-4 text-yellow-500" />
                           <span className="text-xl font-bold">
-                            {game.topScore.toLocaleString()}
+                            {formatScoreValue(game.topScore, game.prefs)}
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -309,6 +316,7 @@ export function PlayerProfile() {
               <div className="space-y-3">
                 {scores.slice(0, 10).map((score) => {
                   const metadata = getGame(score.event.pubkey, score.gameIdentifier);
+                  const prefs = getScoreDisplayPrefs(metadata);
                   return (
                     <Link
                       key={score.event.id}
@@ -339,7 +347,7 @@ export function PlayerProfile() {
                           </Badge>
                         )}
                         <span className="text-lg font-bold">
-                          {score.score.toLocaleString()}
+                          {formatScoreValue(score.score, prefs)}
                         </span>
                       </div>
                     </Link>

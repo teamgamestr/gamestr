@@ -5,7 +5,7 @@ import { useNostr } from '@nostrify/react';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { validateScoreEvent } from '@/hooks/useScores';
-import { resolveGameByIdentifier } from '@/lib/gameConfig';
+import { resolveGameByIdentifier, formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +76,8 @@ export function ScoreDetail() {
     ? resolved?.metadata || getGame(scoreData.event.pubkey, scoreData.gameIdentifier)
     : null;
   const isVerified = resolved?.pubkey && scoreData && scoreData.event.pubkey === resolved.pubkey;
+  const scorePrefs = getScoreDisplayPrefs(gameMetadata ?? undefined);
+  const isTimeScore = scorePrefs?.scoreFormat === 'time';
 
   if (isLoading) {
     return (
@@ -141,8 +143,8 @@ export function ScoreDetail() {
               {/* Floating Score Badge */}
               <div className="absolute bottom-4 right-4 bg-background/95 backdrop-blur-sm rounded-lg p-4 shadow-lg border">
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Score</p>
-                  <p className="text-3xl font-bold">{scoreData.score.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{isTimeScore ? 'Time' : 'Score'}</p>
+                  <p className="text-3xl font-bold">{formatScoreValue(scoreData.score, scorePrefs)}</p>
                 </div>
               </div>
             </div>

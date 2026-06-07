@@ -480,6 +480,7 @@ function parseEventWithScoreTag(
       score,
       playerPubkey: playerTag,
       state: stateTag,
+      level: event.tags.find(([name]) => name === 'level')?.[1],
       difficulty: event.tags.find(([name]) => name === 'difficulty')?.[1],
       mode: event.tags.find(([name]) => name === 'mode')?.[1],
       sourceKind: 30762,
@@ -544,7 +545,7 @@ export function useMultiLeaderboard(
   } = options;
 
   return useQuery({
-    queryKey: ['multi-leaderboard', gameIdentifier, leaderboards.map(l => l.scoreTag).join(','), period, difficulty, mode, limit, developerPubkey, kind5555Only],
+    queryKey: ['multi-leaderboard', gameIdentifier, leaderboards.map(l => `${l.scoreTag}:${l.filterTag ?? ''}=${l.filterValue ?? ''}`).join(','), period, difficulty, mode, limit, developerPubkey, kind5555Only],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const filters: NostrFilter[] = [];
@@ -580,6 +581,11 @@ export function useMultiLeaderboard(
           .filter((score): score is ParsedScore => score !== null)
           .filter(score => score.gameIdentifier === gameIdentifier);
 
+        if (config.filterTag && config.filterValue) {
+          parsedScores = parsedScores.filter(score =>
+            score.event.tags.some(([name, value]) => name === config.filterTag && value === config.filterValue)
+          );
+        }
         if (difficulty) {
           parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
         }

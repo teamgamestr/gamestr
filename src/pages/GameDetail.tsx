@@ -23,7 +23,7 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, FALLBACK_GAME_METADATA, type LeaderboardConfig } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, type LeaderboardConfig } from '@/lib/gameConfig';
 
 const GAMESTR_PUBKEY = '5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453';
 
@@ -97,10 +97,13 @@ export function GameDetail() {
     || (isNoPubkey ? undefined : genUserName(pubkey || ''));
   const developerProfileUrl = isDeveloperNpub && metadata?.developer ? `/${metadata.developer}` : undefined;
 
-  const hasMultiLeaderboard = (metadata?.leaderboards?.length ?? 0) > 1;
-  const leaderboardConfigs: LeaderboardConfig[] = metadata?.leaderboards || [
-    { label: "Score", scoreTag: "score", direction: "desc" },
-  ];
+  const resolvedLeaderboards = metadata ? resolveLeaderboards(metadata) : [];
+  const isSplitLeaderboard = (metadata?.leaderboardSplit?.values?.length ?? 0) > 0;
+  const splitLayout = metadata?.leaderboardSplit?.layout ?? 'tabs';
+  const hasMultiLeaderboard = resolvedLeaderboards.length > 1;
+  const leaderboardConfigs: LeaderboardConfig[] = resolvedLeaderboards.length > 0
+    ? resolvedLeaderboards
+    : [{ label: "Score", scoreTag: "score", direction: "desc" }];
   const [activeBoard, setActiveBoard] = useState(0);
 
   const singleLeaderboard = useLeaderboard(
@@ -130,8 +133,9 @@ export function GameDetail() {
     }
   );
 
+  const summaryBoardIndex = isSplitLeaderboard ? activeBoard : 0;
   const scores = hasMultiLeaderboard
-    ? multiLeaderboard.data?.[0]?.scores
+    ? multiLeaderboard.data?.[summaryBoardIndex]?.scores
     : singleLeaderboard.data;
   const isLoading = hasMultiLeaderboard ? multiLeaderboard.isLoading : singleLeaderboard.isLoading;
 
@@ -208,7 +212,7 @@ export function GameDetail() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-blue-500" />
-                        <span>Top Score: {scores[0].score.toLocaleString()}</span>
+                        <span>{isSplitLeaderboard ? 'Best Time' : 'Top Score'}: {formatScoreValue(scores[0].score, leaderboardConfigs[0])}</span>
                       </div>
                     </>
                   )}
@@ -386,7 +390,34 @@ export function GameDetail() {
               </CardContent>
             </Card>
 
-            {hasMultiLeaderboard ? (
+            {isSplitLeaderboard && splitLayout === 'tabs' ? (
+              <>
+                {/* Scrollable track selector */}
+                <div className="-mx-1 overflow-x-auto pb-1">
+                  <div className="flex gap-2 px-1 w-max">
+                    {leaderboardConfigs.map((lb, i) => (
+                      <Button
+                        key={i}
+                        variant={activeBoard === i ? 'default' : 'outline'}
+                        size="sm"
+                        className="whitespace-nowrap shrink-0"
+                        onClick={() => setActiveBoard(i)}
+                      >
+                        {lb.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <LeaderboardPanel
+                    boardData={multiLeaderboard.data?.[activeBoard]}
+                    isLoading={multiLeaderboard.isLoading}
+                    developerPubkey={pubkey}
+                    gameIdentifier={gameIdentifier}
+                  />
+                </div>
+              </>
+            ) : hasMultiLeaderboard ? (
               <>
                 <div className="md:hidden">
                   <Tabs value={String(activeBoard)} onValueChange={(v) => setActiveBoard(Number(v))}>
@@ -474,6 +505,7 @@ function LeaderboardPanel({ boardData, isLoading, developerPubkey, gameIdentifie
                 key={score.event.id}
                 rank={index + 1}
                 score={score}
+                config={config}
                 developerPubkey={developerPubkey}
                 gameIdentifier={gameIdentifier}
                 showDisplayValue={!!config?.displayTag}
@@ -495,13 +527,14 @@ function LeaderboardPanel({ boardData, isLoading, developerPubkey, gameIdentifie
 interface LeaderboardRowProps {
   rank: number;
   score: ParsedScore;
+  config?: LeaderboardConfig;
   developerPubkey?: string;
   gameIdentifier?: string;
   showDisplayValue?: boolean;
   displayLabel?: string;
 }
 
-function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier, showDisplayValue, displayLabel }: LeaderboardRowProps) {
+function LeaderboardRow({ rank, score, config, developerPubkey, gameIdentifier, showDisplayValue, displayLabel }: LeaderboardRowProps) {
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(score.playerPubkey);
@@ -551,13 +584,13 @@ function LeaderboardRow({ rank, score, developerPubkey, gameIdentifier, showDisp
 
         {/* Score Details */}
         <div className="text-right">
-          <p className="text-2xl font-bold">{score.score.toLocaleString()}</p>
+          <p className="text-2xl font-bold">{formatScoreValue(score.score, config)}</p>
           {showDisplayValue && score.displayValue && (
             <p className="text-xs text-muted-foreground">
               {displayLabel ? `${displayLabel}: ` : ''}{score.displayValue}
             </p>
           )}
-          {!showDisplayValue && score.duration && (
+          {!showDisplayValue && config?.scoreFormat !== 'time' && score.duration && (
             <p className="text-xs text-muted-foreground">
               {Math.floor(score.duration / 60)}m {score.duration % 60}s
             </p>
