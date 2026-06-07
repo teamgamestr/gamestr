@@ -271,6 +271,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
+  // BTC Rally
+  "bb1f62f00f67dec2182ac7c40d046979d7c8ca698951cb9e509bdcb3d0a85f8a:btcrally": {
+    name: "BTC Rally",
+    description:
+      "A Kart-style racing game with integrated Bitcoin support. Challenge friends in local split-screen mode — everyone pays a few sats to enter, and the winners take the majority of the prize pot. Powered by ZBD or LNBits.",
+    image:
+      "https://img.itch.zone/aW1nLzIyMzY5MTgyLnBuZw==/original/aKuWbq.png",
+    genres: ["racing", "multiplayer", "action"],
+    url: "https://mandelduckstudio.itch.io/btcrally",
+    developer:
+      "npub1yreyumw0xrc2mz324ul44c8pr2ellmg7t904h0e62kx5h53z6nnqm6q23f",
+    featured: true,
+    trending: false,
+    newRelease: true,
+  },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
