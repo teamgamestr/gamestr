@@ -6,6 +6,7 @@ import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
+import { Button } from '@/components/ui/button';
 import { Zap } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import type { Event } from 'nostr-tools';
@@ -81,6 +82,58 @@ export function ScoreZapButton({
     }
   };
 
+  if (label) {
+    return (
+      <>
+        <div className="flex items-center gap-3">
+          {isLoggedIn && hasLightningAddress ? (
+            <ZapDialog target={playerEvent}>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
+                <Zap className="h-4 w-4" />
+                {showLoading ? '...' : label}
+              </Button>
+            </ZapDialog>
+          ) : (
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+              onClick={handleZapClick}
+            >
+              <Zap className="h-4 w-4" />
+              {showLoading ? '...' : label}
+            </Button>
+          )}
+          {showCount && totalSats > 0 && !showLoading && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowZapListModal(true); }}
+              className="text-sm text-orange-500 hover:text-orange-400 transition-colors cursor-pointer font-medium"
+              title="View zappers"
+            >
+              {totalSats.toLocaleString()} sats zapped
+            </button>
+          )}
+        </div>
+
+        <ZapModal
+          playerPubkey={playerPubkey}
+          playerName={playerName}
+          playerAvatar={playerAvatar}
+          scoreEvent={scoreEvent}
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          hasLightningAddress={hasLightningAddress}
+          isLoggedIn={isLoggedIn}
+          isSelf={isSelf}
+        />
+        <ZapListModal
+          target={scoreEvent}
+          playerPubkey={playerPubkey}
+          isOpen={showZapListModal}
+          onClose={() => setShowZapListModal(false)}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col items-center gap-1">
@@ -90,7 +143,7 @@ export function ScoreZapButton({
             <div className={`flex items-center gap-1 cursor-pointer hover:text-primary transition-colors ${className}`}>
               <Zap className="h-4 w-4" />
               <span className="text-xs">
-                {showLoading ? '...' : (label ?? 'Zap')}
+                {showLoading ? '...' : 'Zap'}
               </span>
             </div>
           </ZapDialog>
@@ -101,7 +154,7 @@ export function ScoreZapButton({
           >
             <Zap className="h-4 w-4" />
             <span className="text-xs">
-              {showLoading ? '...' : (label ?? 'Zap')}
+              {showLoading ? '...' : 'Zap'}
             </span>
           </div>
         )}
