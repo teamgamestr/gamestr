@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { type LeaderboardPeriod, type ParsedScore, useLeaderboard, useMultiLeaderboard } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
@@ -104,7 +104,30 @@ export function GameDetail() {
   const leaderboardConfigs: LeaderboardConfig[] = resolvedLeaderboards.length > 0
     ? resolvedLeaderboards
     : [{ label: "Score", scoreTag: "score", direction: "desc" }];
-  const [activeBoard, setActiveBoard] = useState(0);
+
+  // Deep-link the selected board via the URL: ?track=<slug> for split
+  // (per-level) boards, ?board=<slug> for multi-metric tabs. The slug is
+  // derived from the friendly label so links are readable and shareable, and
+  // browser back/forward stays in sync.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const boardParamName = isSplitLeaderboard ? 'track' : 'board';
+  const boardKeys = useMemo(
+    () =>
+      leaderboardConfigs.map((lb) =>
+        lb.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+      ),
+    [leaderboardConfigs],
+  );
+  const activeBoard = Math.max(0, boardKeys.indexOf(searchParams.get(boardParamName) ?? ''));
+  const setActiveBoard = (index: number) => {
+    const next = new URLSearchParams(searchParams);
+    if (index <= 0) {
+      next.delete(boardParamName);
+    } else {
+      next.set(boardParamName, boardKeys[index]);
+    }
+    setSearchParams(next);
+  };
 
   const singleLeaderboard = useLeaderboard(
     gameIdentifier || '',
