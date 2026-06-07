@@ -216,11 +216,15 @@ export function useZaps(
       const signedZapRequest = await user.signer.signEvent(zapRequest);
 
       try {
-        const res = await fetch(`${zapEndpoint}?amount=${zapAmount}&nostr=${encodeURI(JSON.stringify(signedZapRequest))}`);
+        const res = await fetch(`${zapEndpoint}?amount=${zapAmount}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`);
             const responseData = await res.json();
 
             if (!res.ok) {
               throw new Error(`HTTP ${res.status}: ${responseData.reason || 'Unknown error'}`);
+            }
+
+            if (responseData.status === 'ERROR') {
+              throw new Error(responseData.reason || 'LNURL service returned an error');
             }
 
             const newInvoice = responseData.pr;
