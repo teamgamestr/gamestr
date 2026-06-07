@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { useZaps } from '@/hooks/useZaps';
@@ -188,16 +188,17 @@ export function ScoreDetail() {
                     )}
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-3">
-                    <ScoreZapButton
-                      scoreEvent={scoreData.event as unknown as Event}
-                      playerPubkey={scoreData.playerPubkey}
-                      className="text-sm"
-                      showCount={true}
-                      zapData={{ count: zapCount, totalSats, isLoading: zapsLoading }}
-                    />
-                  </div>
+                  {/* Info Icon — top right */}
+                  {scoreData.event.tags.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground shrink-0"
+                      onClick={() => setTagsOpen(true)}
+                    >
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 {/* Timestamp */}
@@ -211,33 +212,22 @@ export function ScoreDetail() {
                     {format(scoreData.event.created_at * 1000, 'PPP')}
                   </div>
                 </div>
+
+                {/* Zap Button */}
+                <div className="mt-4">
+                  <ScoreZapButton
+                    scoreEvent={scoreData.event as unknown as Event}
+                    playerPubkey={scoreData.playerPubkey}
+                    showCount={true}
+                    zapData={{ count: zapCount, totalSats, isLoading: zapsLoading }}
+                    label="Zap this score"
+                  />
+                </div>
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6">
-            {totalSats > 0 && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Zap className="h-4 w-4 text-orange-500" />
-                <span className="font-medium">{totalSats.toLocaleString()} sats zapped</span>
-              </div>
-            )}
-
-            {/* Event Tags Info Button */}
-            {scoreData.event.tags.length > 0 && (
-              <div className="flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground gap-1.5"
-                  onClick={() => setTagsOpen(true)}
-                >
-                  <Info className="h-4 w-4" />
-                  Event Details
-                </Button>
-              </div>
-            )}
-          </CardContent>
+          <CardContent />
         </Card>
 
         {/* Event Tags Modal */}
@@ -245,6 +235,7 @@ export function ScoreDetail() {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Event Tags</DialogTitle>
+              <DialogDescription>Raw Nostr event tags for this score.</DialogDescription>
             </DialogHeader>
             <div className="rounded-lg border bg-muted/30 overflow-hidden">
               <table className="w-full text-sm">

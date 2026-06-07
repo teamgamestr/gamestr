@@ -16,6 +16,7 @@ interface ScoreZapButtonProps {
   className?: string;
   showCount?: boolean;
   zapData?: { count: number; totalSats: number; isLoading?: boolean };
+  label?: string;
 }
 
 /**
@@ -31,7 +32,8 @@ export function ScoreZapButton({
   playerPubkey,
   className = "text-xs ml-1",
   showCount = true,
-  zapData: externalZapData
+  zapData: externalZapData,
+  label,
 }: ScoreZapButtonProps) {
   const [showModal, setShowModal] = useState(false);
   const [showZapListModal, setShowZapListModal] = useState(false);
@@ -88,7 +90,7 @@ export function ScoreZapButton({
             <div className={`flex items-center gap-1 cursor-pointer hover:text-primary transition-colors ${className}`}>
               <Zap className="h-4 w-4" />
               <span className="text-xs">
-                {showLoading ? '...' : 'Zap'}
+                {showLoading ? '...' : (label ?? 'Zap')}
               </span>
             </div>
           </ZapDialog>
@@ -99,7 +101,7 @@ export function ScoreZapButton({
           >
             <Zap className="h-4 w-4" />
             <span className="text-xs">
-              {showLoading ? '...' : 'Zap'}
+              {showLoading ? '...' : (label ?? 'Zap')}
             </span>
           </div>
         )}
