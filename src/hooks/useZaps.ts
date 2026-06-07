@@ -21,7 +21,7 @@ export function useZaps(
   const { nostr } = useNostr();
   const { toast } = useToast();
   const { user } = useCurrentUser();
-  const { config } = useAppContext();
+  const { presetRelays } = useAppContext();
   const queryClient = useQueryClient();
 
   // Handle the case where an empty array is passed (from ZapButton when external data is provided)
@@ -205,7 +205,7 @@ export function useZaps(
         profile: actualTarget.pubkey,
         event: event,
         amount: zapAmount,
-        relays: [config.relayUrl],
+        relays: presetRelays?.map(r => r.url) ?? ['wss://relay.damus.io'],
         comment
       });
 
