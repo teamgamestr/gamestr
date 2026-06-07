@@ -133,9 +133,8 @@ export function GameDetail() {
     }
   );
 
-  const summaryBoardIndex = isSplitLeaderboard ? activeBoard : 0;
   const scores = hasMultiLeaderboard
-    ? multiLeaderboard.data?.[summaryBoardIndex]?.scores
+    ? multiLeaderboard.data?.[0]?.scores
     : singleLeaderboard.data;
   const isLoading = hasMultiLeaderboard ? multiLeaderboard.isLoading : singleLeaderboard.isLoading;
 
@@ -201,8 +200,10 @@ export function GameDetail() {
                 ))}
               </div>
 
-              {/* Stats */}
-              {hasLeaderboard && (
+              {/* Stats — hidden for split boards: each track shows its own best
+                  time in the board, and a per-tab summary here causes the page
+                  to jump as you switch tracks / scores load. */}
+              {hasLeaderboard && !isSplitLeaderboard && (
                 <div className="flex flex-wrap gap-4 text-sm">
                   {scores && scores.length > 0 && (
                     <>
