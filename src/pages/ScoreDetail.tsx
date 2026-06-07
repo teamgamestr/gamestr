@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { useZaps } from '@/hooks/useZaps';
@@ -22,6 +24,7 @@ import {
   Calendar,
   Gamepad2,
   ShieldCheck,
+  Info,
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -30,6 +33,7 @@ import type { Event } from 'nostr-tools';
 
 export function ScoreDetail() {
   const { eventId } = useParams<{ eventId: string }>();
+  const [tagsOpen, setTagsOpen] = useState(false);
   const { nostr } = useNostr();
   const { getGame } = useGameConfig();
   const { webln, activeNWC } = useWallet();
@@ -219,34 +223,51 @@ export function ScoreDetail() {
               </div>
             )}
 
-            {/* All Event Tags */}
+            {/* Event Tags Info Button */}
             {scoreData.event.tags.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Event Tags</h3>
-                <div className="rounded-lg border bg-muted/30 overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="text-left px-4 py-2 font-medium text-muted-foreground w-1/4">Tag</th>
-                        <th className="text-left px-4 py-2 font-medium text-muted-foreground">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {scoreData.event.tags.map((tag, index) => (
-                        <tr key={index} className="border-b last:border-0">
-                          <td className="px-4 py-2 font-mono text-xs text-primary">{tag[0]}</td>
-                          <td className="px-4 py-2 font-mono text-xs break-all">
-                            {tag.slice(1).join(', ')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground gap-1.5"
+                  onClick={() => setTagsOpen(true)}
+                >
+                  <Info className="h-4 w-4" />
+                  Event Details
+                </Button>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Event Tags Modal */}
+        <Dialog open={tagsOpen} onOpenChange={setTagsOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Event Tags</DialogTitle>
+            </DialogHeader>
+            <div className="rounded-lg border bg-muted/30 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left px-4 py-2 font-medium text-muted-foreground w-1/4">Tag</th>
+                    <th className="text-left px-4 py-2 font-medium text-muted-foreground">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scoreData.event.tags.map((tag, index) => (
+                    <tr key={index} className="border-b last:border-0">
+                      <td className="px-4 py-2 font-mono text-xs text-primary">{tag[0]}</td>
+                      <td className="px-4 py-2 font-mono text-xs break-all">
+                        {tag.slice(1).join(', ')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Comments Section */}
         <CommentsSection root={scoreData.event} />
