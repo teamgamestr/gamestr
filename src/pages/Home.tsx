@@ -142,8 +142,8 @@ export function Home() {
           <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-400/10 blur-2xl" />
         </div>
 
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
+        <div className="relative container mx-auto px-4 pt-6 pb-4">
+          <div className="max-w-3xl mx-auto text-center space-y-1">
             <img src="/gamestr-logo.svg" alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
 
             <p
