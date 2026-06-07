@@ -118,15 +118,38 @@ export function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white">
-        <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=1920')] opacity-20 bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
-        
+      <div
+        className="relative overflow-hidden text-white"
+        style={{
+          backgroundColor: "#0a0a1a",
+          backgroundImage: `
+            repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px),
+            repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px)
+          `,
+        }}
+      >
+        {/* scanline overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
+          }}
+        />
+        {/* neon glow spots */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-600/20 blur-3xl" />
+          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-green-400/10 blur-2xl" />
+          <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-400/10 blur-2xl" />
+        </div>
+
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <img src="/gamestr-logo.svg" alt="Gamestr" className="h-32 md:h-48 mx-auto" />
-            
-            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
+            <img src="/gamestr-logo.svg" alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
+
+            <p
+              className="text-xl md:text-2xl max-w-2xl mx-auto font-mono tracking-wide"
+              style={{ color: "#00ff80", textShadow: "0 0 12px rgba(0,255,128,0.6)" }}
+            >
               Gamestr: decentralized gaming on Nostr.
             </p>
           </div>
