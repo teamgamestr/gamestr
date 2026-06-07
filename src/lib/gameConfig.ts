@@ -414,6 +414,23 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     },
   },
 
+  // Forge Realms
+  "b1a7a47a0abb87c8913c431f5ebdfce45532d26db4b61c85373048d44d1324b9:forge-realms":
+    {
+      name: "Forge Realms",
+      description:
+        "A Stone Age RTS. Build, gather, raid, and advance from a fragile village into a conquering realm.",
+      image:
+        "https://forgesworn.dev/forge-realms/assets/ui/start-page-v1.webp",
+      genres: ["strategy", "simulation", "multiplayer"],
+      url: "https://forgesworn.dev/forge-realms/",
+      developer:
+        "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
+      featured: true,
+      trending: false,
+      newRelease: true,
+    },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
