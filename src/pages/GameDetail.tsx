@@ -19,7 +19,7 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, type LeaderboardConfig } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, FALLBACK_GAME_METADATA, type LeaderboardConfig } from '@/lib/gameConfig';
 
 export function GameDetail() {
   const { slug: gameIdentifier } = useParams<{ slug: string }>();
@@ -30,7 +30,7 @@ export function GameDetail() {
   const { getGame, config } = useGameConfig();
   const resolved = gameIdentifier ? resolveGameByIdentifier(gameIdentifier, config) : null;
   const pubkey = resolved?.pubkey;
-  const metadata = resolved?.metadata || null;
+  const metadata = resolved?.metadata || (gameIdentifier ? FALLBACK_GAME_METADATA : null);
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
   const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
   const isPlayerSigned = metadata?.playerSigned === true;
