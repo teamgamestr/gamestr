@@ -168,8 +168,7 @@ export const FALLBACK_GAME_METADATA: GameMetadata = {
   name: "Unknown Game",
   description:
     "No description available. Add metadata to improve this listing.",
-  image:
-    "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=800",
+  image: "/gamestr-logo.svg",
   genres: ["uncategorized"],
   featured: false,
   trending: false,
