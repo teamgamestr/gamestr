@@ -147,8 +147,8 @@ export function Home() {
             <img src="/gamestr-logo.svg" alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
 
             <p
-              className="text-xl md:text-2xl max-w-2xl mx-auto font-mono tracking-wide -mt-16"
-              style={{ color: "#00ff80", textShadow: "0 0 12px rgba(0,255,128,0.6)" }}
+              className="text-xl md:text-2xl max-w-2xl mx-auto font-mono tracking-wide"
+              style={{ color: "#00ff80", textShadow: "0 0 12px rgba(0,255,128,0.6)", marginTop: "-3rem" }}
             >
               Decentralized gaming on Nostr
             </p>
