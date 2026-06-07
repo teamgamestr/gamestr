@@ -124,17 +124,10 @@ export function Home() {
         
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-              <Gamepad2 className="h-5 w-5" />
-              <span className="text-sm font-medium">Powered by Nostr</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-              Welcome to Gamestr
-            </h1>
+            <img src="/gamestr-logo.svg" alt="Gamestr" className="h-32 md:h-48 mx-auto" />
             
             <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
-              The decentralized gaming leaderboard platform. Compete, share, and celebrate your gaming achievements on Nostr.
+              Gamestr: decentralized gaming on Nostr.
             </p>
           </div>
         </div>
