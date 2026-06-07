@@ -150,7 +150,7 @@ export function Home() {
               className="text-xl md:text-2xl max-w-2xl mx-auto font-mono tracking-wide"
               style={{ color: "#00ff80", textShadow: "0 0 12px rgba(0,255,128,0.6)" }}
             >
-              Gamestr: decentralized gaming on Nostr
+              Decentralized gaming on Nostr
             </p>
           </div>
         </div>
