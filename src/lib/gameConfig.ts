@@ -309,7 +309,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   "5a625acc4312b5b56c735e7eb0fa48521ec9a5fe72bef0015b0ca62f3c4e09b6:sats-man": {
     name: "Sats-Man",
     description: "A Bitcoin-themed Pac-Man style arcade game on Nostr.",
-    image: "https://sats-man.com/logo.png",
+    image: "https://sats-man.com/sats-man-logo.png",
     genres: ["arcade", "casual", "retro"],
     url: "https://sats-man.com",
     developer:
