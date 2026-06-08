@@ -10,7 +10,7 @@ interface AppProviderProps {
   /** Default app configuration */
   defaultConfig: AppConfig;
   /** List of relays the client connects to */
-  presetRelays?: { name: string; url: string }[];
+  presetRelays?: { name: string; url: string; main?: boolean }[];
 }
 
 // Zod schema for AppConfig validation

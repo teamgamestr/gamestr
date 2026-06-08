@@ -37,6 +37,7 @@ const defaultConfig: AppConfig = {
 };
 
 const relays = [
+  { url: 'wss://gamestr.relay.io', name: 'Gamestr', main: true },
   { url: 'wss://relay.ditto.pub', name: 'Ditto' },
   { url: 'wss://relay.nostr.band', name: 'Nostr.Band' },
   { url: 'wss://relay.damus.io', name: 'Damus' },
