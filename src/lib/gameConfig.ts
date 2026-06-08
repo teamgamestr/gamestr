@@ -305,6 +305,20 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: false,
   },
 
+  //Sats-Man
+  "5a625acc4312b5b56c735e7eb0fa48521ec9a5fe72bef0015b0ca62f3c4e09b6:sats-man": {
+    name: "Sats-Man",
+    description: "A Bitcoin-themed Pac-Man style arcade game on Nostr.",
+    image: "https://sats-man.com/logo.png",
+    genres: ["arcade", "casual", "retro"],
+    url: "https://sats-man.com",
+    developer:
+      "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
+    featured: false,
+    trending: false,
+    newRelease: true,
+  },
+
   //Space Zappers
   "6c95ab59b0ebf56296f45b8b52b9b0f2599029c173a8c5fd463ef0a474995fcc:space-zappers":
     {
