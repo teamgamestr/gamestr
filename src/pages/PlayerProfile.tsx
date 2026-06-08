@@ -263,7 +263,7 @@ export function PlayerProfile() {
                       className="flex items-center gap-4 p-4 rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       {/* Game Image */}
-                      <div className="h-16 w-16 rounded overflow-hidden bg-gradient-to-br from-muted to-background flex-shrink-0">
+                      <div className="h-16 w-16 rounded overflow-hidden bg-muted/60 ring-1 ring-inset ring-white/5 flex-shrink-0">
                         <img
                           src={metadata.image}
                           alt={metadata.name}
@@ -324,7 +324,7 @@ export function PlayerProfile() {
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="h-10 w-10 rounded overflow-hidden bg-gradient-to-br from-muted to-background flex-shrink-0">
+                        <div className="h-10 w-10 rounded overflow-hidden bg-muted/60 ring-1 ring-inset ring-white/5 flex-shrink-0">
                           <img
                             src={metadata.image}
                             alt={metadata.name}

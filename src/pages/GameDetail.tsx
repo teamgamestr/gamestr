@@ -199,7 +199,7 @@ export function GameDetail() {
 
           <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Game Image */}
-            <div className="w-full md:w-64 aspect-square rounded-lg overflow-hidden shadow-2xl bg-gradient-to-br from-muted to-background">
+            <div className="w-full md:w-64 aspect-square rounded-lg overflow-hidden shadow-2xl bg-muted/60 ring-1 ring-inset ring-white/5">
               <img
                 src={metadata.image}
                 alt={metadata.name}

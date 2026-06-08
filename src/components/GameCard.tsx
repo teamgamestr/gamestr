@@ -27,7 +27,7 @@ export function GameCard({
     <Link to={gameUrl}>
       <Card className={`group overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer ${className}`}>
         {/* Game Image */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-background">
+        <div className="relative aspect-square overflow-hidden bg-muted/60 ring-1 ring-inset ring-white/5">
           <img
             src={metadata.image}
             alt={metadata.name}
