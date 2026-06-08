@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { GamesGrid } from '@/components/GamesGrid';
 import { useGamesWithScores } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,8 @@ export function Home() {
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000 });
   const { getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();
+  const { theme } = useTheme();
+  const logoSrc = theme === 'light' ? '/gamestr-logo-light.svg' : '/gamestr-logo-dark.svg';
 
   const noPubkeyConfigGames = useMemo(() => getNoPubkeyGames(), []);
   const kind5555ConfigGames = useMemo(() => getAllKind5555Games(), []);
@@ -143,15 +146,8 @@ export function Home() {
         </div>
 
         <div className="relative container mx-auto px-4 pt-6 pb-4">
-          <div className="max-w-3xl mx-auto text-center space-y-1">
-            <img src="/gamestr-logo.svg" alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
-
-            <p
-              className="text-xl md:text-2xl max-w-2xl mx-auto font-mono tracking-wide"
-              style={{ color: "#00ff80", textShadow: "0 0 12px rgba(0,255,128,0.6)", marginTop: "-3rem" }}
-            >
-              Decentralized gaming on Nostr
-            </p>
+          <div className="max-w-3xl mx-auto text-center">
+            <img src={logoSrc} alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
           </div>
         </div>
       </div>
