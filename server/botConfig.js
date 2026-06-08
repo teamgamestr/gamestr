@@ -167,7 +167,7 @@ export function getMonitoredDeveloperPubkeys() {
   
   for (const gameKey of Object.keys(GAME_CONFIG)) {
     const parsed = parseGameKey(gameKey);
-    if (parsed && !parsed.pubkey.startsWith('test-')) {
+    if (parsed && !parsed.pubkey.startsWith('test-') && parsed.pubkey !== 'nopubkey') {
       pubkeys.add(parsed.pubkey);
     }
   }
