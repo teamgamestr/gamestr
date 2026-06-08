@@ -13,7 +13,7 @@ export interface AppContextType {
   /** Update configuration using a callback that receives current config and returns new config */
   updateConfig: (updater: (currentConfig: Partial<AppConfig>) => Partial<AppConfig>) => void;
   /** List of relays the client connects to */
-  presetRelays?: { name: string; url: string; main?: boolean }[];
+  presetRelays?: { name: string; url: string }[];
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
