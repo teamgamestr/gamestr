@@ -295,7 +295,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   "c70f635895bf0cade4f4c80863fe662a1d6e72153c9be357dc5fa5064c3624de:blockstr": {
     name: "blockstr",
     description: "Classic 8-bit Tetris with a timechain twist!",
-    image: "https://i.nostr.build/rwl4S2TucTObXR3T.webp",
+    image: "/blockstr-logo.png",
     genres: ["arcade", "casual", "retro"],
     url: "https://blockstr.io",
     developer:
