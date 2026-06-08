@@ -184,10 +184,10 @@ export function GameDetail() {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20">
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
+          className="absolute inset-0 bg-cover bg-center opacity-30 transform-gpu will-change-auto"
           style={{ backgroundImage: `url(${metadata.image})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background transform-gpu" />
 
         <div className="relative container mx-auto px-4 py-8">
           <Button variant="ghost" asChild className="mb-4">
