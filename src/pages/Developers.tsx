@@ -312,27 +312,51 @@ publish_score(
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-1">
-                <h2 className="text-xl font-bold text-white">Official Gamestr Relay</h2>
+                <h2 className="text-xl font-bold text-white">Gamestr Relays</h2>
                 <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">Recommended</Badge>
               </div>
               <p className="text-purple-200/80 text-sm mb-4">
-                Publish your scores to the dedicated Gamestr relay to ensure they appear on Gamestr leaderboards instantly. Use it alongside other public relays for maximum reach.
+                Publish your scores to a Gamestr relay to ensure they appear on Gamestr leaderboards instantly. Use it alongside other public relays for maximum reach.
               </p>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <code className="flex-1 block bg-black/40 border border-purple-500/30 rounded-lg px-4 py-2.5 text-purple-300 font-mono text-base tracking-wide select-all">
-                  wss://relay.gamestr.io
-                </code>
-                <Button
-                  variant="outline"
-                  className="border-purple-500/40 text-purple-200 hover:bg-purple-500/20 hover:text-white shrink-0"
-                  onClick={() => copyCode('wss://relay.gamestr.io', 'relay-url')}
-                >
-                  {copiedCode === 'relay-url' ? (
-                    <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>
-                  ) : (
-                    'Copy URL'
-                  )}
-                </Button>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-purple-300/60 mb-1 font-medium uppercase tracking-wider">Production</div>
+                    <code className="block w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-2.5 text-purple-300 font-mono text-base tracking-wide select-all">
+                      wss://relay.gamestr.io
+                    </code>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="border-purple-500/40 text-purple-200 hover:bg-purple-500/20 hover:text-white shrink-0 mt-5"
+                    onClick={() => copyCode('wss://relay.gamestr.io', 'relay-url-prod')}
+                  >
+                    {copiedCode === 'relay-url-prod' ? (
+                      <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>
+                    ) : (
+                      'Copy'
+                    )}
+                  </Button>
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-purple-300/60 mb-1 font-medium uppercase tracking-wider">Test / Staging</div>
+                    <code className="block w-full bg-black/40 border border-purple-500/20 rounded-lg px-4 py-2.5 text-purple-300/70 font-mono text-base tracking-wide select-all">
+                      wss://test.gamestr.io
+                    </code>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10 hover:text-white shrink-0 mt-5"
+                    onClick={() => copyCode('wss://test.gamestr.io', 'relay-url-test')}
+                  >
+                    {copiedCode === 'relay-url-test' ? (
+                      <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>
+                    ) : (
+                      'Copy'
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
