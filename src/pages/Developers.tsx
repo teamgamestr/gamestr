@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Code2, Rocket, Shield, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight, Hash } from 'lucide-react';
+import { Code2, Rocket, Shield, Zap, CheckCircle2, ShieldCheck, User, Trophy, Clock, ChevronRight, Hash, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { validateScoreEvent } from '@/hooks/useScores';
@@ -94,7 +94,7 @@ export function Developers() {
 
 // Initialize Nostr connection
 const pool = new SimplePool();
-const relays = ['wss://relay.nostr.band', 'wss://relay.damus.io'];
+const relays = ['wss://relay.gamestr.io', 'wss://relay.damus.io'];
 
 // Your game's private key (keep this secret!)
 const gamePrivateKey = 'your-game-private-key-hex';
@@ -143,7 +143,7 @@ publishScore('player-pubkey-here', 15000, {
   import { SimplePool } from 'nostr-tools';
 
   const pool = new SimplePool();
-  const relays = ['wss://relay.nostr.band', 'wss://relay.damus.io'];
+  const relays = ['wss://relay.gamestr.io', 'wss://relay.damus.io'];
 
   async function publishPlayerScore(score, metadata = {}) {
     // Get the player's pubkey from their browser extension
@@ -190,7 +190,7 @@ private_key = PrivateKey.from_nsec("your-nsec-here")
 
 # Initialize relay manager
 relay_manager = RelayManager()
-relay_manager.add_relay("wss://relay.nostr.band")
+relay_manager.add_relay("wss://relay.gamestr.io")
 relay_manager.add_relay("wss://relay.damus.io")
 
 def publish_score(player_pubkey, score, **metadata):
@@ -301,6 +301,41 @@ publish_score(
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Gamestr Relay Callout */}
+        <div id="relay" className="relative overflow-hidden rounded-xl border-2 border-purple-500/40 bg-gradient-to-r from-purple-950/60 via-purple-900/40 to-purple-950/60 p-6 md:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.15),transparent_60%)]" />
+          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30">
+              <Radio className="h-7 w-7 text-purple-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap mb-1">
+                <h2 className="text-xl font-bold text-white">Official Gamestr Relay</h2>
+                <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">Recommended</Badge>
+              </div>
+              <p className="text-purple-200/80 text-sm mb-4">
+                Publish your scores to the dedicated Gamestr relay to ensure they appear on Gamestr leaderboards instantly. Use it alongside other public relays for maximum reach.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <code className="flex-1 block bg-black/40 border border-purple-500/30 rounded-lg px-4 py-2.5 text-purple-300 font-mono text-base tracking-wide select-all">
+                  wss://relay.gamestr.io
+                </code>
+                <Button
+                  variant="outline"
+                  className="border-purple-500/40 text-purple-200 hover:bg-purple-500/20 hover:text-white shrink-0"
+                  onClick={() => copyCode('wss://relay.gamestr.io', 'relay-url')}
+                >
+                  {copiedCode === 'relay-url' ? (
+                    <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>
+                  ) : (
+                    'Copy URL'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Signing Approaches */}
