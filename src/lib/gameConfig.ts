@@ -456,6 +456,40 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       },
     ],
   },
+
+  // noGames Miner
+  "nopubkey:nogames-miner-v1": {
+    name: "Miner",
+    description:
+      "The classic Gold Miner — your claw swings on a pendulum, you release it at the right moment, and it reels back loot from the cavern below. Swing the hook. Pull up gold. Dodge the stones.",
+    image:
+      "https://cdn.hzrd149.com/a4e13e0101d63ca405d6f38b5d69f30de5ddec58aeb803276f03730c25be5cce.svg",
+    genres: ["arcade", "casual", "puzzle"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqyx66twv4ez6a33wmgevg",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    trending: false,
+    newRelease: true,
+    playerSigned: true,
+  },
+
+  // noGames Snake
+  "nopubkey:nogames-snake-v1": {
+    name: "Snake",
+    description:
+      "The classic, reimagined. Slip through walls, grab the golden apple, don't bite yourself. Walls wrap, golden apples appear for bonus points, and the snake speeds up as you grow.",
+    image:
+      "https://cdn.hzrd149.com/e19b12222085fa5fdc359f6d74acdcf8bbbbb310a1673542727552beda098340.svg",
+    genres: ["arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqy8xmnpddjj6a33ae9uxl",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    trending: false,
+    newRelease: true,
+    playerSigned: true,
+  },
 };
 
 // Generate a hash from game configuration content
