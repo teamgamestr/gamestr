@@ -267,7 +267,7 @@ export function PlayerProfile() {
                         <img
                           src={metadata.image}
                           alt={metadata.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain p-1"
                         />
                       </div>
 
@@ -324,11 +324,11 @@ export function PlayerProfile() {
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="h-10 w-10 rounded overflow-hidden bg-background flex-shrink-0">
+                        <div className="h-10 w-10 rounded overflow-hidden bg-muted flex-shrink-0">
                           <img
                             src={metadata.image}
                             alt={metadata.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain p-0.5"
                           />
                         </div>
                         <div className="min-w-0 flex-1">
