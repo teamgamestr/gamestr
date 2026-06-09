@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import { MessageCircle, Heart, Trophy, ArrowLeft, Gamepad2, SmilePlus } from 'lucide-react';
+import { MessageCircle, Heart, Gamepad2, SmilePlus } from 'lucide-react';
 import { NKinds, type NostrEvent } from '@nostrify/nostrify';
 
 import { useLatestScores, type ParsedScore } from '@/hooks/useScores';
@@ -23,6 +23,7 @@ import { FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolve
 import { genUserName } from '@/lib/genUserName';
 
 const LATEST_SCORES_PAGE_LIMIT = 500;
+const SCORES_PER_PAGE = 25;
 const SCORE_REACTION_EMOJIS = ['❤️', '🔥', '🎉', '💪', '👑', '⚡', '💩', '🎮'];
 const COUNT_QUERY_CHUNK_SIZE = 25;
 
@@ -30,6 +31,7 @@ export function LatestScores() {
   const { config } = useGameConfig();
   const { data: scores, isLoading } = useLatestScores({ limit: LATEST_SCORES_PAGE_LIMIT });
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const gameFilters = useMemo(() => {
     const games = new Map<string, { name: string; count: number }>();
@@ -52,37 +54,37 @@ export function LatestScores() {
     if (!selectedGame) return scores ?? [];
     return (scores ?? []).filter(score => score.gameIdentifier === selectedGame);
   }, [scores, selectedGame]);
-  const { data: commentCounts } = useScoreCommentCounts(filteredScores);
-  const { data: reactionCounts } = useScoreReactionCounts(filteredScores);
+  const totalPages = Math.max(1, Math.ceil(filteredScores.length / SCORES_PER_PAGE));
+  const paginatedScores = useMemo(() => {
+    const start = (page - 1) * SCORES_PER_PAGE;
+    return filteredScores.slice(start, start + SCORES_PER_PAGE);
+  }, [filteredScores, page]);
+  const { data: commentCounts } = useScoreCommentCounts(paginatedScores);
+  const { data: reactionCounts } = useScoreReactionCounts(paginatedScores);
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedGame]);
+
+  useEffect(() => {
+    setPage(current => Math.min(current, totalPages));
+  }, [totalPages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-3">
-            <Button variant="ghost" size="sm" asChild className="w-fit gap-2 pl-0">
-              <Link to="/">
-                <ArrowLeft className="h-4 w-4" />
-                Back home
-              </Link>
-            </Button>
             <div>
-              <Badge variant="outline" className="mb-3 gap-1 border-primary/30 bg-primary/10 text-primary">
-                <Trophy className="h-3 w-3" />
-                Live scoreboard
-              </Badge>
               <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Latest Scores</h1>
               <p className="mt-2 max-w-2xl text-muted-foreground">
                 Every recent run ordered newest first, with quick Nostr reactions and comments.
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className="w-fit">
-            {filteredScores.length.toLocaleString()} {filteredScores.length === 1 ? 'score' : 'scores'}
-          </Badge>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={selectedGame === null ? 'default' : 'outline'}
             size="sm"
@@ -123,7 +125,7 @@ export function LatestScores() {
           </div>
         ) : filteredScores.length > 0 ? (
           <div className="space-y-3">
-            {filteredScores.map(score => (
+            {paginatedScores.map(score => (
               <LatestScoreRow
                 key={score.event.id}
                 score={score}
@@ -132,6 +134,7 @@ export function LatestScores() {
                 reactionCount={reactionCounts?.get(score.event.id) ?? 0}
               />
             ))}
+            <ScoresPagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         ) : (
           <Card className="border-dashed">
@@ -140,6 +143,42 @@ export function LatestScores() {
             </CardContent>
           </Card>
         )}
+      </div>
+    </div>
+  );
+}
+
+interface ScoresPaginationProps {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+function ScoresPagination({ page, totalPages, onPageChange }: ScoresPaginationProps) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row">
+      <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+        >
+          Previous
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

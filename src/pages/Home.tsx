@@ -14,7 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { Search, Gamepad2, Flame, Sparkles, Star, Activity, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
@@ -352,8 +352,10 @@ function LatestScoresSection({ scores, gameConfig, hasMoreScores, isLoading, onL
   };
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_30%)]" />
+    <section className="relative overflow-visible rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_30%)]" />
+      </div>
       <div className="relative space-y-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -373,7 +375,7 @@ function LatestScoresSection({ scores, gameConfig, hasMoreScores, isLoading, onL
         </div>
 
         {isLoading || scores.length > 0 ? (
-          <div className="relative">
+          <div className="relative py-2">
             <Button
               type="button"
               variant="secondary"
@@ -387,7 +389,7 @@ function LatestScoresSection({ scores, gameConfig, hasMoreScores, isLoading, onL
             </Button>
             <div
               ref={scrollRef}
-              className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="-my-4 flex gap-3 overflow-x-auto py-4 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {isLoading
                 ? Array.from({ length: 5 }).map((_, index) => (
@@ -452,9 +454,8 @@ function LatestScoreCard({ score, gameConfig }: LatestScoreCardProps) {
               <AvatarImage src={metadata?.picture} alt={playerName} />
               <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <Badge variant="outline" className="gap-1 text-xs">
-              <Trophy className="h-3 w-3" />
-              Score
+            <Badge variant="secondary" className="max-w-36 rounded-full px-3 py-1 text-xs font-semibold">
+              <span className="truncate">{gameMetadata.name}</span>
             </Badge>
           </div>
           <CardTitle className="line-clamp-1 text-base">{playerName}</CardTitle>
@@ -462,7 +463,6 @@ function LatestScoreCard({ score, gameConfig }: LatestScoreCardProps) {
         <CardContent className="space-y-3">
           <div>
             <p className="text-3xl font-black tracking-tight text-primary">{formatScoreValue(score.score, scorePrefs)}</p>
-            <p className="line-clamp-1 text-sm font-medium text-muted-foreground">{gameMetadata.name}</p>
           </div>
           <p className="text-xs text-muted-foreground">
             {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
