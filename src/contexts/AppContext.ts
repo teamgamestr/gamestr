@@ -5,6 +5,12 @@ export type Theme = "dark" | "light" | "system";
 export interface AppConfig {
   /** Current theme */
   theme: Theme;
+  /** Default relay URL */
+  relayUrl: string;
+  /** Number of recent scores to show on the homepage */
+  latestScoresCount: number;
+  /** Extra recent scores to prefetch before the user asks for more */
+  latestScoresBufferCount: number;
 }
 
 export interface AppContextType {

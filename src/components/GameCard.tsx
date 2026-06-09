@@ -14,7 +14,6 @@ interface GameCardProps {
 }
 
 export function GameCard({
-  pubkey,
   gameIdentifier,
   metadata,
   scoreCount,

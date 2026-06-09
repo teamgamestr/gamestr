@@ -34,6 +34,9 @@ const queryClient = new QueryClient({
 
 const defaultConfig: AppConfig = {
   theme: "dark",
+  relayUrl: "wss://relay.gamestr.io",
+  latestScoresCount: 10,
+  latestScoresBufferCount: 10,
 };
 
 const relays = [

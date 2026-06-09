@@ -13,9 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ExternalLink, Calendar, MessageSquare } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow } from 'date-fns';
-import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
 import NotFound from './NotFound';
+
+type NProfilePointer = { pubkey: string };
+type NEventPointer = { id: string };
+type NAddrPointer = { kind: number; pubkey: string; identifier: string };
 
 function AddressableEventView({ kind, pubkey, identifier }: { kind: number; pubkey: string; identifier: string }) {
   const { nostr } = useNostr();
@@ -467,21 +470,22 @@ export function NIP19Page() {
       return <ProfileView pubkey={data as string} />;
 
     case 'nprofile':
-      return <ProfileView pubkey={(data as any).pubkey} />;
+      return <ProfileView pubkey={(data as NProfilePointer).pubkey} />;
 
     case 'note':
       return <EventView eventId={data as string} />;
 
     case 'nevent':
-      return <EventView eventId={(data as any).id} />;
+      return <EventView eventId={(data as NEventPointer).id} />;
 
-    case 'naddr':
-      const addrData = data as any;
+    case 'naddr': {
+      const addrData = data as NAddrPointer;
       return <AddressableEventView 
         kind={addrData.kind} 
         pubkey={addrData.pubkey} 
         identifier={addrData.identifier} 
       />;
+    }
 
     default:
       return <NotFound />;

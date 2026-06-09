@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 
 import { Home } from "./pages/Home";
 import { GameDetail } from "./pages/GameDetail";
+import { LatestScores } from "./pages/LatestScores";
 import { ScoreDetail } from "./pages/ScoreDetail";
 import { PlayerProfile } from "./pages/PlayerProfile";
 import { Developers } from "./pages/Developers";
@@ -38,6 +39,7 @@ export function AppRouter() {
           <Route path="/game/:pubkey/:gameIdentifier" element={<LegacyGameRedirect />} />
           <Route path="/score/:eventId" element={<ScoreDetail />} />
           <Route path="/score/:pubkey/:gameIdentifier/:eventId" element={<ScoreDetail />} />
+          <Route path="/scores" element={<LatestScores />} />
           <Route path="/:gameIdentifier/score/:eventId" element={<ScoreDetail />} />
           <Route path="/player/:pubkey" element={<PlayerProfile />} />
           <Route path="/developers" element={<Developers />} />

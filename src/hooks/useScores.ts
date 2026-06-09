@@ -251,6 +251,46 @@ export function useScores(options: UseScoresOptions = {}) {
 }
 
 /**
+ * Get the newest valid score events across configured score kinds.
+ */
+export function useLatestScores(options: { limit?: number } = {}) {
+  const { nostr } = useNostr();
+  const { limit = 5 } = options;
+
+  return useQuery({
+    queryKey: ['latest-scores', limit],
+    queryFn: async (c) => {
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
+      const queryLimit = Math.max(limit * 6, 30);
+
+      const filters: NostrFilter[] = [
+        { kinds: [30762], limit: queryLimit },
+      ];
+
+      const kind5555Tags = Object.keys(KIND_5555_GAMES);
+      if (kind5555Tags.length > 0) {
+        filters.push({
+          kinds: [5555],
+          '#t': kind5555Tags,
+          limit: queryLimit,
+        });
+      }
+
+      const events = await nostr.query(filters, { signal });
+      const excludedSet = new Set(EXCLUDED_GAMES);
+
+      return events
+        .map(validateScoreEvent)
+        .filter((score): score is ParsedScore => score !== null)
+        .filter(score => score.state !== 'invalidated')
+        .filter(score => !excludedSet.has(score.gameIdentifier))
+        .sort((a, b) => b.event.created_at - a.event.created_at)
+        .slice(0, limit);
+    },
+  });
+}
+
+/**
  * Get leaderboard for a specific game
  */
 export function useLeaderboard(

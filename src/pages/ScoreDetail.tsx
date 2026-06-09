@@ -6,9 +6,8 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { validateScoreEvent } from '@/hooks/useScores';
 import { resolveGameByIdentifier, formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -19,7 +18,6 @@ import { useWallet } from '@/hooks/useWallet';
 import {
   Trophy,
   Clock,
-  Zap,
   Calendar,
   Gamepad2,
   ShieldCheck,
@@ -29,7 +27,6 @@ import {
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
-import type { NostrEvent } from '@nostrify/nostrify';
 import type { Event } from 'nostr-tools';
 
 export function ScoreDetail() {

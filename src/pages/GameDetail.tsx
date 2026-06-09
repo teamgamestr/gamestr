@@ -39,7 +39,7 @@ export function GameDetail() {
   const { sendMessage } = useDMContext();
   const { toast } = useToast();
 
-  const { getGame, config } = useGameConfig();
+  const { config } = useGameConfig();
   const resolved = gameIdentifier ? resolveGameByIdentifier(gameIdentifier, config) : null;
   const isUnknownGame = !resolved;
   const pubkey = resolved?.pubkey;
@@ -91,7 +91,7 @@ export function GameDetail() {
   const developerNpubMetadata = developerNpubAuthor.data?.metadata;
   
   // Use resolved name from Nostr if available, fallback to config value
-  const developerDisplayName = developerMetadata?.name 
+  const _developerDisplayName = developerMetadata?.name 
     || developerNpubMetadata?.name 
     || metadata?.developer 
     || (isNoPubkey ? undefined : genUserName(pubkey || ''));

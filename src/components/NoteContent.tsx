@@ -12,6 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 
+type NProfilePointer = { pubkey: string };
+type NEventPointer = { id: string };
+type NAddrPointer = { identifier?: string };
+
 interface NoteContentProps {
   event: NostrEvent;
   className?: string;
@@ -96,7 +100,7 @@ export function NoteContent({
               <NostrMention key={`mention-${keyCounter++}`} pubkey={pubkey} />
             );
           } else if (decoded.type === 'nprofile') {
-            const pubkey = (decoded.data as any).pubkey;
+            const pubkey = (decoded.data as NProfilePointer).pubkey;
             parts.push(
               <NostrMention key={`mention-${keyCounter++}`} pubkey={pubkey} />
             );
@@ -106,12 +110,12 @@ export function NoteContent({
               <EmbeddedNote key={`note-${keyCounter++}`} eventId={eventId} />
             );
           } else if (decoded.type === 'nevent') {
-            const eventId = (decoded.data as any).id;
+            const eventId = (decoded.data as NEventPointer).id;
             parts.push(
               <EmbeddedNote key={`nevent-${keyCounter++}`} eventId={eventId} />
             );
           } else if (decoded.type === 'naddr') {
-            const addrData = decoded.data as any;
+            const addrData = decoded.data as NAddrPointer;
             const identifier = addrData.identifier || 'unknown';
             parts.push(
               <Link 
