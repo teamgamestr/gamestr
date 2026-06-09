@@ -14,7 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Clock, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
@@ -364,10 +364,6 @@ function LatestScoresSection({ scores, gameConfig, hasMoreScores, isLoading, onL
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Latest Scores</h2>
             <p className="text-sm text-muted-foreground">Fresh runs arriving from Nostr leaderboards.</p>
           </div>
-          <Badge variant="secondary" className="w-fit gap-1">
-            <Clock className="h-3 w-3" />
-            Newest first
-          </Badge>
           <Button variant="outline" size="sm" asChild className="w-fit gap-2 rounded-full bg-background/70">
             <Link to="/scores">
               View all
