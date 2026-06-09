@@ -17,7 +17,6 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
 import {
-  ArrowLeft,
   Trophy,
   Clock,
   Zap,
@@ -25,6 +24,8 @@ import {
   Gamepad2,
   ShieldCheck,
   Info,
+  ExternalLink,
+  ListOrdered,
 } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -121,14 +122,6 @@ export function ScoreDetail() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
-        {/* Back Button */}
-        <Button variant="ghost" asChild>
-          <Link to={gameMetadata ? `/${scoreData.gameIdentifier}` : '/'}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {gameMetadata ? `Back to ${gameMetadata.name}` : 'Back to Home'}
-          </Link>
-        </Button>
-
         {/* Score Card */}
         <Card className="overflow-hidden">
           {/* Hero Section with Game Background */}
@@ -227,6 +220,26 @@ export function ScoreDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Score Page Actions - bottom of profile section */}
+            {gameMetadata && (
+              <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t">
+                <Button asChild variant="outline">
+                  <Link to={`/${scoreData.gameIdentifier}`}>
+                    <ListOrdered className="mr-2 h-4 w-4" />
+                    See more {gameMetadata.name} scores
+                  </Link>
+                </Button>
+                {gameMetadata.url && (
+                  <Button asChild>
+                    <a href={gameMetadata.url} target="_blank" rel="noopener noreferrer">
+                      Play {gameMetadata.name}
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+              </div>
+            )}
           </CardHeader>
 
           <CardContent />
