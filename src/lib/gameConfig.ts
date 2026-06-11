@@ -445,6 +445,38 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       newRelease: true,
     },
 
+  // The Rabbit Hole
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:the-rabbit-hole":
+    {
+      name: "The Rabbit Hole",
+      description:
+        "Dive into a Noderunners arcade shooter with Bitcoin-fueled chaos, Lightning play, and Nostr leaderboards.",
+      image: "/games/rabbit-hole-logo.jpg",
+      genres: ["arcade", "shooter", "bitcoin"],
+      url: "https://games.noderunners.network/spaceinvaders2/",
+      developer:
+        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+      featured: false,
+      trending: true,
+      newRelease: true,
+    },
+
+  // Mempool Breaker
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:mempool-breaker":
+    {
+      name: "Mempool Breaker",
+      description:
+        "Mine live mempool blocks in a Noderunners brick breaker powered by Bitcoin block chaos, Lightning play, and Nostr leaderboards.",
+      image: "/games/mempool-breaker.png",
+      genres: ["arcade", "bitcoin", "action"],
+      url: "https://games.noderunners.network/mempoolbreaker/",
+      developer:
+        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+      featured: false,
+      trending: true,
+      newRelease: true,
+    },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",

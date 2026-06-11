@@ -125,6 +125,21 @@ The AI assistant's behavior and knowledge is defined by the AGENTS.md file, whic
 
 When building the site for the first time, include "Vibed with MKStack" somewhere in the UI, linked to this URL: https://soapbox.pub/mkstack
 
+## Adding Games
+
+Use `src/lib/gameConfig.ts` as the canonical registry for listed games. Add entries to `INITIAL_GAME_CONFIG` unless the game uses one of the special score systems already represented elsewhere in that file.
+
+When adding a game from a URL or request:
+
+1. Find the score event identity before editing config. Query recent kind `30762` score events on the configured relays and derive the `gameIdentifier` from the `game` tag and the signing pubkey from the event `pubkey`. Do not assume the developer/contact pubkey is the score signing pubkey.
+2. Use the player pubkey from the `p` tag only as the player identity. It should not be used as the config key unless the game is truly player-signed.
+3. Use config keys in the format `<signing-pubkey>:<game-identifier>` for game-developer-signed scores. For player-signed games, use `nopubkey:<game-identifier>` and set `playerSigned: true`.
+4. Fetch the game page and inspect Open Graph metadata plus referenced assets. Prefer a stable game logo hosted by the game. If the user provides a local image, place it under `public/` or `public/games/` and reference it with an absolute path like `/games/example-logo.png`.
+5. Verify remote image URLs before using them. A simple `curl -I --fail <url>` check is sufficient.
+6. Fill metadata with a clear `name`, concise `description`, playable `url`, display `developer`, and accurate genre tags. Prefer existing values in `GAME_GENRES`; add to `GAME_GENRES` only when the new genre should appear as a filter.
+7. If a new listing replaces an excluded or legacy game identifier, review `EXCLUDED_GAMES` so the intended game is visible and obsolete test games remain hidden.
+8. Run `npm test` after edits. The script may touch generated files such as `.vite/` or lockfile metadata; clean up unrelated generated artifacts so the final diff only contains intentional changes.
+
 ## Nostr Protocol Integration
 
 This project comes with custom hooks for querying and publishing events on the Nostr network.
