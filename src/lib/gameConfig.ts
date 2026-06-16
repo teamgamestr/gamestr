@@ -77,8 +77,7 @@ export interface GameMetadata {
   url?: string;
   developer?: string;
   featured?: boolean;
-  trending?: boolean;
-  newRelease?: boolean;
+  addedAt?: string;
   playerSigned?: boolean;
   leaderboards?: LeaderboardConfig[];
   leaderboardSplit?: LeaderboardSplitConfig;
@@ -232,8 +231,6 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       url: "https://word5.otherstuff.ai",
       developer: "otherstuff.ai",
       featured: false,
-      trending: false,
-      newRelease: true,
     },
   },
   unicornvssnakes: {
@@ -248,8 +245,6 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       developer:
         "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc",
       featured: false,
-      trending: false,
-      newRelease: true,
     },
   },
 };
@@ -282,8 +277,6 @@ export const FALLBACK_GAME_METADATA: GameMetadata = {
   image: "/gamestr-logo.svg",
   genres: ["uncategorized"],
   featured: false,
-  trending: false,
-  newRelease: false,
 };
 
 // Initial game configuration (can be extended by users/admins)
@@ -301,8 +294,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer:
       "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
     featured: true,
-    trending: false,
-    newRelease: false,
+    addedAt: "2026-01-01",
   },
 
   //Sats-Man
@@ -314,9 +306,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     url: "https://sats-man.com",
     developer:
       "npub1jwh6vzw5tzpwh6g79m72grzae5hsv99f3x9v3l35uux477m6lk9slqhpvc",
-    featured: false,
-    trending: false,
-    newRelease: true,
+    featured: true,
+    addedAt: "2026-06-10",
   },
 
   //Space Zappers
@@ -330,12 +321,11 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://www.spacezappers.com/",
       developer:
         "npub1sfpeyr9k5jms37q4900mw9q4vze4xwhdxd4avdxjml8rqgjkre8s4lcq9l",
-      featured: true,
-      trending: false,
-      newRelease: false,
-    },
+    featured: false,
+    addedAt: "2026-01-01",
+  },
 
-  //Nostrich Run
+//Nostrich Run
   "277813f913fae89093c5cb443c671c0612144c636a43f08abcde2ef2f43d4978:nostrich-run":
     {
       name: "Nostrich Run",
@@ -345,8 +335,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://nostrichrun.whitepaperinteractive.com",
       developer: "Whitepaper Interactive",
       featured: false,
-      trending: false,
-      newRelease: false,
+      addedAt: "2026-01-01",
     },
 
   //Sat Snake
@@ -358,8 +347,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     url: "https://satsnake.whitepaperinteractive.com/",
     developer: "Whitepaper Interactive",
     featured: false,
-    trending: false,
-    newRelease: false,
+    addedAt: "2026-01-01",
   },
 
   // BTC Proof of Play
@@ -374,9 +362,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://btcproofofplay.itch.io/btcproofofplay",
       developer:
         "npub17qk62dxqfg2wchg3hmrxkj29g03ld25rnf0hazn4v367vcq6ux9qw485cc",
-      featured: true,
-      trending: false,
-      newRelease: true,
+      featured: false,
+      addedAt: "2026-06-10",
     },
 
   // Pallasite
@@ -391,8 +378,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       developer:
         "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
       featured: true,
-      trending: true,
-      newRelease: true,
+      addedAt: "2026-06-10",
     },
 
   // BTC Rally
@@ -406,9 +392,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     url: "https://mandelduckstudio.itch.io/btcrally",
     developer:
       "npub1yreyumw0xrc2mz324ul44c8pr2ellmg7t904h0e62kx5h53z6nnqm6q23f",
-    featured: true,
-    trending: false,
-    newRelease: true,
+    featured: false,
+    addedAt: "2026-06-10",
     leaderboardSplit: {
       splitTag: "level",
       scoreTag: "score",
@@ -440,9 +425,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://forgesworn.dev/forge-realms/",
       developer:
         "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
-      featured: true,
-      trending: false,
-      newRelease: true,
+      featured: false,
+      addedAt: "2026-06-10",
     },
 
   // The Rabbit Hole
@@ -457,8 +441,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       developer:
         "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
       featured: false,
-      trending: true,
-      newRelease: true,
+      addedAt: "2026-06-10",
     },
 
   // Mempool Breaker
@@ -472,9 +455,8 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://games.noderunners.network/mempoolbreaker/",
       developer:
         "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
-      featured: false,
-      trending: true,
-      newRelease: true,
+      featured: true,
+      addedAt: "2026-06-10",
     },
 
   // Player-signed games (kind 30762, no developer pubkey)
@@ -487,9 +469,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     url: "https://wordswithzaps.top",
     developer:
       "npub1aeh2zw4elewy5682lxc6xnlqzjnxksq303gwu2npfaxd49vmde6qcq4nwx",
-    featured: true,
-    trending: true,
-    newRelease: true,
+    featured: false,
     playerSigned: true,
     leaderboards: [
       { label: "Score", scoreTag: "score", direction: "desc" },
@@ -515,8 +495,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
-    trending: false,
-    newRelease: true,
     playerSigned: true,
   },
 
@@ -532,8 +510,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
-    trending: false,
-    newRelease: true,
+    addedAt: "2026-06-10",
     playerSigned: true,
   },
 
@@ -549,8 +526,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
-    trending: false,
-    newRelease: true,
+    addedAt: "2026-06-10",
     playerSigned: true,
   },
 
@@ -566,8 +542,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
-    trending: false,
-    newRelease: true,
+    addedAt: "2026-06-10",
     playerSigned: true,
   },
 };
@@ -766,6 +741,18 @@ export function filterGamesByGenre(
 }
 
 /**
+ * Check if a game is a "new release" based on its addedAt date.
+ * Returns true if the game was added within the last 14 days.
+ */
+export function isNewGame(metadata: GameMetadata): boolean {
+  if (!metadata.addedAt) return false;
+  const added = new Date(metadata.addedAt).getTime();
+  const now = Date.now();
+  const twoWeeks = 14 * 24 * 60 * 60 * 1000;
+  return (now - added) <= twoWeeks;
+}
+
+/**
  * Get featured games
  */
 export function getFeaturedGames(customConfig?: GameConfigMap) {
@@ -773,15 +760,22 @@ export function getFeaturedGames(customConfig?: GameConfigMap) {
 }
 
 /**
- * Get trending games
+ * Filter games by a set of trending identifiers
  */
-export function getTrendingGames(customConfig?: GameConfigMap) {
-  return getAllGames(customConfig).filter((game) => game.metadata.trending);
+export function getTrendingGames(
+  trendingIdentifiers: Set<string>,
+  customConfig?: GameConfigMap,
+) {
+  return getAllGames(customConfig).filter((game) =>
+    trendingIdentifiers.has(game.gameIdentifier),
+  );
 }
 
 /**
- * Get new release games
+ * Get new release games (computed from addedAt, within last 14 days)
  */
 export function getNewReleaseGames(customConfig?: GameConfigMap) {
-  return getAllGames(customConfig).filter((game) => game.metadata.newRelease);
+  return getAllGames(customConfig).filter((game) =>
+    isNewGame(game.metadata),
+  );
 }

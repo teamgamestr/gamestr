@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Flame, Sparkles, Trophy } from 'lucide-react';
 import type { GameMetadata } from '@/lib/gameConfig';
+import { isNewGame } from '@/lib/gameConfig';
 
 interface GameCardProps {
   pubkey: string;
@@ -10,6 +11,7 @@ interface GameCardProps {
   metadata: GameMetadata;
   scoreCount?: number;
   topScore?: number;
+  trending?: boolean;
   className?: string;
 }
 
@@ -18,13 +20,14 @@ export function GameCard({
   metadata,
   scoreCount,
   topScore,
+  trending,
   className = '',
 }: GameCardProps) {
   const gameUrl = `/${gameIdentifier}`;
 
   return (
     <Link to={gameUrl}>
-      <Card className={`group overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer ${className}`}>
+      <Card className={`group h-full flex flex-col overflow-hidden transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer ${className}`}>
         {/* Game Image */}
         <div className="relative aspect-square overflow-hidden bg-muted/60 ring-1 ring-inset ring-white/5">
           <img
@@ -36,13 +39,13 @@ export function GameCard({
           
           {/* Overlay badges */}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            {metadata.trending && (
+            {trending && (
               <Badge variant="destructive" className="gap-1 shadow-lg">
                 <Flame className="h-3 w-3" />
                 Trending
               </Badge>
             )}
-            {metadata.newRelease && (
+            {isNewGame(metadata) && (
               <Badge variant="secondary" className="gap-1 shadow-lg">
                 <Sparkles className="h-3 w-3" />
                 New
@@ -58,7 +61,7 @@ export function GameCard({
         </div>
 
         {/* Game Info */}
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex-1">
           <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">
             {metadata.name}
           </h3>
@@ -84,20 +87,18 @@ export function GameCard({
         </CardContent>
 
         {/* Stats Footer */}
-        {(scoreCount !== undefined || topScore !== undefined) && (
-          <CardFooter className="pt-3 border-t">
-            <div className="flex justify-between w-full text-sm text-muted-foreground">
-              {scoreCount !== undefined && (
-                <span>{scoreCount.toLocaleString()} scores</span>
-              )}
-              {topScore !== undefined && (
-                <span className="font-semibold">
-                  Top: {topScore.toLocaleString()}
-                </span>
-              )}
-            </div>
-          </CardFooter>
-        )}
+        <CardFooter className="pt-3 border-t mt-auto">
+          <div className="flex justify-between w-full text-sm text-muted-foreground">
+            {scoreCount !== undefined && (
+              <span>{scoreCount.toLocaleString()} scores</span>
+            )}
+            {topScore !== undefined && (
+              <span className="font-semibold ml-auto">
+                Top: {topScore.toLocaleString()}
+              </span>
+            )}
+          </div>
+        </CardFooter>
       </Card>
     </Link>
   );

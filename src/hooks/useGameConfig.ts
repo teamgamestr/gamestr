@@ -10,8 +10,7 @@ import {
   getAllGames,
   filterGamesByGenre,
   getFeaturedGames,
-  getTrendingGames,
-  getNewReleaseGames,
+  isNewGame,
 } from '@/lib/gameConfig';
 
 const GAME_CONFIG_STORAGE_KEY = 'gamestr-game-config';
@@ -87,8 +86,6 @@ export function useGameConfig() {
   const getAllGamesMemo = useCallback(() => getAllGames(customConfig), [customConfig]);
   const filterByGenreMemo = useCallback((genre: string) => filterGamesByGenre(genre, customConfig), [customConfig]);
   const getFeaturedMemo = useCallback(() => getFeaturedGames(customConfig), [customConfig]);
-  const getTrendingMemo = useCallback(() => getTrendingGames(customConfig), [customConfig]);
-  const getNewReleasesMemo = useCallback(() => getNewReleaseGames(customConfig), [customConfig]);
 
   return {
     config: customConfig,
@@ -100,8 +97,7 @@ export function useGameConfig() {
     getAllGames: getAllGamesMemo,
     filterByGenre: filterByGenreMemo,
     getFeatured: getFeaturedMemo,
-    getTrending: getTrendingMemo,
-    getNewReleases: getNewReleasesMemo,
+    isNewGame,
     resetToDefaults,
   };
 }

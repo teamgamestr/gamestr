@@ -9,6 +9,7 @@ interface Game {
   metadata: GameMetadata;
   scoreCount?: number;
   topScore?: number;
+  trending?: boolean;
 }
 
 interface GamesGridProps {
@@ -66,6 +67,7 @@ export function GamesGrid({ games, isLoading, emptyMessage = 'No games found' }:
           metadata={game.metadata}
           scoreCount={game.scoreCount}
           topScore={game.topScore}
+          trending={game.trending}
         />
       ))}
     </div>

@@ -422,12 +422,12 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
 /**
  * Get trending games based on recent score activity
  */
-export function useTrendingGames(options: { limit?: number; days?: number } = {}) {
+export function useTrendingGames(options: { days?: number } = {}) {
   const { nostr } = useNostr();
-  const { limit = 100, days = 7 } = options;
+  const { days = 7 } = options;
 
   return useQuery({
-    queryKey: ['trending-games', limit, days],
+    queryKey: ['trending-games', days],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const since = Math.floor(Date.now() / 1000) - (days * 86400);
@@ -486,8 +486,7 @@ export function useTrendingGames(options: { limit?: number; days?: number } = {}
           playerCount: game.uniquePlayers.size,
           trendingScore: game.scoreCount * game.uniquePlayers.size,
         }))
-        .sort((a, b) => b.trendingScore - a.trendingScore)
-        .slice(0, limit);
+        .sort((a, b) => b.trendingScore - a.trendingScore);
     },
   });
 }

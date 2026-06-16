@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { GamesGrid } from '@/components/GamesGrid';
-import { useGamesWithScores, useLatestScores, type ParsedScore } from '@/hooks/useScores';
+import { GameCard } from '@/components/GameCard';
+import { useGamesWithScores, useLatestScores, useTrendingGames, type ParsedScore } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useTheme } from '@/hooks/useTheme';
@@ -14,8 +15,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Gamepad2, Flame, Sparkles, Star, Activity, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
+import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
@@ -25,11 +26,17 @@ export function Home() {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000 });
-  const { config, getGame, getFeatured, getTrending, getNewReleases } = useGameConfig();
+  const { config, getGame, getFeatured } = useGameConfig();
   const { config: appConfig } = useAppContext();
   const [visibleLatestScoresCount, setVisibleLatestScoresCount] = useState(appConfig.latestScoresCount);
   const latestScoresQueryLimit = visibleLatestScoresCount + appConfig.latestScoresBufferCount;
   const { data: latestScores, isLoading: isLatestScoresLoading } = useLatestScores({ limit: latestScoresQueryLimit });
+  const { data: trendingGames } = useTrendingGames({ days: 7 });
+  const trendingIdentifiers = useMemo(() => {
+    const full = trendingGames || [];
+    const cutoff = Math.max(1, Math.ceil(full.length * 0.2));
+    return new Set(full.slice(0, cutoff).map(g => g.gameIdentifier));
+  }, [trendingGames]);
   const { theme } = useTheme();
   const logoSrc = theme === 'light' ? '/gamestr-logo-light.svg' : '/gamestr-logo-dark.svg';
 
@@ -48,6 +55,8 @@ export function Home() {
       metadata: getGame(game.developerPubkey, game.gameIdentifier),
       scoreCount: game.scoreCount,
       topScore: game.topScore,
+      latestTimestamp: game.latestTimestamp,
+      trending: trendingIdentifiers.has(game.gameIdentifier),
     }));
 
     const nostrGameIdentifiers = new Set(nostrGames.map(g => g.gameIdentifier));
@@ -60,6 +69,8 @@ export function Home() {
         metadata: g.metadata,
         scoreCount: undefined as number | undefined,
         topScore: undefined as number | undefined,
+        latestTimestamp: undefined as number | undefined,
+        trending: trendingIdentifiers.has(g.gameIdentifier),
       }));
 
     const kind5555Fallbacks = kind5555ConfigGames
@@ -70,6 +81,8 @@ export function Home() {
         metadata: g.config.metadata,
         scoreCount: undefined as number | undefined,
         topScore: undefined as number | undefined,
+        latestTimestamp: undefined as number | undefined,
+        trending: trendingIdentifiers.has(g.gameTag),
       }));
 
     const nostrGameKeys = new Set(nostrGames.map(g => `${g.pubkey}:${g.gameIdentifier}`));
@@ -81,10 +94,21 @@ export function Home() {
         metadata: g.metadata,
         scoreCount: undefined as number | undefined,
         topScore: undefined as number | undefined,
+        latestTimestamp: undefined as number | undefined,
+        trending: trendingIdentifiers.has(g.gameIdentifier),
       }));
 
-    return [...nostrGames, ...noPubkeyGames, ...kind5555Fallbacks, ...configOnlyGames];
-  }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames, allConfigGames]);
+    return [...nostrGames, ...noPubkeyGames, ...kind5555Fallbacks, ...configOnlyGames].sort((a, b) => {
+      const aTime = a.latestTimestamp ?? 0;
+      const bTime = b.latestTimestamp ?? 0;
+      return bTime - aTime;
+    });
+  }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames, allConfigGames, trendingIdentifiers]);
+
+  const featuredGames = useMemo(
+    () => games.filter(g => g.metadata.featured).slice(0, 8),
+    [games],
+  );
 
   // Apply filters
   const filteredGames = useMemo(() => {
@@ -99,18 +123,12 @@ export function Home() {
         featuredKeys.has(`${game.pubkey}:${game.gameIdentifier}`)
       );
     } else if (filterMode === 'trending') {
-      const trendingKeys = new Set(
-        getTrending().map(g => `${g.pubkey}:${g.gameIdentifier}`)
-      );
       filtered = filtered.filter(game =>
-        trendingKeys.has(`${game.pubkey}:${game.gameIdentifier}`)
+        trendingIdentifiers.has(game.gameIdentifier)
       );
     } else if (filterMode === 'new') {
-      const newKeys = new Set(
-        getNewReleases().map(g => `${g.pubkey}:${g.gameIdentifier}`)
-      );
       filtered = filtered.filter(game =>
-        newKeys.has(`${game.pubkey}:${game.gameIdentifier}`)
+        isNewGame(game.metadata)
       );
     }
 
@@ -132,7 +150,7 @@ export function Home() {
     }
 
     return filtered;
-  }, [games, filterMode, selectedGenre, searchQuery, getFeatured, getTrending, getNewReleases]);
+  }, [games, filterMode, selectedGenre, searchQuery, getFeatured, trendingIdentifiers]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -268,6 +286,10 @@ export function Home() {
           isLoading={isLatestScoresLoading}
           onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
         />
+
+        {featuredGames.length > 0 && (
+          <FeaturedGamesSection games={featuredGames} />
+        )}
 
         {/* Results Count */}
         {!isLoading && (
@@ -470,5 +492,106 @@ function LatestScoreCard({ score, gameConfig }: LatestScoreCardProps) {
         </CardContent>
       </Card>
     </Link>
+  );
+}
+
+interface FeaturedGamesSectionProps {
+  games: Array<{
+    pubkey: string;
+    gameIdentifier: string;
+    metadata: GameMetadata;
+    scoreCount?: number;
+    topScore?: number;
+    trending?: boolean;
+  }>;
+}
+
+function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  useEffect(() => {
+    const row = scrollRef.current;
+    if (!row) return;
+
+    const updateScrollState = () => {
+      setCanScrollLeft(row.scrollLeft > 0);
+      setCanScrollRight(row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
+    };
+
+    updateScrollState();
+    row.addEventListener('scroll', updateScrollState, { passive: true });
+    window.addEventListener('resize', updateScrollState);
+
+    return () => {
+      row.removeEventListener('scroll', updateScrollState);
+      window.removeEventListener('resize', updateScrollState);
+    };
+  }, [games.length]);
+
+  const scrollGames = (direction: 'left' | 'right') => {
+    const row = scrollRef.current;
+    if (!row) return;
+    row.scrollBy({
+      left: direction === 'left' ? -row.clientWidth * 0.85 : row.clientWidth * 0.85,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <section className="relative overflow-visible rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.1),transparent_30%)]" />
+      </div>
+      <div className="relative space-y-5">
+        <div className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-yellow-500" />
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Featured Games</h2>
+        </div>
+
+        <div className="relative py-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            aria-label="Scroll featured games left"
+            disabled={!canScrollLeft}
+            onClick={() => scrollGames('left')}
+            className="absolute left-0 top-1/2 z-10 h-10 w-10 -translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div
+            ref={scrollRef}
+            className="-my-4 flex gap-3 overflow-x-auto py-4 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {games.map((game) => (
+              <div key={`${game.pubkey}:${game.gameIdentifier}`} className="min-w-[220px] flex-1 snap-start md:min-w-[260px]">
+                <GameCard
+                  pubkey={game.pubkey}
+                  gameIdentifier={game.gameIdentifier}
+                  metadata={game.metadata}
+                  scoreCount={game.scoreCount}
+                  topScore={game.topScore}
+                  trending={game.trending}
+                />
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            aria-label="Scroll featured games right"
+            disabled={!canScrollRight}
+            onClick={() => scrollGames('right')}
+            className="absolute right-0 top-1/2 z-10 h-10 w-10 translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
