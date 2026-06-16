@@ -536,6 +536,40 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     newRelease: true,
     playerSigned: true,
   },
+
+  // noGames Tetris
+  "nopubkey:nogames-tetris": {
+    name: "NoGames Tetris",
+    description:
+      "The classic block puzzle. Play, stack, and earn zaps.",
+    image:
+      "https://blossom.yakihonne.com/08f1f12202da69900c37a6e091b8183462f1fc32af19d313ca1bb4fabbe706ef.png",
+    genres: ["puzzle", "arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpmtd9s580ly25l5cyvjveme9xjk454rkl4lp0t3x3az3jky8dz4wqq88get5wf5hxttdd9hxjmtpdslmnhwd",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    trending: false,
+    newRelease: true,
+    playerSigned: true,
+  },
+
+  // noGames no2048
+  "nopubkey:nogames-no2048-v1": {
+    name: "no2048",
+    description:
+      "Slide tiles, merge matching numbers, reach 2048. Arrow keys or swipe.",
+    image:
+      "https://cdn.hzrd149.com/5f12d0e5f642697bf7e48636d65acbd84afbc8230cf056647a9fc93f40c6de42.svg",
+    genres: ["puzzle", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqykumejxq6rsttkxy0eq4ne",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    trending: false,
+    newRelease: true,
+    playerSigned: true,
+  },
 };
 
 // Generate a hash from game configuration content
