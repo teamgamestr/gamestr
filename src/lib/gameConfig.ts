@@ -485,7 +485,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
 
   // noGames Miner
   "nopubkey:nogames-miner-v1": {
-    name: "Miner",
+    name: "noMiner",
     description:
       "The classic Gold Miner — your claw swings on a pendulum, you release it at the right moment, and it reels back loot from the cavern below. Swing the hook. Pull up gold. Dodge the stones.",
     image:
@@ -500,29 +500,13 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
 
   // noGames Snake
   "nopubkey:nogames-snake-v1": {
-    name: "Snake",
+    name: "noSnake",
     description:
       "The classic, reimagined. Slip through walls, grab the golden apple, don't bite yourself. Walls wrap, golden apples appear for bonus points, and the snake speeds up as you grow.",
     image:
       "https://cdn.hzrd149.com/e19b12222085fa5fdc359f6d74acdcf8bbbbb310a1673542727552beda098340.svg",
     genres: ["arcade", "casual"],
     url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqy8xmnpddjj6a33ae9uxl",
-    developer:
-      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
-    featured: false,
-    addedAt: "2026-06-10",
-    playerSigned: true,
-  },
-
-  // noGames Tetris
-  "nopubkey:nogames-tetris": {
-    name: "NoGames Tetris",
-    description:
-      "The classic block puzzle. Play, stack, and earn zaps.",
-    image:
-      "https://blossom.yakihonne.com/08f1f12202da69900c37a6e091b8183462f1fc32af19d313ca1bb4fabbe706ef.png",
-    genres: ["puzzle", "arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpmtd9s580ly25l5cyvjveme9xjk454rkl4lp0t3x3az3jky8dz4wqq88get5wf5hxttdd9hxjmtpdslmnhwd",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -543,6 +527,102 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
     addedAt: "2026-06-10",
+    playerSigned: true,
+  },
+
+  // noGames noMineSweeper
+  "nopubkey:nogames-minesweeper-v1": {
+    name: "noMineSweeper",
+    description:
+      "The classic mine hunt. Read the numbers, flag the bombs, clear the field — fast and clean.",
+    image:
+      "https://cdn.hzrd149.com/2d89d57515850a7ab5f877ae2e24921444a481a0f75f48a45700542abd3d3c65.svg",
+    genres: ["puzzle", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qq8x66twv4ehwet9wpjhyttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vmq794g",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
+    playerSigned: true,
+  },
+
+  // noGames noBluk
+  "nopubkey:nogames-nobluk-v1": {
+    name: "noBluk",
+    description:
+      "Sling a glowing block from pillar to pillar under a starry sky. Perfect landings chain bonuses.",
+    image:
+      "https://cdn.hzrd149.com/6fde59b8c541c2111844543c7276debcf38412d8d62ac32843e75fdf728a0015.svg",
+    genres: ["arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqykummzd36kkttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vltt8tu",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
+    playerSigned: true,
+  },
+
+  // noGames noNova
+  "nopubkey:nogames-nonova-v1": {
+    name: "noNova",
+    description:
+      "Aim, release, and shatter descending asteroids with a stream of plasma orbs before they reach your launcher.",
+    image:
+      "https://cdn.hzrd149.com/990b98dad34d41bd72de5ba3d737e550ebfa45a2298e52d4ec2118702c9baeed.svg",
+    genres: ["arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqykummwdamxzttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vklx39s",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
+    playerSigned: true,
+  },
+
+  // noGames noTidyCoin
+  "nopubkey:nogames-notidycoin-v1": {
+    name: "noTidyCoin",
+    description:
+      "Pour coins so every tube holds one colour. Solve boards, ramp up, beat your best.",
+    image:
+      "https://cdn.hzrd149.com/fc02bdc37354eed723c081e625eec2f2a490c0603389d16228b5b064b7c2908b.svg",
+    genres: ["puzzle", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqxkumm5d9j8jcm0d9hz6a33qgsfh5waucdg53ukfngllewgczq54q2c93u78pyp6h8x4z2tlsw6vzcrqsqqpq0nhrrczw",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
+    playerSigned: true,
+  },
+
+  // noGames noSudoku
+  "nopubkey:nogames-sudoku-v1": {
+    name: "noSudoku",
+    description:
+      "The number puzzle, on paper. Fill the grid, no row, column or box repeats. Beat the clock.",
+    image:
+      "https://cdn.hzrd149.com/29c9da6812468af4c2938f97f2a83e8fd74b6524a1880af191c295d2e749188d.svg",
+    genres: ["puzzle", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqyhxatyda4h2ttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vm8arap",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
+    playerSigned: true,
+  },
+
+  // noGames noTimber
+  "nopubkey:nogames-timberman-v1": {
+    name: "noTimber",
+    description:
+      "One-button lumberjack panic. Chop left, chop right, dodge the branches — don't let the timer hit zero.",
+    image:
+      "https://cdn.hzrd149.com/4d25a1ec64d4d2aa4988e958ff79d7ea7baf84465eb5419e4c0879d6dc5fd5e4.svg",
+    genres: ["arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqx8g6tdvfjhymtpdckhvvgzyzdarh0xr29y09jv68l7tjxqs99gzkpv083cfqw4ee4gjjlurknqkqcyqqqgrucwkkvkr",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-06",
     playerSigned: true,
   },
 };
