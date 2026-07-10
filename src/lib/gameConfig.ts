@@ -459,6 +459,19 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       addedAt: "2026-06-10",
     },
 
+  // Hang On, Fren
+  "51312d91ac6fc6e35005c23656b0effa159c89e4b21e56e054d5af52adc7c272:hangonfren": {
+    name: "Hang On, Fren",
+    description:
+      "An endless Riviera Vespa road-tribute starring DNI. Grab roses, don't run out of time, don't wipe out.",
+    image: "https://hang-on-fren.playechoseven.com/icons/icon-512.png",
+    genres: ["arcade", "racing", "casual"],
+    url: "https://hang-on-fren.playechoseven.com/",
+    developer: "cryptodonkey",
+    featured: false,
+    addedAt: "2026-07-10",
+  },
+
   // Player-signed games (kind 30762, no developer pubkey)
   "nopubkey:wordswithzaps": {
     name: "Words With Zaps",
