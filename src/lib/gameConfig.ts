@@ -686,6 +686,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-07-06",
     playerSigned: true,
   },
+
+  // noGames noSkyBurger
+  "nopubkey:nogames-skyburger-v1": {
+    name: "noSkyBurger",
+    description:
+      "Catch the falling ingredients and stack the tallest burger without it toppling.",
+    image:
+      "https://cdn.hzrd149.com/62106940d7a5834172411e31be836f00d1d04caf873cd35a60ef07637be8c6de.svg",
+    genres: ["arcade", "casual"],
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqx8x6mevf6hyem9wgkhvvga8uvva",
+    developer:
+      "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
+    featured: false,
+    addedAt: "2026-07-11",
+    playerSigned: true,
+  },
 };
 
 // Generate a hash from game configuration content
@@ -713,6 +729,7 @@ export const EXCLUDED_GAMES: string[] = [
   "zap-raptor",
   "bitcoin-space-invaders",
   "asteroid-sats",
+  "nogames-tetris",
 ];
 
 // All available genres
