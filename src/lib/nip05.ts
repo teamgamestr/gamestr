@@ -1,12 +1,5 @@
-export const NIP05_SERVICE_PUBKEY =
-  '5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453';
-
-export const NIP05_DOMAIN = 'gamestr.me';
-
-export const NIP05_PRICE_SATS = 10_000;
-
-export function buildNIP05Identifier(name: string): string {
-  return `${name}@${NIP05_DOMAIN}`;
+export function buildNIP05Identifier(name: string, domain: string): string {
+  return `${name}@${domain}`;
 }
 
 export function isValidNIP05LocalPart(name: string): boolean {

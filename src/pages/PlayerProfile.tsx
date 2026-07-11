@@ -5,6 +5,7 @@ import { useNostr } from '@nostrify/react';
 import { usePlayerScores, type LeaderboardPeriod } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05Config } from '@/hooks/useNIP05';
 import { ZapButton } from '@/components/ZapButton';
 import { NoteContent } from '@/components/NoteContent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,9 @@ export function PlayerProfile() {
   const author = useAuthor(pubkey || '');
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(pubkey || '');
+  const { data: nip05Config } = useNIP05Config();
+  const nip05Domain = nip05Config?.domain;
+  const isGamestrHolder = !!nip05Domain && !!metadata?.nip05?.endsWith(`@${nip05Domain}`);
 
   const { data: scores, isLoading } = usePlayerScores(pubkey || '', {
     period,
@@ -150,7 +154,7 @@ export function PlayerProfile() {
             <div className="flex-1 space-y-2">
               <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2">
                 {displayName}
-                {metadata?.nip05?.endsWith('@gamestr.me') && (
+                {isGamestrHolder && (
                   <Crown className="h-6 w-6 text-yellow-500" />
                 )}
               </h1>
@@ -159,7 +163,7 @@ export function PlayerProfile() {
               )}
               {metadata?.nip05 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {metadata.nip05.endsWith('@gamestr.me') ? (
+                  {isGamestrHolder ? (
                     <Crown className="h-4 w-4 text-yellow-500" />
                   ) : (
                     <ExternalLink className="h-4 w-4" />

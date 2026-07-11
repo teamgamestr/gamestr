@@ -5,18 +5,17 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useNWC } from '@/hooks/useNWCContext';
 import { useToast } from '@/hooks/useToast';
-import { NIP05_SERVICE_PUBKEY } from '@/lib/nip05';
+import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
-const AMOUNT_SATS = 10_000;
-const AMOUNT_MILLISATS = AMOUNT_SATS * 1000;
-
-export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null) {
+export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null, amountMillisats: number) {
   const { user } = useCurrentUser();
   const { presetRelays } = useAppContext();
   const { toast } = useToast();
   const { sendPayment, getActiveConnection } = useNWC();
-  const author = useAuthor(NIP05_SERVICE_PUBKEY);
+  const { data: config } = useNIP05Config();
+  const servicePubkey = config?.servicePubkey ?? '';
+  const author = useAuthor(servicePubkey);
 
   const [isZapping, setIsZapping] = useState(false);
   const [invoice, setInvoice] = useState<string | null>(null);
@@ -36,6 +35,10 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
         toast({ title: 'No order', description: 'Create an order first.', variant: 'destructive' });
         return false;
       }
+      if (!servicePubkey) {
+        toast({ title: 'Service unavailable', description: 'NIP-05 service is not configured.', variant: 'destructive' });
+        return false;
+      }
       if (!author.data?.event) {
         toast({ title: 'Service not found', description: 'Could not load the Gamestr payment profile.', variant: 'destructive' });
         return false;
@@ -51,9 +54,9 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
         }
 
         const zapRequest = nip57.makeZapRequest({
-          profile: NIP05_SERVICE_PUBKEY,
+          profile: servicePubkey,
           event: null,
-          amount: AMOUNT_MILLISATS,
+          amount: amountMillisats,
           relays: presetRelays?.map((r) => r.url) ?? ['wss://relay.damus.io'],
           comment,
         });
@@ -61,7 +64,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
         const signedZapRequest = await user.signer.signEvent(zapRequest);
 
         const res = await fetch(
-          `${zapEndpoint}?amount=${AMOUNT_MILLISATS}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`,
+          `${zapEndpoint}?amount=${amountMillisats}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`,
         );
         const responseData = await res.json();
 
@@ -81,7 +84,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
         if (activeNWC?.connectionString && activeNWC.isConnected) {
           try {
             await sendPayment(activeNWC, newInvoice);
-            toast({ title: 'Zap sent!', description: `You sent ${AMOUNT_SATS.toLocaleString()} sats via NWC.` });
+            toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats via NWC.` });
             setIsZapping(false);
             return true;
           } catch (error) {
@@ -102,7 +105,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
               if (enabled) provider = enabled;
             }
             await provider.sendPayment(newInvoice);
-            toast({ title: 'Zap sent!', description: `You sent ${AMOUNT_SATS.toLocaleString()} sats.` });
+            toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });
             setIsZapping(false);
             return true;
           } catch (error) {
@@ -129,7 +132,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null)
         return false;
       }
     },
-    [user, orderId, author.data?.event, presetRelays, toast, getActiveConnection, sendPayment, webln],
+    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, getActiveConnection, sendPayment, webln, amountMillisats],
   );
 
   return {

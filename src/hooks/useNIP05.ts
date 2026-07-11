@@ -1,6 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNIP98Auth } from '@/hooks/useNIP98Auth';
-import { NIP05_SERVICE_PUBKEY, isValidNIP05LocalPart } from '@/lib/nip05';
+import { isValidNIP05LocalPart } from '@/lib/nip05';
+
+export interface NIP05Config {
+  servicePubkey: string;
+  domain: string;
+  priceSats: number;
+  termMonths: number;
+  orderTimeoutMs: number;
+}
 
 export interface NIP05Availability {
   name: string;
@@ -38,6 +46,18 @@ export interface NIP05NameEntry {
   name: string;
   pubkey: string;
   expiresAt: number;
+}
+
+export function useNIP05Config() {
+  return useQuery<NIP05Config>({
+    queryKey: ['nip05', 'config'],
+    queryFn: async ({ signal }) => {
+      const res = await fetch('/api/nip05/config', { signal });
+      if (!res.ok) throw new Error('Failed to fetch NIP-05 config');
+      return res.json();
+    },
+    staleTime: Infinity,
+  });
 }
 
 export function useNIP05Availability(name: string, pubkey?: string) {
@@ -128,5 +148,3 @@ export function useNIP05NamesByPubkey(pubkey: string | undefined) {
     staleTime: 60_000,
   });
 }
-
-export { NIP05_SERVICE_PUBKEY };

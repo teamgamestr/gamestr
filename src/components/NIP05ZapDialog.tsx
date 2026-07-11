@@ -13,21 +13,24 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useWallet } from '@/hooks/useWallet';
 import { useNIP05Zap } from '@/hooks/useNIP05Zap';
-import { useNIP05Order, type NIP05Order } from '@/hooks/useNIP05';
+import { useNIP05Order, useNIP05Config, type NIP05Order, type NIP05OrderPayment } from '@/hooks/useNIP05';
 import { useToast } from '@/hooks/useToast';
 import QRCode from 'qrcode';
 
 interface NIP05ZapDialogProps {
   order: NIP05Order | null;
+  payment?: NIP05OrderPayment | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05ZapDialogProps) {
+export function NIP05ZapDialog({ order, payment, open, onOpenChange, onSuccess }: NIP05ZapDialogProps) {
   const { webln } = useWallet();
   const { toast } = useToast();
-  const { zap, isZapping, invoice, setInvoice, reset } = useNIP05Zap(webln, order?.id ?? null);
+  const { data: config } = useNIP05Config();
+  const domain = config?.domain ?? 'gamestr.me';
+  const { zap, isZapping, invoice, setInvoice, reset } = useNIP05Zap(webln, order?.id ?? null, payment?.amountMillisats ?? 0);
   const { data: orderData } = useNIP05Order(order?.id ?? null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -43,6 +46,12 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
     const expiresAt = orderData?.order.expiresAt ?? order?.expiresAt;
     return expiresAt ? Math.max(0, expiresAt - now) : 0;
   }, [orderData?.order.expiresAt, order?.expiresAt, now]);
+
+  const timeLeft = useMemo(() => {
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }, [secondsLeft]);
 
   const comment = order ? `NIP05:${order.id}` : '';
 
@@ -102,9 +111,9 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Pay 10,000 sats</DialogTitle>
+          <DialogTitle>Pay {payment?.amountSats.toLocaleString() ?? '…'} sats</DialogTitle>
           <DialogDescription>
-            Send a zap to claim <span className="font-medium">{order?.name}@gamestr.me</span>.
+            Send a zap to claim <span className="font-medium">{order?.name}@{domain}</span>.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,8 +157,8 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
             </>
           ) : (
             <div className="text-center space-y-4 py-4">
-              <div className="text-3xl font-bold">10,000 sats</div>
-              <p className="text-sm text-muted-foreground">One year of {order?.name}@gamestr.me</p>
+              <div className="text-3xl font-bold">{payment?.amountSats.toLocaleString() ?? '…'} sats</div>
+              <p className="text-sm text-muted-foreground">One year of {order?.name}@{domain}</p>
               <Button onClick={handlePay} disabled={isZapping} className="w-full" size="lg">
                 {isZapping ? (
                   'Creating invoice...'
@@ -165,7 +174,7 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
 
           {orderData?.order.status === 'pending' && (
             <p className="text-xs text-center text-muted-foreground">
-              Waiting for zap receipt... ({secondsLeft}s left)
+              Waiting for zap receipt... ({timeLeft} left)
             </p>
           )}
         </div>

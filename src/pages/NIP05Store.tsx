@@ -2,13 +2,15 @@ import { Crown } from 'lucide-react';
 import { NIP05PurchaseForm } from '@/components/NIP05PurchaseForm';
 import { NIP05Directory } from '@/components/NIP05Directory';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
+import { useNIP05NamesByPubkey, useNIP05Config } from '@/hooks/useNIP05';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function NIP05Store() {
   const { user } = useCurrentUser();
   const queryClient = useQueryClient();
   const { data: owned } = useNIP05NamesByPubkey(user?.pubkey);
+  const { data: config } = useNIP05Config();
+  const domain = config?.domain ?? 'gamestr.me';
   const ownedName = owned?.names[0]?.name;
 
   const handleClaimed = () => {
@@ -20,10 +22,10 @@ export function NIP05Store() {
       <div className="text-center space-y-2">
         <h1 className="text-3xl md:text-5xl font-bold flex items-center justify-center gap-3">
           <Crown className="h-8 w-8 md:h-10 md:w-10 text-yellow-500" />
-          gamestr.me
+          {domain}
         </h1>
         <p className="text-muted-foreground text-lg">
-          Your verified Nostr identity on gamestr.me
+          Your verified Nostr identity on {domain}
         </p>
       </div>
 

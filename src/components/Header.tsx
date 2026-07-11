@@ -4,9 +4,12 @@ import { LoginArea } from '@/components/auth/LoginArea';
 import { Gamepad2, Code2, Crown } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Moon, Sun } from 'lucide-react';
+import { useNIP05Config } from '@/hooks/useNIP05';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
+  const { data: config } = useNIP05Config();
+  const nip05Domain = config?.domain ?? 'gamestr.me';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,7 +38,7 @@ export function Header() {
             <Button variant="ghost" asChild>
               <Link to="/me" className="flex items-center gap-2">
                 <Crown className="h-4 w-4" />
-                gamestr.me
+                {nip05Domain}
               </Link>
             </Button>
           </nav>

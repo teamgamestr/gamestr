@@ -13,14 +13,16 @@ import {
   markOrderPaid,
   updateNameExpiry,
 } from '../lib/db.js';
-import { getServicePaymentInfo, getServicePubkey } from '../lib/nostr.js';
+import { getServicePaymentInfo } from '../lib/nostr.js';
 
 const router = Router();
 
 const PRICE_SATS = parseInt(process.env.NIP05_PRICE_SATS || '10000', 10);
-const ORDER_TIMEOUT_MS = parseInt(process.env.NIP05_ORDER_TIMEOUT_MS || '60000', 10);
+const ORDER_TIMEOUT_MS = parseInt(process.env.NIP05_ORDER_TIMEOUT_MS || '600000', 10);
 const ORDER_TIMEOUT_SECONDS = Math.floor(ORDER_TIMEOUT_MS / 1000);
 const TERM_SECONDS = 365 * 24 * 60 * 60; // 12 months
+const DOMAIN = process.env.NIP05_DOMAIN || 'gamestr.me';
+const SERVICE_PUBKEY = process.env.NIP05_SERVICE_PUBKEY_HEX || '';
 
 const RESERVED_NAMES = new Set([
   'admin', 'root', 'www', 'api', 'mail', 'ftp', 'localhost', 'gamestr', '_',
@@ -53,6 +55,16 @@ function parseJsonBody(req) {
     return {};
   }
 }
+
+router.get('/api/nip05/config', (_req, res) => {
+  return res.json({
+    servicePubkey: SERVICE_PUBKEY,
+    domain: DOMAIN,
+    priceSats: PRICE_SATS,
+    termMonths: 12,
+    orderTimeoutMs: ORDER_TIMEOUT_MS,
+  });
+});
 
 router.get('/api/nip05/availability', (req, res) => {
   const rawName = normalizeName(String(req.query.name || ''));
@@ -256,7 +268,7 @@ export function handleZapReceipt({ zapRequest, senderPubkey, amountMillisats, co
     createName({ name: order.name, pubkey: order.pubkey, expiresAt, orderId: order.id });
   }
 
-  console.log(`[NIP-05] Order ${orderId} paid: ${order.name}@${getServicePubkey() ? 'gamestr.me' : 'example.com'}`);
+  console.log(`[NIP-05] Order ${orderId} paid: ${order.name}@${DOMAIN}`);
   return { orderId, name: order.name, expiresAt };
 }
 
