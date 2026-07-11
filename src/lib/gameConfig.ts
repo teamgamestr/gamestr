@@ -439,7 +439,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "shooter", "bitcoin"],
       url: "https://games.noderunners.network/spaceinvaders2/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-06-10",
     },
@@ -454,7 +454,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "bitcoin", "action"],
       url: "https://games.noderunners.network/mempoolbreaker/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: true,
       addedAt: "2026-06-10",
     },
@@ -470,7 +470,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "bitcoin", "puzzle"],
       url: "https://games.noderunners.network/coordinator/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-07-11",
     },
@@ -486,7 +486,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "bitcoin", "action"],
       url: "https://games.noderunners.network/bubblebreaker/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-07-11",
     },
@@ -502,7 +502,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "shooter", "bitcoin"],
       url: "https://games.noderunners.network/blitz/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-07-11",
     },
