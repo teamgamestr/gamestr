@@ -507,6 +507,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       addedAt: "2026-07-11",
     },
 
+  // Badger Arcade
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:badger":
+    {
+      name: "Badger Arcade",
+      description:
+        "Cross fast, stay wild and stack sats in Badger Arcade, a Noderunners crossing run game.",
+      image:
+        "https://games.noderunners.network/assets/social/badger-preview.jpg",
+      genres: ["arcade", "bitcoin", "action"],
+      url: "https://games.noderunners.network/badger/",
+      developer:
+        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+      featured: false,
+      addedAt: "2026-07-11",
+    },
+
   // Hang On, Fren
   "51312d91ac6fc6e35005c23656b0effa159c89e4b21e56e054d5af52adc7c272:hangonfren": {
     name: "Hang On, Fren",
