@@ -153,7 +153,16 @@ router.get('/api/nip05/order/:id', (req, res) => {
     order.status = 'expired';
   }
 
-  return res.json({ order });
+  return res.json({
+    order: {
+      id: order.id,
+      name: order.name,
+      action: order.action,
+      status: order.status,
+      expiresAt: order.expires_at,
+      createdAt: order.created_at,
+    },
+  });
 });
 
 router.get('/api/nip05/names', (req, res) => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Zap, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +31,18 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
   const { data: orderData } = useNIP05Order(order?.id ?? null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
+
+  useEffect(() => {
+    if (!open || orderData?.order.status !== 'pending') return;
+    const interval = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(interval);
+  }, [open, orderData?.order.status]);
+
+  const secondsLeft = useMemo(() => {
+    const expiresAt = orderData?.order.expiresAt ?? order?.expiresAt;
+    return expiresAt ? Math.max(0, expiresAt - now) : 0;
+  }, [orderData?.order.expiresAt, order?.expiresAt, now]);
 
   const comment = order ? `NIP05:${order.id}` : '';
 
@@ -153,7 +165,7 @@ export function NIP05ZapDialog({ order, open, onOpenChange, onSuccess }: NIP05Za
 
           {orderData?.order.status === 'pending' && (
             <p className="text-xs text-center text-muted-foreground">
-              Waiting for zap receipt... ({Math.max(0, orderData.order.expiresAt - Math.floor(Date.now() / 1000))}s left)
+              Waiting for zap receipt... ({secondsLeft}s left)
             </p>
           )}
         </div>

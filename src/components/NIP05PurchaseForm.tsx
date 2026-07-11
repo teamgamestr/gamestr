@@ -30,9 +30,13 @@ export function NIP05PurchaseForm({ ownedName, onClaimed }: NIP05PurchaseFormPro
 
   const handleAction = async (action: 'new' | 'renew') => {
     if (!user?.pubkey || !normalized) return;
-    const result = await createOrder.mutateAsync({ name: normalized, action });
-    setOrder(result.order);
-    setDialogOpen(true);
+    try {
+      const result = await createOrder.mutateAsync({ name: normalized, action });
+      setOrder(result.order);
+      setDialogOpen(true);
+    } catch (err) {
+      console.error('Failed to create order:', err);
+    }
   };
 
   const canBuy = availability?.available && !createOrder.isPending;
@@ -103,6 +107,10 @@ export function NIP05PurchaseForm({ ownedName, onClaimed }: NIP05PurchaseFormPro
               </Button>
             )}
           </div>
+
+          {createOrder.isError && (
+            <p className="text-sm text-destructive">{createOrder.error.message}</p>
+          )}
         </CardContent>
       </Card>
 

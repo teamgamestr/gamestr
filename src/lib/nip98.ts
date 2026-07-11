@@ -11,17 +11,13 @@ export async function createNIP98AuthHeader(
   method: string,
   payload?: string | object,
 ): Promise<string> {
-  const payloadString = payload === undefined
-    ? undefined
-    : typeof payload === 'string'
-      ? payload
-      : JSON.stringify(payload);
+  const payloadObj = typeof payload === 'string' ? JSON.parse(payload) : payload;
 
   return getToken(
     url,
     method.toUpperCase(),
     async (event) => signer.signEvent(event as Omit<NostrEvent, 'id' | 'pubkey' | 'sig'>),
     true,
-    payloadString as unknown as Record<string, unknown> | undefined,
+    payloadObj as Record<string, unknown> | undefined,
   );
 }
