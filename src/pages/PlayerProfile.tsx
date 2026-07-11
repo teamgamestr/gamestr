@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink, MessageSquare, Calendar } from 'lucide-react';
+import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink, MessageSquare, Calendar, Crown } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
 import { formatDistanceToNow } from 'date-fns';
@@ -148,13 +148,22 @@ export function PlayerProfile() {
 
             {/* Profile Info */}
             <div className="flex-1 space-y-2">
-              <h1 className="text-3xl md:text-4xl font-bold">{displayName}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-2">
+                {displayName}
+                {metadata?.nip05?.endsWith('@gamestr.me') && (
+                  <Crown className="h-6 w-6 text-yellow-500" />
+                )}
+              </h1>
               {metadata?.about && (
                 <p className="text-muted-foreground max-w-2xl">{metadata.about}</p>
               )}
               {metadata?.nip05 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <ExternalLink className="h-4 w-4" />
+                  {metadata.nip05.endsWith('@gamestr.me') ? (
+                    <Crown className="h-4 w-4 text-yellow-500" />
+                  ) : (
+                    <ExternalLink className="h-4 w-4" />
+                  )}
                   {metadata.nip05}
                 </div>
               )}

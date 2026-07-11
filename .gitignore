@@ -29,5 +29,8 @@ dist-ssr
 .env.local
 .env.production
 
+# Data
+data/
+
 # Testing
 coverage

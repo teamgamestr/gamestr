@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LoginArea } from '@/components/auth/LoginArea';
-import { Gamepad2, Code2 } from 'lucide-react';
+import { Gamepad2, Code2, Crown } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Moon, Sun } from 'lucide-react';
 
@@ -30,6 +30,12 @@ export function Header() {
               <Link to="/developers" className="flex items-center gap-2">
                 <Code2 className="h-4 w-4" />
                 Developers
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link to="/me" className="flex items-center gap-2">
+                <Crown className="h-4 w-4" />
+                gamestr.me
               </Link>
             </Button>
           </nav>
