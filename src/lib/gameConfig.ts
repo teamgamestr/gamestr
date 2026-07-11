@@ -725,6 +725,7 @@ export const NO_PUBKEY_PREFIX = "nopubkey";
 // Games to exclude from display (by game name/identifier)
 // Add game identifiers here to hide them from the platform
 export const EXCLUDED_GAMES: string[] = [
+  "the-bubble-is-real",
   "Nostrich Run",
   "zap-raptor",
   "bitcoin-space-invaders",
