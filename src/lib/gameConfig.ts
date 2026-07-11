@@ -439,7 +439,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "shooter", "bitcoin"],
       url: "https://games.noderunners.network/spaceinvaders2/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-06-10",
     },
@@ -454,9 +454,57 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "bitcoin", "action"],
       url: "https://games.noderunners.network/mempoolbreaker/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: true,
       addedAt: "2026-06-10",
+    },
+
+  // Coordinator
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:coordinator":
+    {
+      name: "Coordinator",
+      description:
+        "A CoinJoin falling-block arcade prototype. Build outputs, batch lines and learn privacy by playing.",
+      image:
+        "https://games.noderunners.network/coordinator/assets/coordinator-preview.png",
+      genres: ["arcade", "bitcoin", "puzzle"],
+      url: "https://games.noderunners.network/coordinator/",
+      developer:
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
+      featured: false,
+      addedAt: "2026-07-11",
+    },
+
+  // The Bubble is Real
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:bubble-breaker":
+    {
+      name: "The Bubble is Real",
+      description:
+        "Pop fiat bubbles, route Lightning shots and survive the mempool pressure. Solo, PvP and tournament modes.",
+      image:
+        "https://games.noderunners.network/bubblebreaker/assets/logo-select.png",
+      genres: ["arcade", "bitcoin", "action"],
+      url: "https://games.noderunners.network/bubblebreaker/",
+      developer:
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
+      featured: false,
+      addedAt: "2026-07-11",
+    },
+
+  // Bitcoin Blitz
+  "7d9eee713542b282bfac93de867c38a4b0048ff1207bec56d1b1808844eb2507:bitcoin-blitz":
+    {
+      name: "Bitcoin Blitz",
+      description:
+        "Fight through Bitcoin Blitz, a lightning arcade shooter campaign from the Noderunners universe.",
+      image:
+        "https://games.noderunners.network/assets/social/blitz-preview.jpg",
+      genres: ["arcade", "shooter", "bitcoin"],
+      url: "https://games.noderunners.network/blitz/",
+      developer:
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
+      featured: false,
+      addedAt: "2026-07-11",
     },
 
   // Hang On, Fren
