@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { startScoreBot, stopScoreBot, getBotStatus } from './server/scoreBot.js';
-import { nip05Router } from './server/routes/nip05.js';
+import nip05Router from './server/routes/nip05.js';
 import { startNIP05ZapMonitor, stopNIP05ZapMonitor } from './server/services/nip05ZapMonitor.js';
 
 const __filename = fileURLToPath(import.meta.url);
