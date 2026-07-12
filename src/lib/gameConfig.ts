@@ -381,6 +381,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       addedAt: "2026-06-10",
     },
 
+  // Neon Sentinel
+  "370148bb752fee753c8dd436752e801f02913dbc7ac6330828d13d5540c4ca21:neonsentinel":
+    {
+      name: "Neon Sentinel",
+      description:
+        "A radar-first Nostr arcade rescue shooter. Hold the relay. Save the keys. Don't get TIME LOCKED.",
+      image:
+        "https://neonsentinel.com/brand/neon-sentinel-key-art-v2.png",
+      genres: ["arcade", "shooter", "action"],
+      url: "https://neonsentinel.com/",
+      developer:
+        "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
+      featured: false,
+      addedAt: "2026-07-11",
+    },
+
   // BTC Rally
   "bb1f62f00f67dec2182ac7c40d046979d7c8ca698951cb9e509bdcb3d0a85f8a:btcrally": {
     name: "BTC Rally",
@@ -518,7 +534,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       genres: ["arcade", "bitcoin", "action"],
       url: "https://games.noderunners.network/badger/",
       developer:
-        "a97c337110c3573dc246e272b8e25e5de9c2c60e2a7dba2a2bc76087e2856c6b",
+        "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
       featured: false,
       addedAt: "2026-07-11",
     },
