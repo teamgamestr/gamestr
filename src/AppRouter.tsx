@@ -8,6 +8,7 @@ import { LatestScores } from "./pages/LatestScores";
 import { ScoreDetail } from "./pages/ScoreDetail";
 import { PlayerProfile } from "./pages/PlayerProfile";
 import { Developers } from "./pages/Developers";
+import { NIP05Store } from "./pages/NIP05Store";
 import Messages from "./pages/Messages";
 import { NIP19Page } from "./pages/NIP19Page";
 import NotFound from "./pages/NotFound";
@@ -43,6 +44,7 @@ export function AppRouter() {
           <Route path="/:gameIdentifier/score/:eventId" element={<ScoreDetail />} />
           <Route path="/player/:pubkey" element={<PlayerProfile />} />
           <Route path="/developers" element={<Developers />} />
+          <Route path="/me" element={<NIP05Store />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/:slug" element={<DynamicRoute />} />
           <Route path="*" element={<NotFound />} />

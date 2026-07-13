@@ -38,7 +38,7 @@ export function Home() {
     return new Set(full.slice(0, cutoff).map(g => g.gameIdentifier));
   }, [trendingGames]);
   const { theme } = useTheme();
-  const logoSrc = theme === 'light' ? '/gamestr-logo-light.svg' : '/gamestr-logo-dark.svg';
+  const logoSrc = theme === 'light' ? '/gamestr_purple-on-transparent_name.svg' : '/gamestr_white-on-transparent_name.svg';
 
   useEffect(() => {
     setVisibleLatestScoresCount(appConfig.latestScoresCount);
@@ -156,37 +156,49 @@ export function Home() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Hero Header */}
       <div
-        className="relative overflow-hidden text-white"
+        className={`relative overflow-hidden ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}
         style={{
-          backgroundColor: "#0a0a1a",
-          backgroundImage: `
-            repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px),
-            repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px)
-          `,
+          backgroundColor: theme === 'light' ? '#f8f9ff' : '#0a0a1a',
+          backgroundImage: theme === 'light'
+            ? `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(100,100,180,0.05) 31px, rgba(100,100,180,0.05) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(100,100,180,0.05) 31px, rgba(100,100,180,0.05) 32px)
+            `
+            : `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px)
+            `,
         }}
       >
         {/* scanline overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
+            backgroundImage: theme === 'light'
+              ? "repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 4px)"
+              : "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
           }}
         />
         {/* neon glow spots */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-600/20 blur-3xl" />
-          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-green-400/10 blur-2xl" />
-          <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-400/10 blur-2xl" />
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full ${theme === 'light' ? 'bg-purple-300/20' : 'bg-purple-600/20'} blur-3xl`} />
+          <div className={`absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-blue-400/10' : 'bg-green-400/10'} blur-2xl`} />
+          <div className={`absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-cyan-400/10' : 'bg-cyan-400/10'} blur-2xl`} />
         </div>
 
-        <div className="relative container mx-auto px-4 pt-6 pb-4">
+        <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
           <div className="max-w-3xl mx-auto text-center">
-            <img src={logoSrc} alt="Gamestr" className="h-64 md:h-96 mx-auto drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]" />
+            <div className="w-full max-w-[400px] md:max-w-[520px] h-[280px] mx-auto flex items-center justify-center">
+              <img src={logoSrc} alt="Gamestr" className={`max-h-full w-auto ${theme === 'light' ? 'drop-shadow-[0_0_32px_rgba(117,57,143,0.3)]' : 'drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]'}`} />
+            </div>
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
+              Decentralized gaming leaderboards on Nostr
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-12 space-y-8">
         {/* Filters Section */}
         <div className="space-y-4">
           {/* Search Bar */}

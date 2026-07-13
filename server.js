@@ -3,11 +3,14 @@ import { readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { startScoreBot, stopScoreBot, getBotStatus } from './server/scoreBot.js';
+import nip05Router from './server/routes/nip05.js';
+import { startNIP05ZapMonitor, stopNIP05ZapMonitor } from './server/services/nip05ZapMonitor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 const distPath = join(__dirname, 'dist');
@@ -76,6 +79,8 @@ app.get('/api/bot/status', (req, res) => {
   res.json(status);
 });
 
+app.use(nip05Router);
+
 app.use(express.static(distPath));
 
 app.use((req, res) => {
@@ -128,12 +133,14 @@ app.use((req, res) => {
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down...');
   stopScoreBot();
+  stopNIP05ZapMonitor();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down...');
   stopScoreBot();
+  stopNIP05ZapMonitor();
   process.exit(0);
 });
 
@@ -145,5 +152,12 @@ app.listen(PORT, '0.0.0.0', async () => {
     await startScoreBot();
   } catch (error) {
     console.error('Failed to start score bot:', error.message);
+  }
+
+  // Start the NIP-05 zap monitor
+  try {
+    await startNIP05ZapMonitor();
+  } catch (error) {
+    console.error('Failed to start NIP-05 zap monitor:', error.message);
   }
 });

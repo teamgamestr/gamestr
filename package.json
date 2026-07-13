@@ -8,6 +8,7 @@
     "build": "npm i --silent && vite build -l error && node scripts/generate-game-config.js && cp dist/index.html dist/404.html && echo 'Project built successfully!'",
     "start": "node server.js",
     "test": "npm i --silent && tsc --noEmit && eslint && vitest run --reporter=dot --silent && vite build -l error && cp dist/index.html dist/404.html && echo 'All tests passed!'",
+    "dev:server": "PORT=5001 node --env-file=.env server.js",
     "deploy": "npm run build && npx -y nostr-deploy-cli deploy --skip-setup"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "idb": "^8.0.3",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",

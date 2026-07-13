@@ -220,12 +220,12 @@ export const EditProfileForm: React.FC = () => {
             name="nip05"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>NIP-05 Identifier</FormLabel>
+                <FormLabel>Gamestr Handle</FormLabel>
                 <FormControl>
                   <Input placeholder="you@example.com" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Your verified Nostr identifier.
+                  Your Gamestr handle.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -5,6 +5,7 @@ import { useNostr } from '@nostrify/react';
 import { usePlayerScores, type LeaderboardPeriod } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05Config, useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { ZapButton } from '@/components/ZapButton';
 import { NoteContent } from '@/components/NoteContent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,10 @@ export function PlayerProfile() {
   const author = useAuthor(pubkey || '');
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(pubkey || '');
+  const { data: nip05Config } = useNIP05Config();
+  const nip05Domain = nip05Config?.domain;
+  const { data: gamestrNames } = useNIP05NamesByPubkey(pubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
 
   const { data: scores, isLoading } = usePlayerScores(pubkey || '', {
     period,
@@ -139,25 +144,52 @@ export function PlayerProfile() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
             {/* Avatar */}
-            <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-              <AvatarImage src={metadata?.picture} alt={displayName} />
-              <AvatarFallback className="text-3xl">
-                {displayName[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
+                <AvatarImage src={metadata?.picture} alt={displayName} />
+                <AvatarFallback className="text-3xl">
+                  {displayName[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {gamestrName && (
+                <div className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-950 rounded-full p-1 shadow-md">
+                  <Gamepad2 className="h-4 w-4" />
+                </div>
+              )}
+            </div>
 
             {/* Profile Info */}
             <div className="flex-1 space-y-2">
-              <h1 className="text-3xl md:text-4xl font-bold">{displayName}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                {displayName}
+              </h1>
               {metadata?.about && (
                 <p className="text-muted-foreground max-w-2xl">{metadata.about}</p>
               )}
-              {metadata?.nip05 && (
+              {!gamestrName && metadata?.nip05 && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <ExternalLink className="h-4 w-4" />
                   {metadata.nip05}
                 </div>
               )}
+              {author.data?.event?.created_at && (() => {
+                const dateStr = new Date(author.data.event!.created_at * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                return gamestrName ? (
+                  <div className="w-fit bg-card border border-border/60 rounded-lg px-4 py-2.5">
+                    <p className="text-base font-semibold">
+                      @{gamestrName}
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      {nip05Domain} · since {dateStr}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    since {dateStr}
+                  </p>
+                );
+              })()}
             </div>
 
             {/* Action Buttons */}

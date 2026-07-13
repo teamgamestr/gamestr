@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import { MessageCircle, Heart, Gamepad2, SmilePlus } from 'lucide-react';
+import { MessageCircle, Heart, Gamepad2, SmilePlus, Trophy } from 'lucide-react';
 import { NKinds, type NostrEvent } from '@nostrify/nostrify';
 
 import { useLatestScores, type ParsedScore } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
+import { useTheme } from '@/hooks/useTheme';
 import { CommentsSection } from '@/components/comments/CommentsSection';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +30,7 @@ const SCORE_REACTION_EMOJIS = ['❤️', '🔥', '🎉', '💪', '👑', '⚡', 
 const COUNT_QUERY_CHUNK_SIZE = 25;
 
 export function LatestScores() {
+  const { theme } = useTheme();
   const { config } = useGameConfig();
   const { data: scores, isLoading } = useLatestScores({ limit: LATEST_SCORES_PAGE_LIMIT });
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -71,18 +74,51 @@ export function LatestScores() {
   }, [totalPages]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-3">
-            <div>
-              <h1 className="text-4xl font-black tracking-tight sm:text-5xl">Latest Scores</h1>
-              <p className="mt-2 max-w-2xl text-muted-foreground">
-                Every recent run ordered newest first, with quick Nostr reactions and comments.
-              </p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Hero Section */}
+      <div
+        className={`relative overflow-hidden ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}
+        style={{
+          backgroundColor: theme === 'light' ? '#f8f9ff' : '#0a0a1a',
+          backgroundImage: theme === 'light'
+            ? `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(200,0,150,0.05) 31px, rgba(200,0,150,0.05) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(200,0,150,0.05) 31px, rgba(200,0,150,0.05) 32px)
+            `
+            : `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(255,0,200,0.07) 31px, rgba(255,0,200,0.07) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(255,0,200,0.07) 31px, rgba(255,0,200,0.07) 32px)
+            `,
+        }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: theme === 'light'
+              ? "repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 4px)"
+              : "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
+          }}
+        />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full ${theme === 'light' ? 'bg-pink-300/20' : 'bg-pink-600/20'} blur-3xl`} />
+          <div className={`absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-fuchsia-300/10' : 'bg-fuchsia-400/10'} blur-2xl`} />
+          <div className={`absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-purple-300/10' : 'bg-purple-400/10'} blur-2xl`} />
+        </div>
+
+        <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold flex items-center justify-center gap-3">
+              <Trophy className="h-10 w-10 md:h-14 md:w-14 text-pink-400 drop-shadow-[0_0_16px_rgba(236,72,153,0.6)]" />
+              Latest Scores
+            </h1>
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
+              Every recent run ordered newest first, with quick Nostr reactions and comments.
+            </p>
           </div>
         </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12 space-y-8">
 
         <div className="flex flex-wrap gap-2">
           <Button
@@ -197,6 +233,8 @@ function LatestScoreRow({ score, gameConfig, commentCount, reactionCount }: Late
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const playerName = metadata?.name || metadata?.display_name || genUserName(score.playerPubkey);
+  const { data: gamestrNames } = useNIP05NamesByPubkey(score.playerPubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
   const resolvedGame = resolveGameByIdentifier(score.gameIdentifier, gameConfig);
   const gameMetadata: GameMetadata = resolvedGame?.metadata || FALLBACK_GAME_METADATA;
   const scorePrefs = getScoreDisplayPrefs(gameMetadata);
@@ -206,10 +244,17 @@ function LatestScoreRow({ score, gameConfig, commentCount, reactionCount }: Late
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <Link to={`/${score.gameIdentifier}/score/${score.event.id}`} className="group flex min-w-0 items-center gap-4">
-            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-              <AvatarImage src={metadata?.picture} alt={playerName} />
-              <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                <AvatarImage src={metadata?.picture} alt={playerName} />
+                <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              {gamestrName && (
+                <div className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-950 rounded-full p-0.5 shadow-md">
+                  <Gamepad2 className="h-3 w-3" />
+                </div>
+              )}
+            </div>
             <div className="min-w-0">
               <CardTitle className="line-clamp-1 text-lg group-hover:text-primary">{playerName}</CardTitle>
               <p className="line-clamp-1 text-sm text-muted-foreground">

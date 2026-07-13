@@ -10,6 +10,7 @@ import { Code2, Rocket, Shield, Zap, CheckCircle2, ShieldCheck, User, Trophy, Cl
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { validateScoreEvent } from '@/hooks/useScores';
+import { useTheme } from '@/hooks/useTheme';
 import type { NostrEvent } from '@nostrify/nostrify';
 
 function SectionAnchor({ id }: { id: string }) {
@@ -25,6 +26,7 @@ function SectionAnchor({ id }: { id: string }) {
 }
 
 export function Developers() {
+  const { theme } = useTheme();
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { nostr } = useNostr();
 
@@ -242,33 +244,40 @@ publish_score(
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Hero Section */}
       <div
-        className="relative overflow-hidden text-white"
+        className={`relative overflow-hidden ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}
         style={{
-          backgroundColor: "#0a0a1a",
-          backgroundImage: `
-            repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px),
-            repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,255,128,0.07) 31px, rgba(0,255,128,0.07) 32px)
-          `,
+          backgroundColor: theme === 'light' ? '#f8f9ff' : '#0a0a1a',
+          backgroundImage: theme === 'light'
+            ? `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,150,200,0.05) 31px, rgba(0,150,200,0.05) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,150,200,0.05) 31px, rgba(0,150,200,0.05) 32px)
+            `
+            : `
+              repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(0,200,255,0.07) 31px, rgba(0,200,255,0.07) 32px),
+              repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(0,200,255,0.07) 31px, rgba(0,200,255,0.07) 32px)
+            `,
         }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
+            backgroundImage: theme === 'light'
+              ? "repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 4px)"
+              : "repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 4px)",
           }}
         />
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-purple-600/20 blur-3xl" />
-          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-green-400/10 blur-2xl" />
-          <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-cyan-400/10 blur-2xl" />
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full ${theme === 'light' ? 'bg-blue-300/20' : 'bg-blue-600/20'} blur-3xl`} />
+          <div className={`absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-cyan-300/10' : 'bg-cyan-400/10'} blur-2xl`} />
+          <div className={`absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full ${theme === 'light' ? 'bg-teal-300/10' : 'bg-teal-400/10'} blur-2xl`} />
         </div>
 
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
+        <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold">
               Integrate Gamestr Into Your Games
             </h1>
-            <p className="text-xl text-white/90">
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
               Add decentralized leaderboards to your games with just a few lines of code.
               Reach players across the Nostr network.
             </p>
@@ -317,31 +326,31 @@ publish_score(
         </div>
 
         {/* Gamestr Relay Callout */}
-        <div id="relay" className="relative overflow-hidden rounded-xl border-2 border-purple-500/40 bg-gradient-to-r from-purple-950/60 via-purple-900/40 to-purple-950/60 p-6 md:p-8">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.15),transparent_60%)]" />
+        <div id="relay" className="relative overflow-hidden rounded-xl border-2 p-6 md:p-8 dark:border-purple-500/40 dark:bg-gradient-to-r dark:from-purple-950/60 dark:via-purple-900/40 dark:to-purple-950/60 border-purple-300 bg-gradient-to-r from-purple-50 via-purple-50/80 to-purple-50">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.15),transparent_60%)] dark:opacity-100 opacity-0" />
           <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30">
-              <Radio className="h-7 w-7 text-purple-400" />
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl dark:bg-purple-500/20 dark:border-purple-500/30 bg-purple-100 border border-purple-300">
+              <Radio className="h-7 w-7 dark:text-purple-400 text-purple-600" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-1">
-                <h2 className="text-xl font-bold text-white">Gamestr Relays</h2>
-                <Badge className="bg-purple-500/30 text-purple-200 border-purple-500/40">Recommended</Badge>
+                <h2 className="text-xl font-bold dark:text-white text-gray-900">Gamestr Relays</h2>
+                <Badge className="dark:bg-purple-500/30 dark:text-purple-200 dark:border-purple-500/40 bg-purple-100 text-purple-700 border-purple-300">Recommended</Badge>
               </div>
-              <p className="text-purple-200/80 text-sm mb-4">
+              <p className="dark:text-purple-200/80 text-purple-700/80 text-sm mb-4">
                 Publish your scores to a Gamestr relay to ensure they appear on Gamestr leaderboards instantly. Use it alongside other public relays for maximum reach.
               </p>
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-purple-300/60 mb-1 font-medium uppercase tracking-wider">Production</div>
-                    <code className="block w-full bg-black/40 border border-purple-500/30 rounded-lg px-4 py-2.5 text-purple-300 font-mono text-base tracking-wide select-all">
+                    <div className="text-xs dark:text-purple-300/60 text-purple-600/60 mb-1 font-medium uppercase tracking-wider">Production</div>
+                    <code className="block w-full dark:bg-black/40 bg-purple-100/80 dark:border-purple-500/30 border-purple-300 rounded-lg px-4 py-2.5 dark:text-purple-300 text-purple-700 font-mono text-base tracking-wide select-all">
                       wss://relay.gamestr.io
                     </code>
                   </div>
                   <Button
                     variant="outline"
-                    className="border-purple-500/40 text-purple-200 hover:bg-purple-500/20 hover:text-white shrink-0 mt-5"
+                    className="dark:border-purple-500/40 dark:text-purple-200 dark:hover:bg-purple-500/20 dark:hover:text-white border-purple-300 text-purple-700 hover:bg-purple-100 hover:text-purple-900 shrink-0 mt-5"
                     onClick={() => copyCode('wss://relay.gamestr.io', 'relay-url-prod')}
                   >
                     {copiedCode === 'relay-url-prod' ? (
@@ -353,14 +362,14 @@ publish_score(
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs text-purple-300/60 mb-1 font-medium uppercase tracking-wider">Test / Staging</div>
-                    <code className="block w-full bg-black/40 border border-purple-500/20 rounded-lg px-4 py-2.5 text-purple-300/70 font-mono text-base tracking-wide select-all">
+                    <div className="text-xs dark:text-purple-300/60 text-purple-600/60 mb-1 font-medium uppercase tracking-wider">Test / Staging</div>
+                    <code className="block w-full dark:bg-black/40 bg-purple-100/80 dark:border-purple-500/20 border-purple-300 rounded-lg px-4 py-2.5 dark:text-purple-300/70 text-purple-700/70 font-mono text-base tracking-wide select-all">
                       wss://test.gamestr.io
                     </code>
                   </div>
                   <Button
                     variant="outline"
-                    className="border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10 hover:text-white shrink-0 mt-5"
+                    className="dark:border-purple-500/30 dark:text-purple-300/70 dark:hover:bg-purple-500/10 dark:hover:text-white border-purple-300 text-purple-700/70 hover:bg-purple-100 hover:text-purple-900 shrink-0 mt-5"
                     onClick={() => copyCode('wss://test.gamestr.io', 'relay-url-test')}
                   >
                     {copiedCode === 'relay-url-test' ? (
