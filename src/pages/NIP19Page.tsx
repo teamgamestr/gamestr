@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05Config, useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { ZapButton } from '@/components/ZapButton';
 import { NoteContent } from '@/components/NoteContent';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -288,6 +289,10 @@ function ProfileView({ pubkey }: { pubkey: string }) {
   const author = useAuthor(pubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(pubkey);
+  const { data: nip05Config } = useNIP05Config();
+  const nip05Domain = nip05Config?.domain;
+  const { data: gamestrNames } = useNIP05NamesByPubkey(pubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
 
   // Fetch recent kind 1 notes
   const { data: notes, isLoading: notesLoading } = useQuery({
@@ -346,12 +351,14 @@ function ProfileView({ pubkey }: { pubkey: string }) {
 
               {/* Profile Info */}
               <div className="flex-1 space-y-2">
-                <h1 className="text-3xl md:text-4xl font-bold">{displayName}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold">
+                  {displayName}
+                </h1>
                 {metadata?.about && (
                   <p className="text-muted-foreground">{metadata.about}</p>
                 )}
                 <div className="flex flex-wrap gap-3 items-center text-sm text-muted-foreground">
-                  {metadata?.nip05 && (
+                  {!gamestrName && metadata?.nip05 && (
                     <div className="flex items-center gap-1">
                       <ExternalLink className="h-4 w-4" />
                       {metadata.nip05}
@@ -368,6 +375,22 @@ function ProfileView({ pubkey }: { pubkey: string }) {
                       Website
                     </a>
                   )}
+                  {author.data?.event?.created_at && (() => {
+                    const dateStr = new Date(author.data.event!.created_at * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                    return gamestrName ? (
+                      <span className="w-fit bg-card border border-border/60 rounded-lg px-3 py-1.5 inline-flex flex-col">
+                        <span className="font-semibold">@{gamestrName}</span>
+                        <span className="text-xs text-muted-foreground/70">
+                          {nip05Domain} · since {dateStr}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        since {dateStr}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Crown } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNIP05Names, useNIP05Config } from '@/hooks/useNIP05';
@@ -24,7 +24,7 @@ function DirectoryItem({ name, pubkey, domain }: { name: string; pubkey: string;
           <AvatarFallback>{displayName[0]?.toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-950 rounded-full p-0.5">
-          <Crown className="h-3 w-3" />
+          <Gamepad2 className="h-3 w-3" />
         </div>
       </div>
       <div className="flex-1 min-w-0">
@@ -44,7 +44,7 @@ export function NIP05Directory() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Crown className="h-5 w-5 text-yellow-500" />
+          <Gamepad2 className="h-5 w-5 text-yellow-500" />
           {domain} holders
         </CardTitle>
       </CardHeader>

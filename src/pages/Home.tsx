@@ -188,8 +188,10 @@ export function Home() {
 
         <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
           <div className="max-w-3xl mx-auto text-center">
-            <img src={logoSrc} alt="Gamestr" className={`w-full max-w-[400px] md:max-w-[520px] mx-auto ${theme === 'light' ? 'drop-shadow-[0_0_32px_rgba(117,57,143,0.3)]' : 'drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]'} -mb-2`} />
-            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} -mt-6 pb-6`}>
+            <div className="w-full max-w-[400px] md:max-w-[520px] h-[280px] mx-auto flex items-center justify-center">
+              <img src={logoSrc} alt="Gamestr" className={`max-h-full w-auto ${theme === 'light' ? 'drop-shadow-[0_0_32px_rgba(117,57,143,0.3)]' : 'drop-shadow-[0_0_32px_rgba(168,85,247,0.6)]'}`} />
+            </div>
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
               Decentralized gaming leaderboards on Nostr
             </p>
           </div>

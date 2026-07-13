@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Crown, Loader2, RefreshCcw, Sparkles } from 'lucide-react';
+import { Gamepad2, Loader2, RefreshCcw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,11 +53,11 @@ export function NIP05PurchaseForm({ ownedName, onClaimed }: NIP05PurchaseFormPro
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
-            <Crown className="h-6 w-6 text-yellow-500" />
-            Claim your {domain} name
+            <Gamepad2 className="h-6 w-6 text-yellow-500" />
+            Claim your {domain} handle
           </CardTitle>
           <CardDescription>
-            Get a verified NIP-05 identifier on {domain} for {priceSats.toLocaleString()} sats per year.
+            Get a Gamestr handle on {domain} for {priceSats.toLocaleString()} sats per year.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -66,7 +66,7 @@ export function NIP05PurchaseForm({ ownedName, onClaimed }: NIP05PurchaseFormPro
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="nip05-name">Name</Label>
+            <Label htmlFor="nip05-name">Handle</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="nip05-name"

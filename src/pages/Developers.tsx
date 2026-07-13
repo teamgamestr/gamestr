@@ -273,11 +273,11 @@ publish_score(
         </div>
 
         <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold">
               Integrate Gamestr Into Your Games
             </h1>
-            <p className={`text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'}`}>
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
               Add decentralized leaderboards to your games with just a few lines of code.
               Reach players across the Nostr network.
             </p>

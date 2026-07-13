@@ -1,4 +1,4 @@
-import { Crown } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { NIP05PurchaseForm } from '@/components/NIP05PurchaseForm';
 import { NIP05Directory } from '@/components/NIP05Directory';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -52,13 +52,13 @@ export function NIP05Store() {
         </div>
 
         <div className="relative container mx-auto px-4 flex items-center justify-center min-h-[260px] md:min-h-[340px]">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold flex items-center justify-center gap-3">
-              <Crown className="h-10 w-10 md:h-14 md:w-14 text-yellow-500 drop-shadow-[0_0_16px_rgba(234,179,8,0.6)]" />
+              <Gamepad2 className="h-10 w-10 md:h-14 md:w-14 text-yellow-500 drop-shadow-[0_0_16px_rgba(234,179,8,0.6)]" />
               {domain}
             </h1>
-            <p className={`text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'}`}>
-              Your verified Nostr identity on {domain}
+            <p className={`text-lg md:text-xl ${theme === 'light' ? 'text-gray-700' : 'text-white/90'} pb-6`}>
+              Your Gamestr handle
             </p>
           </div>
         </div>
