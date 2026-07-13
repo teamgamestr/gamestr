@@ -24,6 +24,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# opencode config
+opencode.json
+
 # Environment
 .env
 .env.local
