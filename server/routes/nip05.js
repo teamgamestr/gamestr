@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { randomUUID } from 'crypto';
 import { nip98Middleware } from '../lib/nip98.js';
 import {
@@ -90,7 +91,15 @@ router.get('/api/nip05/availability', (req, res) => {
   });
 });
 
-router.post('/api/nip05/order', rawJsonMiddleware(), nip98Middleware(), (req, res) => {
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many order requests, please try again later.' },
+});
+
+router.post('/api/nip05/order', orderLimiter, rawJsonMiddleware(), nip98Middleware(), (req, res) => {
   const body = parseJsonBody(req);
   const name = normalizeName(String(body.name || ''));
   const action = body.action === 'renew' ? 'renew' : 'new';
