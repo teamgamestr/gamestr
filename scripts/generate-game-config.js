@@ -75,8 +75,8 @@ if (fallbackMatch) {
 // Extract SCORE_BOT_CONFIG
 let scoreBot = {
   baseUrl: "https://gamestr.io",
-  publishRelays: ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nos.lol"],
-  subscribeRelays: ["wss://relay.nostr.band"],
+  publishRelays: ["wss://main.relay.gamestr.io", "wss://relay.ditto.pub", "wss://relay.damus.io", "wss://nos.lol"],
+  subscribeRelays: ["wss://main.relay.gamestr.io", "wss://relay.ditto.pub"],
   templates: {
     newScore: "{playerTag} just scored {score} points in {gameName}! {gameTag}\n\nCheck it out: {scoreLink}",
     highScore: "NEW HIGH SCORE! {playerTag} just dethroned {previousHolderTag} in {gameName} with {score} points! {gameTag}\n\nThe previous record of {previousScore} has been crushed!\n\n{scoreLink}",

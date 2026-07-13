@@ -96,7 +96,7 @@ export function Developers() {
 
 // Initialize Nostr connection
 const pool = new SimplePool();
-const relays = ['wss://relay.gamestr.io', 'wss://relay.damus.io'];
+  const relays = ['wss://main.relay.gamestr.io', 'wss://relay.damus.io'];
 
 // Your game's private key (keep this secret!)
 const gamePrivateKey = 'your-game-private-key-hex';
@@ -145,7 +145,7 @@ publishScore('player-pubkey-here', 15000, {
   import { SimplePool } from 'nostr-tools';
 
   const pool = new SimplePool();
-  const relays = ['wss://relay.gamestr.io', 'wss://relay.damus.io'];
+const relays = ['wss://main.relay.gamestr.io', 'wss://relay.damus.io'];
 
   async function publishPlayerScore(score, metadata = {}) {
     // Get the player's pubkey from their browser extension
@@ -192,7 +192,7 @@ private_key = PrivateKey.from_nsec("your-nsec-here")
 
 # Initialize relay manager
 relay_manager = RelayManager()
-relay_manager.add_relay("wss://relay.gamestr.io")
+relay_manager.add_relay("wss://main.relay.gamestr.io")
 relay_manager.add_relay("wss://relay.damus.io")
 
 def publish_score(player_pubkey, score, **metadata):
@@ -345,13 +345,13 @@ publish_score(
                   <div className="flex-1 min-w-0">
                     <div className="text-xs dark:text-purple-300/60 text-purple-600/60 mb-1 font-medium uppercase tracking-wider">Production</div>
                     <code className="block w-full dark:bg-black/40 bg-purple-100/80 dark:border-purple-500/30 border-purple-300 rounded-lg px-4 py-2.5 dark:text-purple-300 text-purple-700 font-mono text-base tracking-wide select-all">
-                      wss://relay.gamestr.io
+                      wss://main.relay.gamestr.io
                     </code>
                   </div>
                   <Button
                     variant="outline"
                     className="dark:border-purple-500/40 dark:text-purple-200 dark:hover:bg-purple-500/20 dark:hover:text-white border-purple-300 text-purple-700 hover:bg-purple-100 hover:text-purple-900 shrink-0 mt-5"
-                    onClick={() => copyCode('wss://relay.gamestr.io', 'relay-url-prod')}
+                    onClick={() => copyCode('wss://main.relay.gamestr.io', 'relay-url-prod')}
                   >
                     {copiedCode === 'relay-url-prod' ? (
                       <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>
@@ -364,13 +364,13 @@ publish_score(
                   <div className="flex-1 min-w-0">
                     <div className="text-xs dark:text-purple-300/60 text-purple-600/60 mb-1 font-medium uppercase tracking-wider">Test / Staging</div>
                     <code className="block w-full dark:bg-black/40 bg-purple-100/80 dark:border-purple-500/20 border-purple-300 rounded-lg px-4 py-2.5 dark:text-purple-300/70 text-purple-700/70 font-mono text-base tracking-wide select-all">
-                      wss://test.gamestr.io
+                      wss://test.relay.gamestr.io
                     </code>
                   </div>
                   <Button
                     variant="outline"
                     className="dark:border-purple-500/30 dark:text-purple-300/70 dark:hover:bg-purple-500/10 dark:hover:text-white border-purple-300 text-purple-700/70 hover:bg-purple-100 hover:text-purple-900 shrink-0 mt-5"
-                    onClick={() => copyCode('wss://test.gamestr.io', 'relay-url-test')}
+                    onClick={() => copyCode('wss://test.relay.gamestr.io', 'relay-url-test')}
                   >
                     {copiedCode === 'relay-url-test' ? (
                       <><CheckCircle2 className="h-4 w-4 mr-2 text-green-400" />Copied!</>

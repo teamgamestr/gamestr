@@ -34,13 +34,14 @@ const queryClient = new QueryClient({
 
 const defaultConfig: AppConfig = {
   theme: "dark",
-  relayUrl: "wss://relay.gamestr.io",
+  relayUrl: "wss://main.relay.gamestr.io",
   latestScoresCount: 10,
   latestScoresBufferCount: 10,
 };
 
 const relays = [
-  { url: 'wss://relay.gamestr.io', name: 'Gamestr' },
+  { url: 'wss://main.relay.gamestr.io', name: 'Gamestr (Main)' },
+  { url: 'wss://test.relay.gamestr.io', name: 'Gamestr (Test)' },
   { url: 'wss://relay.ditto.pub', name: 'Ditto' },
   { url: 'wss://nos.lol', name: 'nos.lol' },
   { url: 'wss://relay.damus.io', name: 'Damus' },

@@ -29,13 +29,16 @@ export const SCORE_BOT_CONFIG = {
 
   // Relays to publish bot announcements to
   publishRelays: [
-    "wss://relay.nostr.band",
+    "wss://main.relay.gamestr.io",
+    "wss://relay.ditto.pub",
     "wss://relay.damus.io",
     "wss://nos.lol",
   ],
 
   // Relays to subscribe to for score events
   subscribeRelays: [
+    "wss://main.relay.gamestr.io",
+    "wss://relay.ditto.pub",
     "wss://relay.damus.io",
     "wss://nos.lol",
     "wss://relay.primal.net",
