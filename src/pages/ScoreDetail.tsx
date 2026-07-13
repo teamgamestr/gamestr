@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { validateScoreEvent } from '@/hooks/useScores';
 import { resolveGameByIdentifier, formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
@@ -60,6 +61,8 @@ export function ScoreDetail() {
   const playerAuthor = useAuthor(scoreData?.playerPubkey || '');
   const playerMetadata = playerAuthor.data?.metadata;
   const playerDisplayName = playerMetadata?.name || genUserName(scoreData?.playerPubkey || '');
+  const { data: gamestrNames } = useNIP05NamesByPubkey(scoreData?.playerPubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
 
   // Fetch zap data for the score
   const { totalSats, zapCount, isLoading: zapsLoading } = useZaps(
@@ -144,12 +147,19 @@ export function ScoreDetail() {
             <div className="flex items-start gap-4">
               {/* Player Avatar */}
               <Link to={`/player/${scoreData.playerPubkey}`}>
-                <Avatar className="h-16 w-16 ring-2 ring-background">
-                  <AvatarImage src={playerMetadata?.picture} alt={playerDisplayName} />
-                  <AvatarFallback className="text-lg">
-                    {playerDisplayName[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-16 w-16 ring-2 ring-background">
+                    <AvatarImage src={playerMetadata?.picture} alt={playerDisplayName} />
+                    <AvatarFallback className="text-lg">
+                      {playerDisplayName[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {gamestrName && (
+                    <div className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-950 rounded-full p-1 shadow-md">
+                      <Gamepad2 className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                </div>
               </Link>
 
               {/* Header Info */}

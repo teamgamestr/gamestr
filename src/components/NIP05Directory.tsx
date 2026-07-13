@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNIP05Names, useNIP05Config } from '@/hooks/useNIP05';
 import { useAuthor } from '@/hooks/useAuthor';
-import { buildNIP05Identifier } from '@/lib/nip05';
+
 import { genUserName } from '@/lib/genUserName';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function DirectoryItem({ name, pubkey, domain }: { name: string; pubkey: string; domain: string }) {
+function DirectoryItem({ name, pubkey }: { name: string; pubkey: string }) {
   const author = useAuthor(pubkey);
   const metadata = author.data?.metadata;
   const displayName = metadata?.name || genUserName(pubkey);
@@ -28,7 +28,7 @@ function DirectoryItem({ name, pubkey, domain }: { name: string; pubkey: string;
         </div>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-semibold truncate">{buildNIP05Identifier(name, domain)}</div>
+        <div className="font-semibold truncate">@{name}</div>
         <div className="text-sm text-muted-foreground truncate">{displayName}</div>
       </div>
     </Link>
@@ -64,7 +64,7 @@ export function NIP05Directory() {
         ) : data?.names.length ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {data.names.map((entry) => (
-              <DirectoryItem key={entry.name} name={entry.name} pubkey={entry.pubkey} domain={domain} />
+              <DirectoryItem key={entry.name} name={entry.name} pubkey={entry.pubkey} />
             ))}
           </div>
         ) : (

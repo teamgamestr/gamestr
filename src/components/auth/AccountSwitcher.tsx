@@ -1,7 +1,7 @@
 // NOTE: This file is stable and usually should not be modified.
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
-import { ChevronDown, LogOut, UserIcon, UserPlus, Wallet } from 'lucide-react';
+import { ChevronDown, Gamepad2, LogOut, UserIcon, UserPlus, Wallet } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { WalletModal } from '@/components/WalletModal';
+import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useLoggedInAccounts, type Account } from '@/hooks/useLoggedInAccounts';
 import { genUserName } from '@/lib/genUserName';
 
@@ -20,6 +21,8 @@ interface AccountSwitcherProps {
 
 export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
   const { currentUser, otherUsers, setLogin, removeLogin } = useLoggedInAccounts();
+  const { data: gamestrNames } = useNIP05NamesByPubkey(currentUser?.pubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
 
   if (!currentUser) return null;
 
@@ -31,10 +34,17 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button className='flex items-center gap-3 p-3 rounded-full hover:bg-accent transition-all w-full text-foreground'>
-          <Avatar className='w-10 h-10'>
-            <AvatarImage src={currentUser.metadata.picture} alt={getDisplayName(currentUser)} />
-            <AvatarFallback>{getDisplayName(currentUser).charAt(0)}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className='w-10 h-10'>
+              <AvatarImage src={currentUser.metadata.picture} alt={getDisplayName(currentUser)} />
+              <AvatarFallback>{getDisplayName(currentUser).charAt(0)}</AvatarFallback>
+            </Avatar>
+            {gamestrName && (
+              <div className="absolute -top-0.5 -right-0.5 bg-yellow-500 text-yellow-950 rounded-full p-0.5 shadow-md">
+                <Gamepad2 className="h-2.5 w-2.5" />
+              </div>
+            )}
+          </div>
           <div className='flex-1 text-left hidden md:block truncate'>
             <p className='font-medium text-sm truncate'>{getDisplayName(currentUser)}</p>
           </div>

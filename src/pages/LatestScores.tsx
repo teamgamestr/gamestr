@@ -9,6 +9,7 @@ import { NKinds, type NostrEvent } from '@nostrify/nostrify';
 import { useLatestScores, type ParsedScore } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAuthor } from '@/hooks/useAuthor';
+import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useToast } from '@/hooks/useToast';
@@ -232,6 +233,8 @@ function LatestScoreRow({ score, gameConfig, commentCount, reactionCount }: Late
   const author = useAuthor(score.playerPubkey);
   const metadata = author.data?.metadata;
   const playerName = metadata?.name || metadata?.display_name || genUserName(score.playerPubkey);
+  const { data: gamestrNames } = useNIP05NamesByPubkey(score.playerPubkey);
+  const gamestrName = gamestrNames?.names?.[0]?.name;
   const resolvedGame = resolveGameByIdentifier(score.gameIdentifier, gameConfig);
   const gameMetadata: GameMetadata = resolvedGame?.metadata || FALLBACK_GAME_METADATA;
   const scorePrefs = getScoreDisplayPrefs(gameMetadata);
@@ -241,10 +244,17 @@ function LatestScoreRow({ score, gameConfig, commentCount, reactionCount }: Late
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <Link to={`/${score.gameIdentifier}/score/${score.event.id}`} className="group flex min-w-0 items-center gap-4">
-            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-              <AvatarImage src={metadata?.picture} alt={playerName} />
-              <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                <AvatarImage src={metadata?.picture} alt={playerName} />
+                <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              {gamestrName && (
+                <div className="absolute -top-1 -right-1 bg-yellow-500 text-yellow-950 rounded-full p-0.5 shadow-md">
+                  <Gamepad2 className="h-3 w-3" />
+                </div>
+              )}
+            </div>
             <div className="min-w-0">
               <CardTitle className="line-clamp-1 text-lg group-hover:text-primary">{playerName}</CardTitle>
               <p className="line-clamp-1 text-sm text-muted-foreground">
