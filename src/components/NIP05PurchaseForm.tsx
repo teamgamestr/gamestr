@@ -43,7 +43,7 @@ export function NIP05PurchaseForm({ ownedName, onClaimed }: NIP05PurchaseFormPro
     }
   };
 
-  const priceSats = availability?.priceSats ?? 0;
+  const priceSats = availability?.priceSats ?? config?.priceSats ?? 0;
   const canBuy = availability?.available && !createOrder.isPending;
   const canRenew = availability?.renewable && !createOrder.isPending;
   const showInvalid = normalized.length > 0 && !isValidNIP05LocalPart(normalized);
