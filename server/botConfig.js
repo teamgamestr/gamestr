@@ -63,14 +63,14 @@ const { games: GAME_CONFIG, scoreBot: SCORE_BOT_JSON_CONFIG } = loadGameConfig()
 const DEFAULT_BOT_CONFIG = {
   baseUrl: 'https://gamestr.io',
   publishRelays: [
-    'wss://relay.gamestr.io',
+    'wss://main.relay.gamestr.io',
     'wss://relay.ditto.pub',
     'wss://nos.lol',
     'wss://relay.damus.io',
     'wss://relay.primal.net',
   ],
   subscribeRelays: [
-    'wss://relay.gamestr.io',
+    'wss://main.relay.gamestr.io',
     'wss://relay.ditto.pub',
     'wss://nos.lol',
     'wss://relay.damus.io',

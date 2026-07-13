@@ -23,7 +23,7 @@ export function TestApp({ children }: TestAppProps) {
 
   const defaultConfig: AppConfig = {
     theme: 'light',
-    relayUrl: 'wss://relay.nostr.band',
+    relayUrl: 'wss://main.relay.gamestr.io',
     latestScoresCount: 10,
     latestScoresBufferCount: 10,
   };

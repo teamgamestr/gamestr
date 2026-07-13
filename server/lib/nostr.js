@@ -5,7 +5,7 @@ const SERVICE_PUBKEY = process.env.NIP05_SERVICE_PUBKEY_HEX || '';
 const FALLBACK_LUD16 = process.env.NIP05_FALLBACK_LUD16 || '';
 
 const DEFAULT_RELAYS = [
-  'wss://relay.gamestr.io',
+  'wss://main.relay.gamestr.io',
   'wss://relay.ditto.pub',
   'wss://nos.lol',
   'wss://relay.damus.io',
