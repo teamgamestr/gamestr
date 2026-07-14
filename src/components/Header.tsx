@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LoginArea } from '@/components/auth/LoginArea';
-import { Gamepad2, Code2 } from 'lucide-react';
+import { Gamepad2, Code2, Menu } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Moon, Sun } from 'lucide-react';
 import { useNIP05Config } from '@/hooks/useNIP05';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -55,6 +56,38 @@ export function Header() {
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>
             </Button>
+
+            {/* Mobile hamburger */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64">
+                <nav className="flex flex-col gap-2 mt-8">
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/" className="flex items-center gap-2 text-lg">
+                      <Gamepad2 className="h-5 w-5" />
+                      Games
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/developers" className="flex items-center gap-2 text-lg">
+                      <Code2 className="h-5 w-5" />
+                      Developers
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" asChild className="justify-start">
+                    <Link to="/me" className="flex items-center gap-2 text-lg">
+                      <Gamepad2 className="h-5 w-5" />
+                      {nip05Domain}
+                    </Link>
+                  </Button>
+                </nav>
+              </SheetContent>
+            </Sheet>
 
             {/* Login */}
             <LoginArea className="max-w-60" />
