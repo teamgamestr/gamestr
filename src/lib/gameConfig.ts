@@ -1000,12 +1000,14 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // ===== NOMAD — game-signed scores (kind 30762 by the game account) =====
+  // NOMAD publishes one leaderboard per game identifier ("nomad-trophies",
+  // "nomad-legend"); both are aliased to the canonical "nomad" identifier and
+  // split into boards via the shared `board` tag.
 
-  // NOMAD Trophies board
-  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-trophies": {
-    name: "NOMAD — Trophies",
+  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad": {
+    name: "NOMAD",
     description:
-      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Trophies leaderboard.",
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead.",
     image: "https://nomadmud.com/og.jpg?v=2",
     genres: ["rpg", "adventure", "multiplayer"],
     url: "https://nomadmud.com",
@@ -1013,20 +1015,10 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
     featured: false,
     addedAt: "2026-08-22",
-  },
-
-  // NOMAD Legend board
-  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-legend": {
-    name: "NOMAD — Legend",
-    description:
-      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Legend leaderboard.",
-    image: "https://nomadmud.com/og.jpg?v=2",
-    genres: ["rpg", "adventure", "multiplayer"],
-    url: "https://nomadmud.com",
-    developer:
-      "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
-    featured: false,
-    addedAt: "2026-08-22",
+    leaderboards: [
+      { label: "Trophies", scoreTag: "score", direction: "desc", filterTag: "board", filterValue: "trophies" },
+      { label: "Legend", scoreTag: "score", direction: "desc", filterTag: "board", filterValue: "legend" },
+    ],
   },
 };
 
@@ -1048,6 +1040,33 @@ export const GAME_CONFIG_VERSION = generateConfigHash(INITIAL_GAME_CONFIG);
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
 
+/**
+ * Alternate score-event identifiers that belong to a canonical configured
+ * game. Maps alias -> canonical identifier, e.g. NOMAD publishes separate
+ * "nomad-trophies" / "nomad-legend" identifiers for what is one game.
+ */
+export const GAME_IDENTIFIER_ALIASES: Record<string, string> = {
+  "nomad-trophies": "nomad",
+  "nomad-legend": "nomad",
+};
+
+/** Resolve an identifier to its canonical form (identity when no alias). */
+export function canonicalGameIdentifier(gameIdentifier: string): string {
+  return GAME_IDENTIFIER_ALIASES[gameIdentifier] ?? gameIdentifier;
+}
+
+/**
+ * All identifiers whose events should be considered part of a game:
+ * the canonical identifier plus every alias pointing at it.
+ */
+export function getGameIdentifierGroup(gameIdentifier: string): string[] {
+  const canonical = canonicalGameIdentifier(gameIdentifier);
+  const aliases = Object.entries(GAME_IDENTIFIER_ALIASES)
+    .filter(([, target]) => target === canonical)
+    .map(([alias]) => alias);
+  return [canonical, ...aliases];
+}
+
 // Games to exclude from display (by game name/identifier)
 // Add game identifiers here to hide them from the platform
 export const EXCLUDED_GAMES: string[] = [
@@ -1057,7 +1076,6 @@ export const EXCLUDED_GAMES: string[] = [
   "bitcoin-space-invaders",
   "asteroid-sats",
   "nogames-tetris",
-  "nomad", // retired NOMAD identifier (superseded by nomad-trophies / nomad-legend)
 ];
 
 // All available genres
@@ -1093,12 +1111,13 @@ export function getGameMetadata(
   customConfig?: GameConfigMap,
 ): GameMetadata {
   const config = customConfig || INITIAL_GAME_CONFIG;
-  const key = `${pubkey}:${gameIdentifier}`;
+  const identifier = canonicalGameIdentifier(gameIdentifier);
+  const key = `${pubkey}:${identifier}`;
 
   if (config[key]) return config[key];
   if (INITIAL_GAME_CONFIG[key]) return INITIAL_GAME_CONFIG[key];
 
-  const k5555 = KIND_5555_GAMES[gameIdentifier];
+  const k5555 = KIND_5555_GAMES[identifier];
   if (k5555) return k5555.metadata;
 
   return FALLBACK_GAME_METADATA;
@@ -1113,10 +1132,11 @@ export function resolveGameByIdentifier(
   customConfig?: GameConfigMap,
 ): { pubkey: string; metadata: GameMetadata } | null {
   const config = customConfig || INITIAL_GAME_CONFIG;
+  const canonical = canonicalGameIdentifier(gameIdentifier);
 
   for (const [key, metadata] of Object.entries(config)) {
     const parsed = parseGameKey(key);
-    if (parsed && parsed.gameIdentifier === gameIdentifier) {
+    if (parsed && parsed.gameIdentifier === canonical) {
       return { pubkey: parsed.pubkey, metadata };
     }
   }
@@ -1124,13 +1144,13 @@ export function resolveGameByIdentifier(
   if (config !== INITIAL_GAME_CONFIG) {
     for (const [key, metadata] of Object.entries(INITIAL_GAME_CONFIG)) {
       const parsed = parseGameKey(key);
-      if (parsed && parsed.gameIdentifier === gameIdentifier) {
+      if (parsed && parsed.gameIdentifier === canonical) {
         return { pubkey: parsed.pubkey, metadata };
       }
     }
   }
 
-  const k5555 = KIND_5555_GAMES[gameIdentifier];
+  const k5555 = KIND_5555_GAMES[canonical];
   if (k5555) {
     return { pubkey: NO_PUBKEY_PREFIX, metadata: k5555.metadata };
   }
@@ -1168,7 +1188,7 @@ export function isNoPubkeyGame(pubkey: string): boolean {
 }
 
 export function isPlayerSignedGame(gameIdentifier: string): boolean {
-  const key = `${NO_PUBKEY_PREFIX}:${gameIdentifier}`;
+  const key = `${NO_PUBKEY_PREFIX}:${canonicalGameIdentifier(gameIdentifier)}`;
   const metadata = INITIAL_GAME_CONFIG[key];
   return metadata?.playerSigned === true;
 }
