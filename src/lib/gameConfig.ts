@@ -1104,6 +1104,7 @@ export const EXCLUDED_GAMES: string[] = [
   "bitcoin-space-invaders",
   "asteroid-sats",
   "nogames-tetris",
+  "some-other-game",
 ];
 
 // All available genres
