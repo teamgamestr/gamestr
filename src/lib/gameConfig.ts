@@ -778,22 +778,9 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // Vibecampvania — Chris Allen
+  // Also published under the legacy identifier
+  // "soul-reaper-vibecamp-chronicles" (aliased above).
   "nopubkey:vibecampvania": {
-    name: "Vibecampvania",
-    description:
-      "A gothic side-scrolling action RPG — storm 5 candlelit levels of the undead with a full combo system, blocking, and a meter-based special move, then face the final boss atop the castle.",
-    image: "https://bitcoinvibe.camp/x/hackers/chris-allen/thumbnail.jpg",
-    genres: ["rpg", "action", "adventure"],
-    url: "https://bitcoinvibe.camp/x/hackers/chris-allen/",
-    developer:
-      "npub1vjunjx20xwun20jds262durqmnkw4hwa59ev8jpy6v7cantsgnrq57yzx9",
-    featured: false,
-    addedAt: "2026-08-22",
-    playerSigned: true,
-  },
-
-  // Vibecampvania legacy identifier still seen in score events
-  "nopubkey:soul-reaper-vibecamp-chronicles": {
     name: "Vibecampvania",
     description:
       "A gothic side-scrolling action RPG — storm 5 candlelit levels of the undead with a full combo system, blocking, and a meter-based special move, then face the final boss atop the castle.",
@@ -900,22 +887,9 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // Vocab Vegas — Matt
+  // Also published under the Olympics-board identifier
+  // "vocab-vegas-spanish-word-dice" (aliased above).
   "nopubkey:vocab-vegas": {
-    name: "Vocab Vegas — Spanish Word Dice",
-    description:
-      "A betting mini-game where you wager chips and race the clock translating Spanish word-dice for bonus payouts.",
-    image: "https://bitcoinvibe.camp/x/hackers/matt/thumbnail.png",
-    genres: ["puzzle", "casual"],
-    url: "https://johnnycards-ai.github.io/vibecamp-vocab-vegas/vocab-vegas/",
-    developer:
-      "npub1nveww8lnznpqlh35k5rt8ea2d4zdj7egw9ynrxu75c5wadadtnasl99sda",
-    featured: false,
-    addedAt: "2026-08-22",
-    playerSigned: true,
-  },
-
-  // Vocab Vegas Olympics-board identifier
-  "nopubkey:vocab-vegas-spanish-word-dice": {
     name: "Vocab Vegas — Spanish Word Dice",
     description:
       "A betting mini-game where you wager chips and race the clock translating Spanish word-dice for bonus payouts.",
@@ -960,21 +934,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
   },
 
   // Satoshi Snake — Vitali
-  "nopubkey:Satoshi Snake": {
-    name: "Satoshi Snake",
-    description:
-      "Cyberpunk snake game: stack Bitcoin blocks, grab Time-Lock Freeze and Mini-Halving power-ups to survive longer.",
-    image: "https://bitcoinvibe.camp/x/hackers/vitali/thumbnail.png",
-    genres: ["arcade", "casual"],
-    url: "https://vgzai.github.io/satoshi-snake/",
-    developer:
-      "npub1v42faa37mfmctvnv8ey7gkmna7f747g9jpa3h5zt2xx4z9clyggqypj0la",
-    featured: false,
-    addedAt: "2026-08-22",
-    playerSigned: true,
-  },
-
-  // Satoshi Snake proxy-signed identifier (camp score relay)
+  // Also published under the proxy identifier "Satoshi Snake" (aliased above).
   "nopubkey:satoshisnake": {
     name: "Satoshi Snake",
     description:
@@ -1089,6 +1049,12 @@ export const FEATURED_GAME_PRICING = {
 export const GAME_IDENTIFIER_ALIASES: Record<string, string> = {
   "nomad-trophies": "nomad",
   "nomad-legend": "nomad",
+  // Vibecampvania legacy identifier
+  "soul-reaper-vibecamp-chronicles": "vibecampvania",
+  // Vocab Vegas Olympics-board identifier
+  "vocab-vegas-spanish-word-dice": "vocab-vegas",
+  // Satoshi Snake camp proxy identifier
+  "Satoshi Snake": "satoshisnake",
 };
 
 /** Resolve an identifier to its canonical form (identity when no alias). */
