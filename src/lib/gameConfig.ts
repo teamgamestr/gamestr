@@ -1036,18 +1036,6 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-08-22",
     playerSigned: true,
   },
-
-  // Snake LCD — hobbyist LCD-style Snake; self-signed by players, no site
-  "nopubkey:snake-lcd": {
-    name: "Snake LCD",
-    description:
-      "A retro LCD-style Snake. Eat, grow, don't bite yourself.",
-    image: "/gamestr-logo.svg",
-    genres: ["arcade", "retro", "casual"],
-    featured: false,
-    addedAt: "2026-08-22",
-    playerSigned: true,
-  },
 };
 
 // Generate a hash from game configuration content
@@ -1105,6 +1093,7 @@ export const EXCLUDED_GAMES: string[] = [
   "asteroid-sats",
   "nogames-tetris",
   "some-other-game",
+  "snake-lcd", // hobbyist game with no site or developer identity
 ];
 
 // All available genres
