@@ -518,44 +518,12 @@ interface FeaturedGamesSectionProps {
 }
 
 function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  useEffect(() => {
-    const row = scrollRef.current;
-    if (!row) return;
-
-    const updateScrollState = () => {
-      setCanScrollLeft(row.scrollLeft > 0);
-      setCanScrollRight(row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
-    };
-
-    updateScrollState();
-    row.addEventListener('scroll', updateScrollState, { passive: true });
-    window.addEventListener('resize', updateScrollState);
-
-    return () => {
-      row.removeEventListener('scroll', updateScrollState);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [games.length]);
-
-  const scrollGames = (direction: 'left' | 'right') => {
-    const row = scrollRef.current;
-    if (!row) return;
-    row.scrollBy({
-      left: direction === 'left' ? -row.clientWidth * 0.85 : row.clientWidth * 0.85,
-      behavior: 'smooth',
-    });
-  };
-
   return (
     <section className="relative overflow-visible rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.1),transparent_30%)]" />
       </div>
-      <div className="relative space-y-5">
+      <div className="relative space-y-4">
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-yellow-500" />
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Featured Games</h2>
@@ -567,62 +535,32 @@ function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
           </FeatureGameDialog>
         </div>
 
-        <div className="relative py-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Scroll featured games left"
-            disabled={!canScrollLeft}
-            onClick={() => scrollGames('left')}
-            className="absolute left-0 top-1/2 z-10 h-10 w-10 -translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div
-            ref={scrollRef}
-            className="-my-4 flex gap-3 overflow-x-auto py-4 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {games.map((game) => (
-              <div key={`${game.pubkey}:${game.gameIdentifier}`} className="min-w-[220px] flex-1 snap-start md:min-w-[260px]">
-                <GameCard
-                  pubkey={game.pubkey}
-                  gameIdentifier={game.gameIdentifier}
-                  metadata={game.metadata}
-                  scoreCount={game.scoreCount}
-                  topScore={game.topScore}
-                  trending={game.trending}
-                />
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+          {games.map((game) => (
+            <GameCard
+              key={`${game.pubkey}:${game.gameIdentifier}`}
+              pubkey={game.pubkey}
+              gameIdentifier={game.gameIdentifier}
+              metadata={game.metadata}
+              scoreCount={game.scoreCount}
+              topScore={game.topScore}
+              trending={game.trending}
+            />
+          ))}
+          <FeatureGameDialog className="h-full">
+            <button
+              type="button"
+              className="group flex h-full min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-yellow-500/60 hover:bg-yellow-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Star className="h-7 w-7 text-muted-foreground/50 transition-colors group-hover:text-yellow-500" />
+              <div>
+                <p className="text-sm font-semibold">Your game here</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Zap to feature your game in this spotlight
+                </p>
               </div>
-            ))}
-            <div className="min-w-[220px] flex-1 snap-start md:min-w-[260px]">
-              <FeatureGameDialog className="h-full">
-                <button
-                  type="button"
-                  className="group flex h-full min-h-[220px] w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-yellow-500/60 hover:bg-yellow-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Star className="h-8 w-8 text-muted-foreground/50 transition-colors group-hover:text-yellow-500" />
-                  <div>
-                    <p className="font-semibold">Your game here</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Zap to feature your game in this spotlight
-                    </p>
-                  </div>
-                </button>
-              </FeatureGameDialog>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Scroll featured games right"
-            disabled={!canScrollRight}
-            onClick={() => scrollGames('right')}
-            className="absolute right-0 top-1/2 z-10 h-10 w-10 translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+            </button>
+          </FeatureGameDialog>
         </div>
       </div>
     </section>
