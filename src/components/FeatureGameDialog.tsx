@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Zap, Copy, Check, ExternalLink, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -73,11 +73,12 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
   const [isZapping, setIsZapping] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const stopObservingRef = useRef<(() => void) | null>(null);
 
   const { user } = useCurrentUser();
   const { data: recipient } = useAuthor(GAMESTR_PUBKEY);
   const { toast } = useToast();
-  const { payInvoice } = useZapPayment();
+  const { payInvoice, observeZapReceipt } = useZapPayment();
   const { presetRelays } = useAppContext();
 
   const games = useMemo(
@@ -208,8 +209,16 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
         return;
       }
 
-      // Payment not confirmed - show the QR/invoice view.
+      // Payment not confirmed - show the QR/invoice view, but keep
+      // watching for the receipt so a payment that settles late (e.g.
+      // completed in the wallet UI after its API rejected) still resolves
+      // to success instead of leaving the QR stuck on screen.
       setInvoice(newInvoice);
+      stopObservingRef.current?.();
+      stopObservingRef.current = observeZapReceipt(
+        { recipientPubkey: GAMESTR_PUBKEY, zapRequest: signedZapRequest as unknown as NostrEvent },
+        () => onPaid(),
+      );
     } catch (error) {
       console.error('Feature zap error:', error);
       toast({
@@ -223,6 +232,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
   };
 
   const onPaid = () => {
+    stopObservingRef.current?.();
     setInvoice(null);
     setOpen(false);
     toast({
@@ -246,6 +256,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) {
+          stopObservingRef.current?.();
           setInvoice(null);
           setSelectedGame('');
           setCustomName('');

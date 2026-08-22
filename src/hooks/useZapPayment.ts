@@ -89,14 +89,16 @@ async function waitForZapReceipt(
  *
  * Order: NWC (if connected) -> WebLN (if registered) -> fallback.
  *
- * When `zapRequest` and `recipientPubkey` are supplied, a rejected
- * WebLN/NWC attempt waits for the kind 9735 zap receipt before declaring
- * failure — so successful payments made in the wallet UI never trigger
- * the QR fallback.
+ * WebLN/NWC promises are NOT trusted as evidence of failure: some wallets
+ * reject sendPayment even when the user completes the payment in the
+ * wallet UI. When `zapRequest` and `recipientPubkey` are supplied, any
+ * rejection waits for the authoritative kind 9735 zap receipt before
+ * declaring failure. Pair the fallback view with `observeZapReceipt` so a
+ * late-settling payment still auto-resolves to success.
  *
  * Returns:
  * - 'paid':     confirmed by a payment method or by observing the receipt.
- * - 'fallback': payment wasn't confirmed. Show the invoice/QR.
+ * - 'fallback': no receipt observed. Show the invoice/QR.
  */
 export function useZapPayment() {
   const { nostr } = useNostr();
@@ -108,25 +110,6 @@ export function useZapPayment() {
       invoice: string,
       opts?: { zapRequest?: NostrEvent; recipientPubkey?: string },
     ): Promise<ZapPaymentResult> => {
-      // Receipt verification: poll the relays for the kind 9735 receipt
-      // matching this zap request. A rejection that happens instantly
-      // usually means the wallet refused outright (nothing to wait for),
-      // while slower rejections mean a popup flow ran — give it real time.
-      const verifyAfterReject = async (engagedAt: number): Promise<ZapPaymentResult> => {
-        if (!opts?.recipientPubkey || !opts.zapRequest?.id) return 'fallback';
-
-        const elapsed = Date.now() / 1000 - engagedAt;
-        const timeoutMs = elapsed < 2 ? 3000 : 15000;
-        const paid = await waitForZapReceipt(
-          (filters, signalOpts) => nostr.query(filters, signalOpts),
-          opts.recipientPubkey,
-          opts.zapRequest.id,
-          Math.floor(Date.now() / 1000),
-          timeoutMs,
-        );
-        return paid ? 'paid' : 'fallback';
-      };
-
       // 1. Nostr Wallet Connect
       const nwc = getActiveConnection();
       if (nwc?.connectionString && nwc.isConnected) {
@@ -139,7 +122,6 @@ export function useZapPayment() {
       }
 
       // 2. WebLN wallet (re-resolved at call time)
-      const engagedAt = Date.now() / 1000;
       const provider = await resolveWebLnProvider(webln);
       if (provider) {
         try {
@@ -148,7 +130,16 @@ export function useZapPayment() {
         } catch (error) {
           console.warn('[ZapPayment] WebLN sendPayment did not resolve:', error);
           if (opts?.recipientPubkey && opts.zapRequest?.id) {
-            return await verifyAfterReject(engagedAt);
+            // The wallet UI may still be completing this payment — wait for
+            // the authoritative receipt before falling back to the QR.
+            const paid = await waitForZapReceipt(
+              (filters, signalOpts) => nostr.query(filters, signalOpts),
+              opts.recipientPubkey,
+              opts.zapRequest.id,
+              Math.floor(Date.now() / 1000),
+              20000,
+            );
+            return paid ? 'paid' : 'fallback';
           }
           return 'fallback';
         }
@@ -160,5 +151,55 @@ export function useZapPayment() {
     [nostr, webln, sendPayment, getActiveConnection],
   );
 
-  return { payInvoice };
+  /**
+   * Watch for a zap receipt in the background and invoke `onPaid` when it
+   * settles. Used so a QR/invoice shown as a fallback auto-resolves to
+   * success if the user completes payment in their own wallet afterwards.
+   * Returns a cancel function.
+   */
+  const observeZapReceipt = useCallback(
+    (
+      opts: { recipientPubkey: string; zapRequest: NostrEvent },
+      onPaid: () => void,
+    ): (() => void) => {
+      let cancelled = false;
+      const startedAt = Math.floor(Date.now() / 1000);
+      const zapRequestId = opts.zapRequest.id;
+
+      (async () => {
+        while (!cancelled) {
+          try {
+            const receipts = await nostr.query(
+              [{
+                kinds: [9735],
+                '#p': [opts.recipientPubkey],
+                since: Math.max(0, startedAt - 120),
+                limit: 200,
+              }],
+              { signal: AbortSignal.timeout(2500) },
+            );
+            const paid = receipts.some((receipt) => {
+              const description = receipt.tags.find(([name]) => name === 'description')?.[1];
+              return !!description && description.includes(zapRequestId);
+            });
+            if (cancelled) return;
+            if (paid) {
+              onPaid();
+              return;
+            }
+          } catch {
+            // Relay hiccup — keep observing.
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    },
+    [nostr],
+  );
+
+  return { payInvoice, observeZapReceipt };
 }
