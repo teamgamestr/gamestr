@@ -210,6 +210,16 @@ export function Home() {
       </div>
 
       <div className="container mx-auto px-4 py-12 space-y-8">
+        <LatestScoresSection
+          scores={(latestScores || []).slice(0, visibleLatestScoresCount)}
+          gameConfig={config}
+          hasMoreScores={(latestScores?.length ?? 0) > visibleLatestScoresCount}
+          isLoading={isLatestScoresLoading}
+          onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
+        />
+
+        <FeaturedGamesSection games={featuredGames} />
+
         {/* Filters Section */}
         <div className="space-y-4">
           {/* Search Bar */}
@@ -301,16 +311,6 @@ export function Home() {
             </div>
           )}
         </div>
-
-        <LatestScoresSection
-          scores={(latestScores || []).slice(0, visibleLatestScoresCount)}
-          gameConfig={config}
-          hasMoreScores={(latestScores?.length ?? 0) > visibleLatestScoresCount}
-          isLoading={isLatestScoresLoading}
-          onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
-        />
-
-        <FeaturedGamesSection games={featuredGames} />
 
         {/* Results Count */}
         {!isLoading && (
