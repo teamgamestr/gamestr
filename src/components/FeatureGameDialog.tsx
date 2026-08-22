@@ -73,6 +73,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
   const [isZapping, setIsZapping] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
 
   const { user } = useCurrentUser();
   const { data: recipient } = useAuthor(GAMESTR_PUBKEY);
@@ -141,6 +142,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
 
     setIsZapping(true);
     setInvoice(null);
+    setPaymentNotice(null);
 
     try {
       if (!user.signer) throw new Error('No signer available');
@@ -198,12 +200,9 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       }
       if (!newInvoice) throw lastError;
 
-      // Show the invoice (QR) immediately as the primary payment view.
-      setInvoice(newInvoice);
-
-      // Then try automatic payment methods quietly. If they fail, the
-      // invoice stays on screen — no error toast, since the wallet UI may
-      // still be open and the invoice can only be paid once.
+      // Try automatic payment methods first: NWC, then the registered
+      // WebLN wallet. The QR fallback is only shown when there is no
+      // WebLN wallet at all.
       const activeNWC = getActiveConnection();
       if (activeNWC?.connectionString && activeNWC.isConnected) {
         try {
@@ -224,11 +223,20 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           }
           await provider.sendPayment(newInvoice);
           onPaid();
-          return;
         } catch (error) {
+          // A WebLN wallet is registered but didn't confirm through its
+          // API. Trust that its own UI handled (or will handle) the
+          // payment — don't fall back to a QR code.
           console.warn('WebLN sendPayment did not resolve:', error);
+          setPaymentNotice(
+            "Your wallet didn't confirm the payment automatically. If you completed it in your wallet, you're all set — otherwise please try again.",
+          );
         }
+        return;
       }
+
+      // No WebLN wallet registered — show the QR/invoice view.
+      setInvoice(newInvoice);
     } catch (error) {
       console.error('Feature zap error:', error);
       toast({
@@ -270,6 +278,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           setCustomName('');
           setCustomUrl('');
           setMonths(1);
+          setPaymentNotice(null);
         }
       }}
     >
@@ -324,6 +333,11 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           </div>
         ) : (
           <div className="space-y-4 pb-2">
+            {paymentNotice && (
+              <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm text-foreground">
+                {paymentNotice}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="featured-game">Your game</Label>
               <Select value={selectedGame} onValueChange={setSelectedGame}>
