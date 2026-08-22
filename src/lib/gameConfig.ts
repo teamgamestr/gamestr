@@ -80,6 +80,11 @@ export interface GameMetadata {
   url?: string;
   developer?: string;
   featured?: boolean;
+  /**
+   * ISO date after which the game is no longer shown as featured.
+   * Featured placements without an expiry remain featured indefinitely.
+   */
+  featuredUntil?: string;
   addedAt?: string;
   playerSigned?: boolean;
   leaderboards?: LeaderboardConfig[];
@@ -1056,6 +1061,26 @@ export const GAME_CONFIG_VERSION = generateConfigHash(INITIAL_GAME_CONFIG);
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
 
+/** Gamestr team account (receives featured-game placement zaps, handles claims). */
+export const GAMESTR_PUBKEY =
+  "5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453";
+
+/**
+ * Static Lightning address used as a fallback when the Gamestr account's
+ * Nostr profile (kind 0) hasn't loaded or lacks a lightning address.
+ */
+export const GAMESTR_LIGHTNING_ADDRESS = "zaps@gamestr.io";
+
+/**
+ * Pricing for featured game placements, paid via Lightning zap to the
+ * Gamestr account. Cost is per month and configurable here.
+ */
+export const FEATURED_GAME_PRICING = {
+  satsPerMonth: 21000,
+  minMonths: 1,
+  maxMonths: 12,
+} as const;
+
 /**
  * Alternate score-event identifiers that belong to a canonical configured
  * game. Maps alias -> canonical identifier, e.g. NOMAD publishes separate
@@ -1277,10 +1302,22 @@ export function isNewGame(metadata: GameMetadata): boolean {
 }
 
 /**
+ * Check whether a game's featured placement is currently active.
+ * A `featuredUntil` expiry date (ISO) bounds the placement in time.
+ */
+export function isFeaturedActive(metadata: GameMetadata, now = Date.now()): boolean {
+  if (!metadata.featured) return false;
+  if (!metadata.featuredUntil) return true;
+  return new Date(metadata.featuredUntil).getTime() > now;
+}
+
+/**
  * Get featured games
  */
 export function getFeaturedGames(customConfig?: GameConfigMap) {
-  return getAllGames(customConfig).filter((game) => game.metadata.featured);
+  return getAllGames(customConfig).filter((game) =>
+    isFeaturedActive(game.metadata),
+  );
 }
 
 /**

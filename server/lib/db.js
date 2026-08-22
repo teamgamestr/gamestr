@@ -34,9 +34,83 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_orders_name_status ON orders(name, status);
   CREATE INDEX IF NOT EXISTS idx_orders_expires ON orders(expires_at);
+
+  CREATE TABLE IF NOT EXISTS featured_placements (
+    game_key TEXT PRIMARY KEY,
+    payer_pubkey TEXT NOT NULL,
+    months INTEGER NOT NULL,
+    expires_at INTEGER NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    last_zap_id TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_featured_placements_expires ON featured_placements(expires_at);
+
+  CREATE TABLE IF NOT EXISTS featured_requests (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    payer_pubkey TEXT NOT NULL,
+    months INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at INTEGER NOT NULL
+  );
 `);
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
+
+// ===== Featured placements =====
+
+export function getActivePlacement(gameKey, asOf = nowSeconds()) {
+  const stmt = db.prepare('SELECT * FROM featured_placements WHERE game_key = ? AND expires_at > ?');
+  return stmt.get(gameKey, asOf) || null;
+}
+
+export function getActivePlacements(asOf = nowSeconds()) {
+  const stmt = db.prepare(`
+    SELECT * FROM featured_placements WHERE expires_at > ?
+    ORDER BY expires_at DESC
+  `);
+  return stmt.all(asOf);
+}
+
+export function upsertFeaturedPlacement({ gameKey, payerPubkey, months, zapId }) {
+  const now = nowSeconds();
+  const termSeconds = months * 30 * 24 * 60 * 60;
+  const existing = getActivePlacement(gameKey);
+  const expiresAt = existing
+    ? Math.max(existing.expires_at, now) + termSeconds
+    : now + termSeconds;
+  const stmt = db.prepare(`
+    INSERT INTO featured_placements (game_key, payer_pubkey, months, expires_at, created_at, updated_at, last_zap_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(game_key) DO UPDATE SET
+      payer_pubkey = excluded.payer_pubkey,
+      months = excluded.months,
+      expires_at = excluded.expires_at,
+      updated_at = excluded.updated_at,
+      last_zap_id = excluded.last_zap_id
+  `);
+  stmt.run(gameKey, payerPubkey, months, expiresAt, now, now, zapId || null);
+  return { gameKey, expiresAt };
+}
+
+export function createFeaturedRequest({ id, name, url, payerPubkey, months }) {
+  const now = nowSeconds();
+  const stmt = db.prepare(`
+    INSERT INTO featured_requests (id, name, url, payer_pubkey, months, status, created_at)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?)
+  `);
+  stmt.run(id, name, url, payerPubkey, months, now);
+  return { id, name, url };
+}
+
+export function deleteExpiredFeaturedPlacements(asOf = nowSeconds()) {
+  const stmt = db.prepare('DELETE FROM featured_placements WHERE expires_at <= ?');
+  const result = stmt.run(asOf);
+  return result.changes;
+}
 
 export function createName({ name, pubkey, expiresAt, orderId }) {
   const now = nowSeconds();

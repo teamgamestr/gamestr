@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Flame, Sparkles, Trophy } from 'lucide-react';
 import type { GameMetadata } from '@/lib/gameConfig';
-import { isNewGame } from '@/lib/gameConfig';
+import { isFeaturedActive, isNewGame } from '@/lib/gameConfig';
 
 interface GameCardProps {
   pubkey: string;
@@ -12,6 +12,8 @@ interface GameCardProps {
   scoreCount?: number;
   topScore?: number;
   trending?: boolean;
+  /** Hide the Featured badge (e.g. inside the Featured section itself). */
+  hideFeaturedBadge?: boolean;
   className?: string;
 }
 
@@ -21,6 +23,7 @@ export function GameCard({
   scoreCount,
   topScore,
   trending,
+  hideFeaturedBadge = false,
   className = '',
 }: GameCardProps) {
   const gameUrl = `/${gameIdentifier}`;
@@ -51,7 +54,7 @@ export function GameCard({
                 New
               </Badge>
             )}
-            {metadata.featured && (
+            {!hideFeaturedBadge && isFeaturedActive(metadata) && (
               <Badge className="gap-1 shadow-lg bg-yellow-500 hover:bg-yellow-600">
                 <Trophy className="h-3 w-3" />
                 Featured

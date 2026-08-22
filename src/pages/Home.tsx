@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { GamesGrid } from '@/components/GamesGrid';
 import { GameCard } from '@/components/GameCard';
+import { FeatureGameDialog } from '@/components/FeatureGameDialog';
 import { useGamesWithScores, useLatestScores, useTrendingGames, type ParsedScore } from '@/hooks/useScores';
+import { useFeaturedPlacements } from '@/hooks/useFeaturedPlacements';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useTheme } from '@/hooks/useTheme';
@@ -16,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isFeaturedActive, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
@@ -105,9 +107,17 @@ export function Home() {
     });
   }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames, allConfigGames, trendingIdentifiers]);
 
+  const featuredPlacements = useFeaturedPlacements();
+
   const featuredGames = useMemo(
-    () => games.filter(g => g.metadata.featured).slice(0, 8),
-    [games],
+    () =>
+      games
+        .filter(g => {
+          const key = `${g.pubkey}:${g.gameIdentifier}`;
+          return isFeaturedActive(g.metadata) || featuredPlacements.placements.has(key);
+        })
+        .slice(0, 8),
+    [games, featuredPlacements.placements],
   );
 
   // Apply filters
@@ -116,9 +126,10 @@ export function Home() {
 
     // Apply filter mode
     if (filterMode === 'featured') {
-      const featuredKeys = new Set(
-        getFeatured().map(g => `${g.pubkey}:${g.gameIdentifier}`)
-      );
+      const featuredKeys = new Set([
+        ...getFeatured().map(g => `${g.pubkey}:${g.gameIdentifier}`),
+        ...featuredPlacements.placements.keys(),
+      ]);
       filtered = filtered.filter(game =>
         featuredKeys.has(`${game.pubkey}:${game.gameIdentifier}`)
       );
@@ -199,6 +210,16 @@ export function Home() {
       </div>
 
       <div className="container mx-auto px-4 py-12 space-y-8">
+        <LatestScoresSection
+          scores={(latestScores || []).slice(0, visibleLatestScoresCount)}
+          gameConfig={config}
+          hasMoreScores={(latestScores?.length ?? 0) > visibleLatestScoresCount}
+          isLoading={isLatestScoresLoading}
+          onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
+        />
+
+        <FeaturedGamesSection games={featuredGames} />
+
         {/* Filters Section */}
         <div className="space-y-4">
           {/* Search Bar */}
@@ -290,18 +311,6 @@ export function Home() {
             </div>
           )}
         </div>
-
-        <LatestScoresSection
-          scores={(latestScores || []).slice(0, visibleLatestScoresCount)}
-          gameConfig={config}
-          hasMoreScores={(latestScores?.length ?? 0) > visibleLatestScoresCount}
-          isLoading={isLatestScoresLoading}
-          onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
-        />
-
-        {featuredGames.length > 0 && (
-          <FeaturedGamesSection games={featuredGames} />
-        )}
 
         {/* Results Count */}
         {!isLoading && (
@@ -519,89 +528,50 @@ interface FeaturedGamesSectionProps {
 }
 
 function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  useEffect(() => {
-    const row = scrollRef.current;
-    if (!row) return;
-
-    const updateScrollState = () => {
-      setCanScrollLeft(row.scrollLeft > 0);
-      setCanScrollRight(row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
-    };
-
-    updateScrollState();
-    row.addEventListener('scroll', updateScrollState, { passive: true });
-    window.addEventListener('resize', updateScrollState);
-
-    return () => {
-      row.removeEventListener('scroll', updateScrollState);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [games.length]);
-
-  const scrollGames = (direction: 'left' | 'right') => {
-    const row = scrollRef.current;
-    if (!row) return;
-    row.scrollBy({
-      left: direction === 'left' ? -row.clientWidth * 0.85 : row.clientWidth * 0.85,
-      behavior: 'smooth',
-    });
-  };
-
   return (
     <section className="relative overflow-visible rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
       <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.1),transparent_30%)]" />
       </div>
-      <div className="relative space-y-5">
+      <div className="relative space-y-4">
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-yellow-500" />
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Featured Games</h2>
+          <FeatureGameDialog className="ml-auto">
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
+              <Star className="h-4 w-4 text-yellow-500" />
+              Feature your game
+            </Button>
+          </FeatureGameDialog>
         </div>
 
-        <div className="relative py-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Scroll featured games left"
-            disabled={!canScrollLeft}
-            onClick={() => scrollGames('left')}
-            className="absolute left-0 top-1/2 z-10 h-10 w-10 -translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div
-            ref={scrollRef}
-            className="-my-4 flex gap-3 overflow-x-auto py-4 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          >
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
             {games.map((game) => (
-              <div key={`${game.pubkey}:${game.gameIdentifier}`} className="min-w-[220px] flex-1 snap-start md:min-w-[260px]">
-                <GameCard
-                  pubkey={game.pubkey}
-                  gameIdentifier={game.gameIdentifier}
-                  metadata={game.metadata}
-                  scoreCount={game.scoreCount}
-                  topScore={game.topScore}
-                  trending={game.trending}
-                />
-              </div>
+              <GameCard
+                key={`${game.pubkey}:${game.gameIdentifier}`}
+                pubkey={game.pubkey}
+                gameIdentifier={game.gameIdentifier}
+                metadata={game.metadata}
+                scoreCount={game.scoreCount}
+                topScore={game.topScore}
+                trending={game.trending}
+                hideFeaturedBadge
+              />
             ))}
-          </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label="Scroll featured games right"
-            disabled={!canScrollRight}
-            onClick={() => scrollGames('right')}
-            className="absolute right-0 top-1/2 z-10 h-10 w-10 translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+          <FeatureGameDialog className="h-full">
+            <button
+              type="button"
+              className="group flex h-full min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-yellow-500/60 hover:bg-yellow-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Star className="h-7 w-7 text-muted-foreground/50 transition-colors group-hover:text-yellow-500" />
+              <div>
+                <p className="text-sm font-semibold">Your game here</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Zap to feature your game in this spotlight
+                </p>
+              </div>
+            </button>
+          </FeatureGameDialog>
         </div>
       </div>
     </section>

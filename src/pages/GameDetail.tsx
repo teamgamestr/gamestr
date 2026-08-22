@@ -23,9 +23,8 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, type LeaderboardConfig } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, GAMESTR_PUBKEY, type LeaderboardConfig } from '@/lib/gameConfig';
 
-const GAMESTR_PUBKEY = '5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453';
 
 export function GameDetail() {
   const { slug: gameIdentifier } = useParams<{ slug: string }>();
