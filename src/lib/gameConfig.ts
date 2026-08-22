@@ -1056,6 +1056,20 @@ export const GAME_CONFIG_VERSION = generateConfigHash(INITIAL_GAME_CONFIG);
 
 export const NO_PUBKEY_PREFIX = "nopubkey";
 
+/** Gamestr team account (receives featured-game placement zaps, handles claims). */
+export const GAMESTR_PUBKEY =
+  "5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453";
+
+/**
+ * Pricing for featured game placements, paid via Lightning zap to the
+ * Gamestr account. Cost is per month and configurable here.
+ */
+export const FEATURED_GAME_PRICING = {
+  satsPerMonth: 21000,
+  minMonths: 1,
+  maxMonths: 12,
+} as const;
+
 /**
  * Alternate score-event identifiers that belong to a canonical configured
  * game. Maps alias -> canonical identifier, e.g. NOMAD publishes separate

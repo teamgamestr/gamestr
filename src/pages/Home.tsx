@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { GamesGrid } from '@/components/GamesGrid';
 import { GameCard } from '@/components/GameCard';
+import { FeatureGameDialog } from '@/components/FeatureGameDialog';
 import { useGamesWithScores, useLatestScores, useTrendingGames, type ParsedScore } from '@/hooks/useScores';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
@@ -299,9 +300,7 @@ export function Home() {
           onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
         />
 
-        {featuredGames.length > 0 && (
-          <FeaturedGamesSection games={featuredGames} />
-        )}
+        <FeaturedGamesSection games={featuredGames} />
 
         {/* Results Count */}
         {!isLoading && (
@@ -560,6 +559,12 @@ function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-yellow-500" />
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Featured Games</h2>
+          <FeatureGameDialog className="ml-auto">
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
+              <Star className="h-4 w-4 text-yellow-500" />
+              Feature your game
+            </Button>
+          </FeatureGameDialog>
         </div>
 
         <div className="relative py-2">
@@ -590,6 +595,22 @@ function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
                 />
               </div>
             ))}
+            <div className="min-w-[220px] flex-1 snap-start md:min-w-[260px]">
+              <FeatureGameDialog className="h-full">
+                <button
+                  type="button"
+                  className="group flex h-full min-h-[220px] w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-muted-foreground/30 p-6 text-center transition-colors hover:border-yellow-500/60 hover:bg-yellow-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Star className="h-8 w-8 text-muted-foreground/50 transition-colors group-hover:text-yellow-500" />
+                  <div>
+                    <p className="font-semibold">Your game here</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Zap to feature your game in this spotlight
+                    </p>
+                  </div>
+                </button>
+              </FeatureGameDialog>
+            </div>
           </div>
           <Button
             type="button"
