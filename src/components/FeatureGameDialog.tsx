@@ -225,16 +225,19 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           onPaid();
           return;
         } catch (error) {
-          console.error('WebLN payment failed:', error);
-          toast({
-            title: 'WebLN payment failed',
-            description: 'Pay the invoice manually below.',
-            variant: 'destructive',
-          });
+          // The wallet UI may have opened even though sendPayment didn't
+          // resolve (dismissed popup, slow confirmation, quirky provider).
+          // Don't report failure — fall back to the invoice below, which
+          // can only be paid once.
+          console.warn('WebLN sendPayment did not resolve:', error);
         }
       }
 
       setInvoice(newInvoice);
+      toast({
+        title: 'Confirm payment below',
+        description: "Your wallet didn't confirm automatically. Pay the invoice below — if you already paid in your wallet, you're all set.",
+      });
     } catch (error) {
       console.error('Feature zap error:', error);
       toast({
