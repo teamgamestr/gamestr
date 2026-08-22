@@ -88,12 +88,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
             setIsZapping(false);
             return true;
           } catch (error) {
-            console.error('NWC payment failed, falling back:', error);
-            toast({
-              title: 'NWC payment failed',
-              description: error instanceof Error ? error.message : 'Falling back to manual payment',
-              variant: 'destructive',
-            });
+            console.warn('NWC payment did not resolve:', error);
           }
         }
 
@@ -109,15 +104,20 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
             setIsZapping(false);
             return true;
           } catch (error) {
-            console.error('WebLN payment failed, falling back:', error);
+            // A WebLN wallet is registered but didn't confirm through its
+            // API. Trust that its own UI handled (or will handle) the
+            // payment — don't fall back to a QR code.
+            console.warn('WebLN sendPayment did not resolve:', error);
             toast({
-              title: 'WebLN payment failed',
-              description: error instanceof Error ? error.message : 'Pay the invoice manually',
-              variant: 'destructive',
+              title: 'Check your wallet',
+              description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
             });
+            setIsZapping(false);
+            return false;
           }
         }
 
+        // No registered WebLN wallet - show QR code and manual Lightning URI
         setInvoice(newInvoice);
         setIsZapping(false);
         return false;

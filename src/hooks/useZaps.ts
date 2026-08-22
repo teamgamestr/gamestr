@@ -256,15 +256,7 @@ export function useZaps(
                 onZapSuccess?.();
                 return;
               } catch (nwcError) {
-                console.error('NWC payment failed, falling back:', nwcError);
-
-                // Show specific NWC error to user for debugging
-                const errorMessage = nwcError instanceof Error ? nwcError.message : 'Unknown NWC error';
-                toast({
-                  title: 'NWC payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
-                  variant: 'destructive',
-                });
+                console.warn('NWC payment did not resolve:', nwcError);
               }
             }
 
@@ -299,20 +291,17 @@ export function useZaps(
                 // Close dialog last to ensure clean state
                 onZapSuccess?.();
               } catch (weblnError) {
-                console.error('WebLN payment failed, falling back:', weblnError);
-
-                // Show specific WebLN error to user for debugging
-                const errorMessage = weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error';
+                // A WebLN wallet is registered but didn't confirm through
+                // its API. Trust that its own UI handled (or will handle)
+                // the payment — don't fall back to a QR code.
+                console.warn('WebLN sendPayment did not resolve:', weblnError);
                 toast({
-                  title: 'WebLN payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
-                  variant: 'destructive',
+                  title: 'Check your wallet',
+                  description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
                 });
-
-                setInvoice(newInvoice);
                 setIsZapping(false);
               }
-            } else { // Default - show QR code and manual Lightning URI
+            } else { // No registered WebLN wallet - show QR code and manual Lightning URI
               setInvoice(newInvoice);
               setIsZapping(false);
             }
