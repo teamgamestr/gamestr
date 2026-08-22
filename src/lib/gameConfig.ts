@@ -747,7 +747,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     name: "Sat Chase",
     description:
       "A Barbiecore ocean-and-island arcade game — catch sats and dodge scam flags, phishing hooks, and a rival pirate ship across three lanes.",
-    image: "https://bitcoinvibe.camp/x/assets/bitcoin-vibecamp-x-og.png",
+    image: "https://bitcoinvibe.camp/x/hackers/ari/thumbnail.png",
     genres: ["arcade", "casual"],
     url: "https://bitcoinvibe.camp/x/hackers/ari/",
     developer:
@@ -762,7 +762,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     name: "Island Bitcoin Vibe",
     description:
       "Teach island businesses to accept bitcoin (wallets, Lightning, QR invoices), then pay in sats and redeem the reward.",
-    image: "https://bitcoinvibe.camp/x/assets/bitcoin-vibecamp-x-og.png",
+    image: "https://bitcoinvibe.camp/x/hackers/audrey/thumbnail.jpg",
     genres: ["puzzle", "casual"],
     url: "https://bitcoinvibe.camp/x/hackers/audrey/",
     developer:
@@ -838,7 +838,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     name: "Tropical Satoshis",
     description:
       "Pilot a speedboat inside a giant coconut half-shell, collecting Bitcoin and Satoshis while dodging Paper Dollars.",
-    image: "https://bitcoinvibe.camp/x/assets/bitcoin-vibecamp-x-og.png",
+    image: "https://bitcoinvibe.camp/x/hackers/ian/thumbnail.png",
     genres: ["arcade", "3d"],
     url: "https://bitcoinvibe.camp/x/hackers/ian/",
     developer:
@@ -998,6 +998,36 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-08-22",
     playerSigned: true,
   },
+
+  // ===== NOMAD — game-signed scores (kind 30762 by the game account) =====
+
+  // NOMAD Trophies board
+  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-trophies": {
+    name: "NOMAD",
+    description:
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. Trophies board.",
+    image: "https://nomadmud.com/og.jpg?v=2",
+    genres: ["rpg", "adventure", "multiplayer"],
+    url: "https://nomadmud.com",
+    developer:
+      "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
+    featured: false,
+    addedAt: "2026-08-22",
+  },
+
+  // NOMAD Legend board
+  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-legend": {
+    name: "NOMAD",
+    description:
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. Legend board.",
+    image: "https://nomadmud.com/og.jpg?v=2",
+    genres: ["rpg", "adventure", "multiplayer"],
+    url: "https://nomadmud.com",
+    developer:
+      "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
+    featured: false,
+    addedAt: "2026-08-22",
+  },
 };
 
 // Generate a hash from game configuration content
@@ -1027,6 +1057,7 @@ export const EXCLUDED_GAMES: string[] = [
   "bitcoin-space-invaders",
   "asteroid-sats",
   "nogames-tetris",
+  "nomad", // retired NOMAD identifier (superseded by nomad-trophies / nomad-legend)
 ];
 
 // All available genres
