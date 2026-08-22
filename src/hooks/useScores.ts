@@ -253,10 +253,11 @@ export function useScores(options: UseScoresOptions = {}) {
 
 /**
  * Get the newest valid score events across configured score kinds.
+ * Polls periodically so new scores appear without a page refresh.
  */
-export function useLatestScores(options: { limit?: number } = {}) {
+export function useLatestScores(options: { limit?: number; refetchInterval?: number } = {}) {
   const { nostr } = useNostr();
-  const { limit = 5 } = options;
+  const { limit = 5, refetchInterval = 30_000 } = options;
 
   return useQuery({
     queryKey: ['latest-scores', limit],
@@ -288,6 +289,7 @@ export function useLatestScores(options: { limit?: number } = {}) {
         .sort((a, b) => b.event.created_at - a.event.created_at)
         .slice(0, limit);
     },
+    refetchInterval,
   });
 }
 
