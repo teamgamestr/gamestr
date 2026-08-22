@@ -1003,9 +1003,9 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
 
   // NOMAD Trophies board
   "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-trophies": {
-    name: "NOMAD",
+    name: "NOMAD — Trophies",
     description:
-      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. Trophies board.",
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Trophies leaderboard.",
     image: "https://nomadmud.com/og.jpg?v=2",
     genres: ["rpg", "adventure", "multiplayer"],
     url: "https://nomadmud.com",
@@ -1017,9 +1017,9 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
 
   // NOMAD Legend board
   "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-legend": {
-    name: "NOMAD",
+    name: "NOMAD — Legend",
     description:
-      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. Legend board.",
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Legend leaderboard.",
     image: "https://nomadmud.com/og.jpg?v=2",
     genres: ["rpg", "adventure", "multiplayer"],
     url: "https://nomadmud.com",
