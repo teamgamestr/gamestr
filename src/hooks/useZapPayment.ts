@@ -6,10 +6,10 @@ import { useWallet } from '@/hooks/useWallet';
 export type ZapPaymentResult =
   /** A payment method confirmed the invoice. */
   | 'paid'
-  /** No payment method is available; caller should show the QR/invoice. */
-  | 'no-wallet'
-  /** A wallet was engaged but never confirmed through its API. The caller should NOT assume failure (the wallet's own UI may have handled it) and must not double-prompt. */
-  | 'unconfirmed';
+  /** Payment wasn't confirmed (no wallet, dismissed window, or error).
+   *  The caller should fall back to the invoice/QR so the user can still
+   *  pay. The invoice is single-use, so there is no double-pay risk. */
+  | 'fallback';
 
 /**
  * Resolve a usable WebLN provider at pay time. Hook state can be stale
@@ -39,16 +39,13 @@ async function resolveWebLnProvider(stateWebln: WebLNProvider | null): Promise<W
 /**
  * The single payment cascade shared by every zap flow in the app.
  *
- * Order: NWC (if connected) -> WebLN (if registered).
+ * Order: NWC (if connected) -> WebLN (if registered) -> fallback.
  *
- * Returns one of:
- * - 'paid':        an automatic method confirmed payment.
- * - 'no-wallet':   no NWC connection and no WebLN wallet. The caller
- *                  should fall back to showing the invoice/QR.
- * - 'unconfirmed': a wallet was engaged but its API didn't confirm.
- *                  The wallet's own UI may still complete the payment,
- *                  so callers must not show the QR (double-pay risk) or
- *                  report a hard failure.
+ * Returns:
+ * - 'paid':     an automatic method confirmed the payment.
+ * - 'fallback': payment wasn't confirmed (no wallet registered, the
+ *               wallet window was dismissed without paying, or the
+ *               wallet errored). Show the invoice/QR.
  */
 export function useZapPayment() {
   const { webln } = useWallet();
@@ -74,13 +71,15 @@ export function useZapPayment() {
           await provider.sendPayment(invoice);
           return 'paid';
         } catch (error) {
+          // Rejection here means the wallet window was dismissed without
+          // paying (or the wallet errored) — fall back to the QR.
           console.warn('[ZapPayment] WebLN sendPayment did not resolve:', error);
-          return 'unconfirmed';
         }
+        return 'fallback';
       }
 
       // 3. Nothing available — caller decides on manual fallback.
-      return 'no-wallet';
+      return 'fallback';
     },
     [webln, sendPayment, getActiveConnection],
   );

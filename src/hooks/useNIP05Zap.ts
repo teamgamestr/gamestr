@@ -89,18 +89,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
           return true;
         }
 
-        if (result === 'unconfirmed') {
-          // The wallet was engaged but never confirmed through its API.
-          // Its own UI may still complete the payment — no QR fallback.
-          toast({
-            title: 'Check your wallet',
-            description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
-          });
-          setIsZapping(false);
-          return false;
-        }
-
-        // No registered WebLN wallet - show QR code and manual Lightning URI
+        // Payment not confirmed - show QR code and manual Lightning URI
         setInvoice(newInvoice);
         setIsZapping(false);
         return false;

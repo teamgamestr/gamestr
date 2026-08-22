@@ -253,18 +253,7 @@ export function useZaps(
               return;
             }
 
-            if (result === 'unconfirmed') {
-              // The wallet was engaged but never confirmed through its API.
-              // Its own UI may still complete the payment — no QR fallback.
-              toast({
-                title: 'Check your wallet',
-                description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
-              });
-              setIsZapping(false);
-              return;
-            }
-
-            // No registered wallet - show QR code and manual Lightning URI
+            // Payment not confirmed - show QR code and manual Lightning URI
             setInvoice(newInvoice);
             setIsZapping(false);
           } catch (err) {
