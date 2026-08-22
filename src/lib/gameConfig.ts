@@ -944,7 +944,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     name: "Pinpoint",
     description:
       "Match a landmark, wonder, or historical figure's photo to the right country on a world map. Hints cost half points, and each round adapts to how well you're doing.",
-    image: "https://bitcoinvibe.camp/x/assets/bitcoin-vibecamp-x-og.png",
+    image: "https://bitcoinvibe.camp/x/hackers/tone/thumbnail.png",
     genres: ["puzzle", "casual"],
     url: "https://bitcoinvibe.camp/x/hackers/tone/",
     developer:
