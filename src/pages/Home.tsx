@@ -546,17 +546,18 @@ function FeaturedGamesSection({ games }: FeaturedGamesSectionProps) {
         </div>
 
         <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-          {games.map((game) => (
-            <GameCard
-              key={`${game.pubkey}:${game.gameIdentifier}`}
-              pubkey={game.pubkey}
-              gameIdentifier={game.gameIdentifier}
-              metadata={game.metadata}
-              scoreCount={game.scoreCount}
-              topScore={game.topScore}
-              trending={game.trending}
-            />
-          ))}
+            {games.map((game) => (
+              <GameCard
+                key={`${game.pubkey}:${game.gameIdentifier}`}
+                pubkey={game.pubkey}
+                gameIdentifier={game.gameIdentifier}
+                metadata={game.metadata}
+                scoreCount={game.scoreCount}
+                topScore={game.topScore}
+                trending={game.trending}
+                hideFeaturedBadge
+              />
+            ))}
           <FeatureGameDialog className="h-full">
             <button
               type="button"
