@@ -1061,6 +1061,12 @@ export const GAMESTR_PUBKEY =
   "5748fbe6ec0443e1f85b66351fe9cc2717014cf938acc968e7b20c9099802453";
 
 /**
+ * Static Lightning address used as a fallback when the Gamestr account's
+ * Nostr profile (kind 0) hasn't loaded or lacks a lightning address.
+ */
+export const GAMESTR_LIGHTNING_ADDRESS = "zaps@gamestr.io";
+
+/**
  * Pricing for featured game placements, paid via Lightning zap to the
  * Gamestr account. Cost is per month and configurable here.
  */

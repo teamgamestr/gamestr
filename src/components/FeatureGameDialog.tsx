@@ -27,10 +27,31 @@ import { useAppContext } from '@/hooks/useAppContext';
 import {
   getAllGames,
   GAMESTR_PUBKEY,
+  GAMESTR_LIGHTNING_ADDRESS,
   FEATURED_GAME_PRICING,
 } from '@/lib/gameConfig';
 import { nip57 } from 'nostr-tools';
 import QRCode from 'qrcode';
+
+/**
+ * Resolve the LNURL-pay callback for a static LUD-16 lightning address
+ * (https://domain/.well-known/lnurlp/name). Returns null when the address
+ * doesn't support Nostr zaps or can't be reached.
+ */
+async function resolveCallbackFromLightningAddress(address: string): Promise<string | null> {
+  try {
+    const [name, domain] = address.split('@');
+    if (!name || !domain) return null;
+    const res = await fetch(`https://${domain}/.well-known/lnurlp/${name}`);
+    const params = await res.json();
+    if (res.ok && params.status !== 'ERROR' && params.allowsNostr && params.nostrPubkey) {
+      return params.callback as string;
+    }
+  } catch {
+    // fall through
+  }
+  return null;
+}
 
 interface FeatureGameDialogProps {
   children?: React.ReactNode;
@@ -117,21 +138,12 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       });
       return;
     }
-    if (!recipient?.event) {
-      toast({
-        title: 'Payment unavailable',
-        description: 'Could not load the Gamestr payment profile. Try again later.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsZapping(true);
     setInvoice(null);
 
     try {
-      const zapEndpoint = await nip57.getZapEndpoint(recipient.event);
-      if (!zapEndpoint) throw new Error('No zap endpoint found for the Gamestr account');
+      if (!user.signer) throw new Error('No signer available');
 
       const zapRequest = nip57.makeZapRequest({
         profile: GAMESTR_PUBKEY,
@@ -142,18 +154,49 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       });
 
       const signedZapRequest = await user.signer.signEvent(zapRequest);
+      const nostrParam = encodeURIComponent(JSON.stringify(signedZapRequest));
 
-      const res = await fetch(
-        `${zapEndpoint}?amount=${totalSats * 1000}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`,
+      // Candidate LNURL-pay callbacks: the Gamestr account's Nostr profile
+      // first, then the static Gamestr lightning address as a fallback in
+      // case the profile hasn't loaded or is missing a lightning address.
+      const candidates: string[] = [];
+      if (recipient?.event) {
+        const profileEndpoint = await nip57
+          .getZapEndpoint(recipient.event)
+          .catch(() => null);
+        if (profileEndpoint) candidates.push(profileEndpoint);
+      }
+      const fallbackCallback = await resolveCallbackFromLightningAddress(
+        GAMESTR_LIGHTNING_ADDRESS,
       );
-      const responseData = await res.json();
-      if (!res.ok || responseData.status === 'ERROR') {
-        throw new Error(responseData.reason || `LNURL error (${res.status})`);
+      if (fallbackCallback && !candidates.includes(fallbackCallback)) {
+        candidates.push(fallbackCallback);
       }
-      const newInvoice = responseData.pr;
-      if (!newInvoice || typeof newInvoice !== 'string') {
-        throw new Error('Lightning service did not return a valid invoice');
+
+      if (candidates.length === 0) {
+        throw new Error('No Lightning payment endpoint found for the Gamestr account');
       }
+
+      let newInvoice: string | null = null;
+      let lastError: Error = new Error('Could not create invoice');
+      for (const callback of candidates) {
+        try {
+          const res = await fetch(`${callback}?amount=${totalSats * 1000}&nostr=${nostrParam}`);
+          const responseData = await res.json();
+          if (!res.ok || responseData.status === 'ERROR') {
+            throw new Error(responseData.reason || `LNURL error (${res.status})`);
+          }
+          if (!responseData.pr || typeof responseData.pr !== 'string') {
+            throw new Error('Lightning service did not return a valid invoice');
+          }
+          newInvoice = responseData.pr;
+          break;
+        } catch (error) {
+          console.error('Invoice request failed:', callback, error);
+          lastError = error as Error;
+        }
+      }
+      if (!newInvoice) throw lastError;
 
       const activeNWC = getActiveConnection();
       if (activeNWC?.connectionString && activeNWC.isConnected) {
