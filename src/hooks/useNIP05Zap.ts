@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/useToast';
 import { useZapPayment } from '@/hooks/useZapPayment';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
+import type { NostrEvent } from '@nostrify/nostrify';
 
 export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null, amountMillisats: number) {
   const { user } = useCurrentUser();
@@ -81,7 +82,10 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         }
 
         // Single shared payment cascade: NWC -> WebLN -> manual.
-        const result = await payInvoice(newInvoice);
+        const result = await payInvoice(newInvoice, {
+          zapRequest: signedZapRequest as unknown as NostrEvent,
+          recipientPubkey: servicePubkey,
+        });
 
         if (result === 'paid') {
           toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });

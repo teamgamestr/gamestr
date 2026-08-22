@@ -233,7 +233,10 @@ export function useZaps(
             }
 
             // Single shared payment cascade: NWC -> WebLN -> manual.
-            const result = await payInvoice(newInvoice);
+            const result = await payInvoice(newInvoice, {
+              zapRequest: signedZapRequest,
+              recipientPubkey: actualTarget.pubkey,
+            });
 
             if (result === 'paid') {
               // Clear states immediately on success

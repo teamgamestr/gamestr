@@ -23,6 +23,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { useToast } from '@/hooks/useToast';
 import { useZapPayment } from '@/hooks/useZapPayment';
 import { useAppContext } from '@/hooks/useAppContext';
+import type { NostrEvent } from '@nostrify/nostrify';
 import {
   getAllGames,
   GAMESTR_PUBKEY,
@@ -197,7 +198,10 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       if (!newInvoice) throw lastError;
 
       // Single shared payment cascade: NWC -> WebLN -> manual.
-      const result = await payInvoice(newInvoice);
+      const result = await payInvoice(newInvoice, {
+        zapRequest: signedZapRequest as unknown as NostrEvent,
+        recipientPubkey: GAMESTR_PUBKEY,
+      });
 
       if (result === 'paid') {
         onPaid();
