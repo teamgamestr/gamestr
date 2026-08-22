@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
@@ -253,12 +254,16 @@ export function useScores(options: UseScoresOptions = {}) {
 
 /**
  * Get the newest valid score events across configured score kinds.
+ *
+ * Loads an initial set with `.query`, then keeps a live Nostr subscription
+ * open so new scores stream in without polling or page refreshes.
  */
 export function useLatestScores(options: { limit?: number } = {}) {
   const { nostr } = useNostr();
   const { limit = 5 } = options;
+  const queryClient = useQueryClient();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['latest-scores', limit],
     queryFn: async (c) => {
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
@@ -289,6 +294,52 @@ export function useLatestScores(options: { limit?: number } = {}) {
         .slice(0, limit);
     },
   });
+
+  // Live subscription: new score events are merged into the cached list.
+  useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+
+    // Overlap slightly with the initial fetch window; duplicates are
+    // filtered out by event id.
+    const since = Math.floor(Date.now() / 1000) - 60;
+
+    (async () => {
+      try {
+        const filters: NostrFilter[] = [{ kinds: [30762], since }];
+        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        if (kind5555Tags.length > 0) {
+          filters.push({ kinds: [5555], '#t': kind5555Tags, since });
+        }
+
+        for await (const msg of nostr.req(filters, { signal: controller.signal })) {
+          if (cancelled) break;
+          if (msg[0] !== 'EVENT') continue;
+
+          const event = msg[2];
+          const score = validateScoreEvent(event);
+          if (!score || score.state === 'invalidated' || score.state === 'retired') continue;
+          if (EXCLUDED_GAMES.includes(score.gameIdentifier)) continue;
+
+          queryClient.setQueryData<ParsedScore[]>(['latest-scores', limit], (prev = []) => {
+            if (prev.some(s => s.event.id === event.id)) return prev;
+            return [score, ...prev]
+              .sort((a, b) => b.event.created_at - a.event.created_at)
+              .slice(0, limit);
+          });
+        }
+      } catch {
+        // Subscription aborted or relay error — the initial query data remains.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [nostr, limit, queryClient]);
+
+  return query;
 }
 
 /**
