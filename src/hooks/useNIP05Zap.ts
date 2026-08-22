@@ -3,8 +3,8 @@ import { nip57 } from 'nostr-tools';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useAppContext } from '@/hooks/useAppContext';
-import { useNWC } from '@/hooks/useNWCContext';
 import { useToast } from '@/hooks/useToast';
+import { useZapPayment } from '@/hooks/useZapPayment';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
@@ -12,7 +12,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
   const { user } = useCurrentUser();
   const { presetRelays } = useAppContext();
   const { toast } = useToast();
-  const { sendPayment, getActiveConnection } = useNWC();
+  const { payInvoice } = useZapPayment();
   const { data: config } = useNIP05Config();
   const servicePubkey = config?.servicePubkey ?? '';
   const author = useAuthor(servicePubkey);
@@ -80,41 +80,24 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
           throw new Error('Lightning service did not return a valid invoice');
         }
 
-        const activeNWC = getActiveConnection();
-        if (activeNWC?.connectionString && activeNWC.isConnected) {
-          try {
-            await sendPayment(activeNWC, newInvoice);
-            toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats via NWC.` });
-            setIsZapping(false);
-            return true;
-          } catch (error) {
-            console.warn('NWC payment did not resolve:', error);
-          }
+        // Single shared payment cascade: NWC -> WebLN -> manual.
+        const result = await payInvoice(newInvoice);
+
+        if (result === 'paid') {
+          toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });
+          setIsZapping(false);
+          return true;
         }
 
-        if (webln) {
-          try {
-            let provider = webln;
-            if (webln.enable && typeof webln.enable === 'function') {
-              const enabled = (await webln.enable()) as WebLNProvider | undefined;
-              if (enabled) provider = enabled;
-            }
-            await provider.sendPayment(newInvoice);
-            toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });
-            setIsZapping(false);
-            return true;
-          } catch (error) {
-            // A WebLN wallet is registered but didn't confirm through its
-            // API. Trust that its own UI handled (or will handle) the
-            // payment — don't fall back to a QR code.
-            console.warn('WebLN sendPayment did not resolve:', error);
-            toast({
-              title: 'Check your wallet',
-              description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
-            });
-            setIsZapping(false);
-            return false;
-          }
+        if (result === 'unconfirmed') {
+          // The wallet was engaged but never confirmed through its API.
+          // Its own UI may still complete the payment — no QR fallback.
+          toast({
+            title: 'Check your wallet',
+            description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
+          });
+          setIsZapping(false);
+          return false;
         }
 
         // No registered WebLN wallet - show QR code and manual Lightning URI
@@ -132,7 +115,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         return false;
       }
     },
-    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, getActiveConnection, sendPayment, webln, amountMillisats],
+    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, payInvoice, amountMillisats],
   );
 
   return {

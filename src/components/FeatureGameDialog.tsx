@@ -21,8 +21,7 @@ import {
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useToast } from '@/hooks/useToast';
-import { useWallet } from '@/hooks/useWallet';
-import { useNWC } from '@/hooks/useNWCContext';
+import { useZapPayment } from '@/hooks/useZapPayment';
 import { useAppContext } from '@/hooks/useAppContext';
 import {
   getAllGames,
@@ -78,8 +77,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
   const { user } = useCurrentUser();
   const { data: recipient } = useAuthor(GAMESTR_PUBKEY);
   const { toast } = useToast();
-  const { webln } = useWallet();
-  const { sendPayment, getActiveConnection } = useNWC();
+  const { payInvoice } = useZapPayment();
   const { presetRelays } = useAppContext();
 
   const games = useMemo(
@@ -200,38 +198,20 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       }
       if (!newInvoice) throw lastError;
 
-      // Try automatic payment methods first: NWC, then the registered
-      // WebLN wallet. The QR fallback is only shown when there is no
-      // WebLN wallet at all.
-      const activeNWC = getActiveConnection();
-      if (activeNWC?.connectionString && activeNWC.isConnected) {
-        try {
-          await sendPayment(activeNWC, newInvoice);
-          onPaid();
-          return;
-        } catch (error) {
-          console.warn('NWC payment did not resolve:', error);
-        }
+      // Single shared payment cascade: NWC -> WebLN -> manual.
+      const result = await payInvoice(newInvoice);
+
+      if (result === 'paid') {
+        onPaid();
+        return;
       }
 
-      if (webln) {
-        try {
-          let provider = webln;
-          if (webln.enable && typeof webln.enable === 'function') {
-            const enabled = (await webln.enable()) as typeof webln | undefined;
-            if (enabled) provider = enabled;
-          }
-          await provider.sendPayment(newInvoice);
-          onPaid();
-        } catch (error) {
-          // A WebLN wallet is registered but didn't confirm through its
-          // API. Trust that its own UI handled (or will handle) the
-          // payment — don't fall back to a QR code.
-          console.warn('WebLN sendPayment did not resolve:', error);
-          setPaymentNotice(
-            "Your wallet didn't confirm the payment automatically. If you completed it in your wallet, you're all set — otherwise please try again.",
-          );
-        }
+      if (result === 'unconfirmed') {
+        // The wallet was engaged but never confirmed through its API.
+        // Its own UI may still complete the payment — no QR fallback.
+        setPaymentNotice(
+          "Your wallet didn't confirm the payment automatically. If you completed it in your wallet, you're all set — otherwise please try again.",
+        );
         return;
       }
 

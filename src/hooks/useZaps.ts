@@ -3,7 +3,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useToast } from '@/hooks/useToast';
-import { useNWC } from '@/hooks/useNWCContext';
+import { useZapPayment } from '@/hooks/useZapPayment';
 import type { NWCConnection } from '@/hooks/useNWC';
 import { nip57 } from 'nostr-tools';
 import type { Event } from 'nostr-tools';
@@ -28,7 +28,7 @@ export function useZaps(
   const actualTarget = Array.isArray(target) ? (target.length > 0 ? target[0] : null) : target;
 
   const author = useAuthor(actualTarget?.pubkey);
-  const { sendPayment, getActiveConnection } = useNWC();
+  const { payInvoice } = useZapPayment();
   const [isZapping, setIsZapping] = useState(false);
   const [invoice, setInvoice] = useState<string | null>(null);
 
@@ -232,79 +232,41 @@ export function useZaps(
               throw new Error('Lightning service did not return a valid invoice');
             }
 
-            // Get the current active NWC connection dynamically
-            const currentNWCConnection = getActiveConnection();
+            // Single shared payment cascade: NWC -> WebLN -> manual.
+            const result = await payInvoice(newInvoice);
 
-            // Try NWC first if available and properly connected
-            if (currentNWCConnection && currentNWCConnection.connectionString && currentNWCConnection.isConnected) {
-              try {
-                await sendPayment(currentNWCConnection, newInvoice);
-
-                // Clear states immediately on success
-                setIsZapping(false);
-                setInvoice(null);
-
-                toast({
-                  title: 'Zap successful!',
-                  description: `You sent ${amount} sats via NWC to the author.`,
-                });
-
-                // Invalidate zap queries to refresh counts
-                queryClient.invalidateQueries({ queryKey: ['zaps'] });
-
-                // Close dialog last to ensure clean state
-                onZapSuccess?.();
-                return;
-              } catch (nwcError) {
-                console.warn('NWC payment did not resolve:', nwcError);
-              }
-            }
-
-            if (webln) {  // Try WebLN next
-              try {
-                // For native WebLN, we may need to enable it first
-                let webLnProvider = webln;
-                if (webln.enable && typeof webln.enable === 'function') {
-                  const enabledProvider = await webln.enable();
-                  // Some implementations return the provider, others return void
-                  // Cast to WebLNProvider to handle both cases
-                  const provider = enabledProvider as WebLNProvider | undefined;
-                  if (provider) {
-                    webLnProvider = provider;
-                  }
-                }
-
-                await webLnProvider.sendPayment(newInvoice);
-
-                // Clear states immediately on success
-                setIsZapping(false);
-                setInvoice(null);
-
-                toast({
-                  title: 'Zap successful!',
-                  description: `You sent ${amount} sats to the author.`,
-                });
-
-                // Invalidate zap queries to refresh counts
-                queryClient.invalidateQueries({ queryKey: ['zaps'] });
-
-                // Close dialog last to ensure clean state
-                onZapSuccess?.();
-              } catch (weblnError) {
-                // A WebLN wallet is registered but didn't confirm through
-                // its API. Trust that its own UI handled (or will handle)
-                // the payment — don't fall back to a QR code.
-                console.warn('WebLN sendPayment did not resolve:', weblnError);
-                toast({
-                  title: 'Check your wallet',
-                  description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
-                });
-                setIsZapping(false);
-              }
-            } else { // No registered WebLN wallet - show QR code and manual Lightning URI
-              setInvoice(newInvoice);
+            if (result === 'paid') {
+              // Clear states immediately on success
               setIsZapping(false);
+              setInvoice(null);
+
+              toast({
+                title: 'Zap successful!',
+                description: `You sent ${amount} sats to the author.`,
+              });
+
+              // Invalidate zap queries to refresh counts
+              queryClient.invalidateQueries({ queryKey: ['zaps'] });
+
+              // Close dialog last to ensure clean state
+              onZapSuccess?.();
+              return;
             }
+
+            if (result === 'unconfirmed') {
+              // The wallet was engaged but never confirmed through its API.
+              // Its own UI may still complete the payment — no QR fallback.
+              toast({
+                title: 'Check your wallet',
+                description: "The wallet didn't confirm automatically. If you completed the payment there, you're all set.",
+              });
+              setIsZapping(false);
+              return;
+            }
+
+            // No registered wallet - show QR code and manual Lightning URI
+            setInvoice(newInvoice);
+            setIsZapping(false);
           } catch (err) {
             console.error('Zap error:', err);
             toast({
