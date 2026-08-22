@@ -380,7 +380,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://pallasite.app",
       developer:
         "npub1mgvlrnf5hm9yf0n5mf9nqmvarhvxkc6remu5ec3vf8r0txqkuk7su0e7q2",
-      featured: true,
+      featured: false,
       addedAt: "2026-06-10",
     },
 
@@ -474,7 +474,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       url: "https://games.noderunners.network/mempoolbreaker/",
       developer:
         "npub1497rxugscdtnmsjxufet3cj7th5u93sw9f7m523tcasg0c59d34sa005w0",
-      featured: true,
+      featured: false,
       addedAt: "2026-06-10",
     },
 
