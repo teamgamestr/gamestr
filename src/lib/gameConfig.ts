@@ -1020,6 +1020,34 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       { label: "Legend", scoreTag: "score", direction: "desc", filterTag: "board", filterValue: "legend" },
     ],
   },
+
+  // Take Me To Your Ledger — playechoseven (cryptodonkey)
+  // Mixed signing: mostly game account, sometimes players — playerSigned
+  // captures every signer.
+  "nopubkey:takemetoyourledger": {
+    name: "Take Me To Your Ledger",
+    description:
+      "No leaders. Only the ledger. Beam up animals and the Cult of the 600 Billion.",
+    image: "https://ledger.playechoseven.com/img/hero.webp",
+    genres: ["arcade", "action"],
+    url: "https://ledger.playechoseven.com/",
+    developer: "cryptodonkey",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Snake LCD — hobbyist LCD-style Snake; self-signed by players, no site
+  "nopubkey:snake-lcd": {
+    name: "Snake LCD",
+    description:
+      "A retro LCD-style Snake. Eat, grow, don't bite yourself.",
+    image: "/gamestr-logo.svg",
+    genres: ["arcade", "retro", "casual"],
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
 };
 
 // Generate a hash from game configuration content
