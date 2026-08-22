@@ -737,6 +737,297 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-07-11",
     playerSigned: true,
   },
+
+  // ===== Bitcoin Vibecamp 2026 (Próspera, Roatán) hacker games =====
+  // Player-signed kind 30762 scores; developers identified via
+  // https://bitcoinvibe.camp/.well-known/nostr.json
+
+  // Sat Chase — Ari
+  "nopubkey:sat-chase": {
+    name: "Sat Chase",
+    description:
+      "A Barbiecore ocean-and-island arcade game — catch sats and dodge scam flags, phishing hooks, and a rival pirate ship across three lanes.",
+    image: "https://bitcoinvibe.camp/x/hackers/ari/thumbnail.png",
+    genres: ["arcade", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/ari/",
+    developer:
+      "npub1y68avj5kzc25cpz6kprx22na077mtcv2jpe5e0j2wleadvmsk5rq4dtcph",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Island Bitcoin Vibe — Audrey
+  "nopubkey:Island Bitcoin Vibe": {
+    name: "Island Bitcoin Vibe",
+    description:
+      "Teach island businesses to accept bitcoin (wallets, Lightning, QR invoices), then pay in sats and redeem the reward.",
+    image: "https://bitcoinvibe.camp/x/hackers/audrey/thumbnail.jpg",
+    genres: ["puzzle", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/audrey/",
+    developer:
+      "npub1mcq9g8g6mclrmz5w6yz3987r7q7kzg2hh7vp8hwrn2mmcfltnrgsnjugs2",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Vibecampvania — Chris Allen
+  "nopubkey:vibecampvania": {
+    name: "Vibecampvania",
+    description:
+      "A gothic side-scrolling action RPG — storm 5 candlelit levels of the undead with a full combo system, blocking, and a meter-based special move, then face the final boss atop the castle.",
+    image: "https://bitcoinvibe.camp/x/hackers/chris-allen/thumbnail.jpg",
+    genres: ["rpg", "action", "adventure"],
+    url: "https://bitcoinvibe.camp/x/hackers/chris-allen/",
+    developer:
+      "npub1vjunjx20xwun20jds262durqmnkw4hwa59ev8jpy6v7cantsgnrq57yzx9",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Vibecampvania legacy identifier still seen in score events
+  "nopubkey:soul-reaper-vibecamp-chronicles": {
+    name: "Vibecampvania",
+    description:
+      "A gothic side-scrolling action RPG — storm 5 candlelit levels of the undead with a full combo system, blocking, and a meter-based special move, then face the final boss atop the castle.",
+    image: "https://bitcoinvibe.camp/x/hackers/chris-allen/thumbnail.jpg",
+    genres: ["rpg", "action", "adventure"],
+    url: "https://bitcoinvibe.camp/x/hackers/chris-allen/",
+    developer:
+      "npub1vjunjx20xwun20jds262durqmnkw4hwa59ev8jpy6v7cantsgnrq57yzx9",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Vibe Duel — Francis Mars
+  "nopubkey:vibecamp-francis-mars": {
+    name: "Vibe Duel",
+    description:
+      "Sovereign Gauntlet 1v1 vs AI with live mempool.space block bonuses. 180 second clock — on loss you keep ms survived, on win 1,000,000 + ms left.",
+    image:
+      "https://bitcoinvibe.camp/x/hackers/francis-mars/screenshots/screenshot-1-live-capture.jpg",
+    genres: ["arcade", "action", "player v player"],
+    url: "https://bitcoinvibe.camp/x/hackers/francis-mars/",
+    developer:
+      "npub1kzkrmkvgq4ppwj0j5pdr0vj5mgpmtcapc6sjuw3wajvg40ryrwrsu2p65n",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // VibeCamp: Fore! — Gian
+  "nopubkey:vibecamp-fore": {
+    name: "VibeCamp: Fore!",
+    description:
+      "A turn-based pixel golf battle with vast obstacle-filled arenas, unlockable ball abilities, Nostr player avatars, and Bitcoin Vibecamp Olympics integration.",
+    image: "https://bitcoinvibe.camp/x/hackers/gian/thumbnail.jpg",
+    genres: ["strategy", "arcade", "multiplayer"],
+    url: "https://bitcoinvibe.camp/x/hackers/gian/",
+    developer:
+      "npub149aa0jys66sxka4k2y7a0fv7435wgukqgnfm9cp3dututnsqg40q4p7n0t",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Tropical Satoshis — Ian
+  "nopubkey:tropical-satoshis": {
+    name: "Tropical Satoshis",
+    description:
+      "Pilot a speedboat inside a giant coconut half-shell, collecting Bitcoin and Satoshis while dodging Paper Dollars.",
+    image: "https://bitcoinvibe.camp/x/hackers/ian/thumbnail.png",
+    genres: ["arcade", "3d"],
+    url: "https://bitcoinvibe.camp/x/hackers/ian/",
+    developer:
+      "npub18f6kq5eygcdu3cf2yekd6gpjc62ycwwk3lnl2eqqa04tqccl3u4qfzz9z2",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Dead Man's Draw — Jason
+  "nopubkey:dead-mans-draw": {
+    name: "Dead Man's Draw — Bitcoin Pirate Edition",
+    description:
+      "A fan-made digital adaptation of Mayday Games' Dead Man's Draw, pirate-themed, with the treasure chest reskinned as Bitcoin.",
+    image: "https://bitcoinvibe.camp/x/hackers/jason/thumbnail.png",
+    genres: ["card", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/jason/deadmansdraw.html",
+    developer:
+      "npub1sm8e7pka3dggwxltalp58gpppuelatd7phtp5v60tqkmd36zqgrsgpzggd",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Maze Sats — Kevin (sync)
+  "nopubkey:maze-sats": {
+    name: "Maze Sats",
+    description:
+      "A Pac-Man-style arcade chase: sweep the network collecting sats while evading rogue nodes.",
+    image: "https://bitcoinvibe.camp/x/hackers/kevin-sync/thumbnail.png",
+    genres: ["arcade", "retro", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/kevin-sync/",
+    developer:
+      "npub1equrmqway3qxw3dkssymusxkwgwrqypfgeqx0lx9pgjam7gnj4ysaqhkj6",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Decentralize! — Maria Freitas
+  "nopubkey:decentralize": {
+    name: "Decentralize!",
+    description:
+      "A 3 minute whack-a-mole game about decentralization: click the decentralizing actions in finance, science, and governance to score, and dodge the centralizing ones.",
+    image:
+      "https://bitcoinvibe.camp/x/hackers/maria-freitas/screenshots/screenshot-1-decentralize-cover.png",
+    genres: ["arcade", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/maria-freitas/",
+    developer:
+      "npub1e9wpwqqclm9pzx2z4rlgvjlhecerytay4w9zfq8hmy07ej0fdtxsvm7mpw",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Vocab Vegas — Matt
+  "nopubkey:vocab-vegas": {
+    name: "Vocab Vegas — Spanish Word Dice",
+    description:
+      "A betting mini-game where you wager chips and race the clock translating Spanish word-dice for bonus payouts.",
+    image: "https://bitcoinvibe.camp/x/hackers/matt/thumbnail.png",
+    genres: ["puzzle", "casual"],
+    url: "https://johnnycards-ai.github.io/vibecamp-vocab-vegas/vocab-vegas/",
+    developer:
+      "npub1nveww8lnznpqlh35k5rt8ea2d4zdj7egw9ynrxu75c5wadadtnasl99sda",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Vocab Vegas Olympics-board identifier
+  "nopubkey:vocab-vegas-spanish-word-dice": {
+    name: "Vocab Vegas — Spanish Word Dice",
+    description:
+      "A betting mini-game where you wager chips and race the clock translating Spanish word-dice for bonus payouts.",
+    image: "https://bitcoinvibe.camp/x/hackers/matt/thumbnail.png",
+    genres: ["puzzle", "casual"],
+    url: "https://johnnycards-ai.github.io/vibecamp-vocab-vegas/vocab-vegas/",
+    developer:
+      "npub1nveww8lnznpqlh35k5rt8ea2d4zdj7egw9ynrxu75c5wadadtnasl99sda",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Toomachia — Tomek
+  "nopubkey:toomachia": {
+    name: "Toomachia",
+    description:
+      "Five timed mini-events — reaction, math, pattern memory, estimation, trivia — scored on speed and accuracy.",
+    image: "https://bitcoinvibe.camp/x/hackers/tomek/thumbnail.png",
+    genres: ["puzzle", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/tomek/",
+    developer:
+      "npub1v2yrq09jwcqetn3ugkzpxq4zntrgc3qdedky4dhn52qz4pjhw9vql8drch",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Pinpoint — Tone
+  "nopubkey:pinpoint-geo-trivia": {
+    name: "Pinpoint",
+    description:
+      "Match a landmark, wonder, or historical figure's photo to the right country on a world map. Hints cost half points, and each round adapts to how well you're doing.",
+    image: "https://bitcoinvibe.camp/x/hackers/tone/thumbnail.png",
+    genres: ["puzzle", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/tone/",
+    developer:
+      "npub1q3570xwmqx2a2dgg5erhscrr5vhthqrd64txvn9v7jc7rya4745ql43qse",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Satoshi Snake — Vitali
+  "nopubkey:Satoshi Snake": {
+    name: "Satoshi Snake",
+    description:
+      "Cyberpunk snake game: stack Bitcoin blocks, grab Time-Lock Freeze and Mini-Halving power-ups to survive longer.",
+    image: "https://bitcoinvibe.camp/x/hackers/vitali/thumbnail.png",
+    genres: ["arcade", "casual"],
+    url: "https://vgzai.github.io/satoshi-snake/",
+    developer:
+      "npub1v42faa37mfmctvnv8ey7gkmna7f747g9jpa3h5zt2xx4z9clyggqypj0la",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Satoshi Snake proxy-signed identifier (camp score relay)
+  "nopubkey:satoshisnake": {
+    name: "Satoshi Snake",
+    description:
+      "Cyberpunk snake game: stack Bitcoin blocks, grab Time-Lock Freeze and Mini-Halving power-ups to survive longer.",
+    image: "https://bitcoinvibe.camp/x/hackers/vitali/thumbnail.png",
+    genres: ["arcade", "casual"],
+    url: "https://vgzai.github.io/satoshi-snake/",
+    developer:
+      "npub1v42faa37mfmctvnv8ey7gkmna7f747g9jpa3h5zt2xx4z9clyggqypj0la",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // Road Sense — Welby Norman
+  "nopubkey:vibecamp-jonathan": {
+    name: "Road Sense",
+    description:
+      "A driving lesson you can fail. Read signs, anticipate hazards, and learn the road through 50 scored cues in 4 minutes. Crashing ends the run.",
+    image: "https://bitcoinvibe.camp/x/hackers/jonathan/thumbnail.png",
+    genres: ["simulation", "racing", "casual"],
+    url: "https://bitcoinvibe.camp/x/hackers/jonathan/",
+    developer:
+      "npub12fafwnceu5vzjkthn9uxug0jny07x07fyrt26649tmprjmh23f9ss5aty0",
+    featured: false,
+    addedAt: "2026-08-22",
+    playerSigned: true,
+  },
+
+  // ===== NOMAD — game-signed scores (kind 30762 by the game account) =====
+
+  // NOMAD Trophies board
+  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-trophies": {
+    name: "NOMAD — Trophies",
+    description:
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Trophies leaderboard.",
+    image: "https://nomadmud.com/og.jpg?v=2",
+    genres: ["rpg", "adventure", "multiplayer"],
+    url: "https://nomadmud.com",
+    developer:
+      "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
+    featured: false,
+    addedAt: "2026-08-22",
+  },
+
+  // NOMAD Legend board
+  "9fb90107374c227a0121cea3ac336663804bc54008db5e75c91aadc9a3972ab4:nomad-legend": {
+    name: "NOMAD — Legend",
+    description:
+      "A living text dungeon on Nostr. Your key is your character. What you carry is provisional until the gate seals it — and the dead stay dead. This is the Legend leaderboard.",
+    image: "https://nomadmud.com/og.jpg?v=2",
+    genres: ["rpg", "adventure", "multiplayer"],
+    url: "https://nomadmud.com",
+    developer:
+      "npub1n7uszpehfs385qfpe636cvmxvwqyh32qprd4uawfr2kunguh926q9ya2fq",
+    featured: false,
+    addedAt: "2026-08-22",
+  },
 };
 
 // Generate a hash from game configuration content
@@ -766,6 +1057,7 @@ export const EXCLUDED_GAMES: string[] = [
   "bitcoin-space-invaders",
   "asteroid-sats",
   "nogames-tetris",
+  "nomad", // retired NOMAD identifier (superseded by nomad-trophies / nomad-legend)
 ];
 
 // All available genres
