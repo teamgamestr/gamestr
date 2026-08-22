@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
-import { EXCLUDED_GAMES, KIND_5555_GAMES, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
 
 export interface ScoreEvent extends NostrEvent {
   kind: number;
@@ -229,10 +229,11 @@ export function useScores(options: UseScoresOptions = {}) {
       let parsedScores = events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null)
-        .filter(score => score.state !== 'invalidated');
+        .filter(score => score.state !== 'invalidated' && score.state !== 'retired');
 
       if (gameIdentifier) {
-        parsedScores = parsedScores.filter(score => score.gameIdentifier === gameIdentifier);
+        const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
+        parsedScores = parsedScores.filter(score => identifierGroup.has(score.gameIdentifier));
       }
 
       if (difficulty) {
@@ -282,7 +283,7 @@ export function useLatestScores(options: { limit?: number } = {}) {
       return events
         .map(validateScoreEvent)
         .filter((score): score is ParsedScore => score !== null)
-        .filter(score => score.state !== 'invalidated')
+        .filter(score => score.state !== 'invalidated' && score.state !== 'retired')
         .filter(score => !excludedSet.has(score.gameIdentifier))
         .sort((a, b) => b.event.created_at - a.event.created_at)
         .slice(0, limit);
@@ -377,7 +378,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
       }>();
 
       parsedScores.forEach(score => {
-        const key = score.gameIdentifier;
+        const key = canonicalGameIdentifier(score.gameIdentifier);
         const existing = gamesMap.get(key);
 
         if (existing) {
@@ -396,7 +397,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
           const isK5555 = score.sourceKind === 5555;
           const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
           gamesMap.set(key, {
-            gameIdentifier: score.gameIdentifier,
+            gameIdentifier: key,
             developerPubkey: devPubkey,
             scoreCount: 1,
             topScore: score.score,
@@ -460,7 +461,7 @@ export function useTrendingGames(options: { days?: number } = {}) {
       }>();
 
       parsedScores.forEach(score => {
-        const key = score.gameIdentifier;
+        const key = canonicalGameIdentifier(score.gameIdentifier);
         const existing = gamesMap.get(key);
 
         if (existing) {
@@ -470,7 +471,7 @@ export function useTrendingGames(options: { days?: number } = {}) {
           const isK5555 = score.sourceKind === 5555;
           const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
           gamesMap.set(key, {
-            gameIdentifier: score.gameIdentifier,
+            gameIdentifier: key,
             developerPubkey: devPubkey,
             scoreCount: 1,
             uniquePlayers: new Set([score.playerPubkey]),
@@ -507,7 +508,7 @@ function parseEventWithScoreTag(
     if (isNaN(score)) return null;
 
     const stateTag = event.tags.find(([name]) => name === 'state')?.[1];
-    if (stateTag === 'invalidated') return null;
+    if (stateTag === 'invalidated' || stateTag === 'retired') return null;
 
     const displayValue = displayTag
       ? event.tags.find(([name]) => name === displayTag)?.[1]
@@ -615,10 +616,11 @@ export function useMultiLeaderboard(
       const events = await nostr.query(filters, { signal });
 
       return leaderboards.map(config => {
+        const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
         let parsedScores = events
           .map(e => parseEventWithScoreTag(e, config.scoreTag, config.displayTag))
           .filter((score): score is ParsedScore => score !== null)
-          .filter(score => score.gameIdentifier === gameIdentifier);
+          .filter(score => identifierGroup.has(score.gameIdentifier));
 
         if (config.filterTag && config.filterValue) {
           parsedScores = parsedScores.filter(score =>

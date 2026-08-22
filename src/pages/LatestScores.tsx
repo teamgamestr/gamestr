@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
+import { FALLBACK_GAME_METADATA, canonicalGameIdentifier, getGameIdentifierGroup, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
 const LATEST_SCORES_PAGE_LIMIT = 500;
@@ -40,9 +40,10 @@ export function LatestScores() {
     const games = new Map<string, { name: string; count: number }>();
 
     for (const score of scores ?? []) {
+      const canonical = canonicalGameIdentifier(score.gameIdentifier);
       const metadata = resolveGameByIdentifier(score.gameIdentifier, config)?.metadata || FALLBACK_GAME_METADATA;
-      const existing = games.get(score.gameIdentifier);
-      games.set(score.gameIdentifier, {
+      const existing = games.get(canonical);
+      games.set(canonical, {
         name: metadata.name,
         count: (existing?.count ?? 0) + 1,
       });
@@ -55,7 +56,8 @@ export function LatestScores() {
 
   const filteredScores = useMemo(() => {
     if (!selectedGame) return scores ?? [];
-    return (scores ?? []).filter(score => score.gameIdentifier === selectedGame);
+    const identifierGroup = new Set(getGameIdentifierGroup(selectedGame));
+    return (scores ?? []).filter(score => identifierGroup.has(score.gameIdentifier));
   }, [scores, selectedGame]);
   const totalPages = Math.max(1, Math.ceil(filteredScores.length / SCORES_PER_PAGE));
   const paginatedScores = useMemo(() => {
