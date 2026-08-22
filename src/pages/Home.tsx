@@ -5,6 +5,7 @@ import { GamesGrid } from '@/components/GamesGrid';
 import { GameCard } from '@/components/GameCard';
 import { FeatureGameDialog } from '@/components/FeatureGameDialog';
 import { useGamesWithScores, useLatestScores, useTrendingGames, type ParsedScore } from '@/hooks/useScores';
+import { useFeaturedPlacements } from '@/hooks/useFeaturedPlacements';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isFeaturedActive, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
@@ -106,9 +107,17 @@ export function Home() {
     });
   }, [gamesWithScores, getGame, noPubkeyConfigGames, kind5555ConfigGames, allConfigGames, trendingIdentifiers]);
 
+  const featuredPlacements = useFeaturedPlacements();
+
   const featuredGames = useMemo(
-    () => games.filter(g => g.metadata.featured).slice(0, 8),
-    [games],
+    () =>
+      games
+        .filter(g => {
+          const key = `${g.pubkey}:${g.gameIdentifier}`;
+          return isFeaturedActive(g.metadata) || featuredPlacements.placements.has(key);
+        })
+        .slice(0, 8),
+    [games, featuredPlacements.placements],
   );
 
   // Apply filters
@@ -117,9 +126,10 @@ export function Home() {
 
     // Apply filter mode
     if (filterMode === 'featured') {
-      const featuredKeys = new Set(
-        getFeatured().map(g => `${g.pubkey}:${g.gameIdentifier}`)
-      );
+      const featuredKeys = new Set([
+        ...getFeatured().map(g => `${g.pubkey}:${g.gameIdentifier}`),
+        ...featuredPlacements.placements.keys(),
+      ]);
       filtered = filtered.filter(game =>
         featuredKeys.has(`${game.pubkey}:${game.gameIdentifier}`)
       );

@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Flame, Sparkles, Trophy } from 'lucide-react';
 import type { GameMetadata } from '@/lib/gameConfig';
-import { isNewGame } from '@/lib/gameConfig';
+import { isFeaturedActive, isNewGame } from '@/lib/gameConfig';
 
 interface GameCardProps {
   pubkey: string;
@@ -51,7 +51,7 @@ export function GameCard({
                 New
               </Badge>
             )}
-            {metadata.featured && (
+            {isFeaturedActive(metadata) && (
               <Badge className="gap-1 shadow-lg bg-yellow-500 hover:bg-yellow-600">
                 <Trophy className="h-3 w-3" />
                 Featured

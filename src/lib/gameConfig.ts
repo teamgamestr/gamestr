@@ -80,6 +80,11 @@ export interface GameMetadata {
   url?: string;
   developer?: string;
   featured?: boolean;
+  /**
+   * ISO date after which the game is no longer shown as featured.
+   * Featured placements without an expiry remain featured indefinitely.
+   */
+  featuredUntil?: string;
   addedAt?: string;
   playerSigned?: boolean;
   leaderboards?: LeaderboardConfig[];
@@ -1297,10 +1302,22 @@ export function isNewGame(metadata: GameMetadata): boolean {
 }
 
 /**
+ * Check whether a game's featured placement is currently active.
+ * A `featuredUntil` expiry date (ISO) bounds the placement in time.
+ */
+export function isFeaturedActive(metadata: GameMetadata, now = Date.now()): boolean {
+  if (!metadata.featured) return false;
+  if (!metadata.featuredUntil) return true;
+  return new Date(metadata.featuredUntil).getTime() > now;
+}
+
+/**
  * Get featured games
  */
 export function getFeaturedGames(customConfig?: GameConfigMap) {
-  return getAllGames(customConfig).filter((game) => game.metadata.featured);
+  return getAllGames(customConfig).filter((game) =>
+    isFeaturedActive(game.metadata),
+  );
 }
 
 /**
