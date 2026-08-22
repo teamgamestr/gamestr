@@ -198,6 +198,12 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       }
       if (!newInvoice) throw lastError;
 
+      // Show the invoice (QR) immediately as the primary payment view.
+      setInvoice(newInvoice);
+
+      // Then try automatic payment methods quietly. If they fail, the
+      // invoice stays on screen — no error toast, since the wallet UI may
+      // still be open and the invoice can only be paid once.
       const activeNWC = getActiveConnection();
       if (activeNWC?.connectionString && activeNWC.isConnected) {
         try {
@@ -205,12 +211,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           onPaid();
           return;
         } catch (error) {
-          console.error('NWC payment failed:', error);
-          toast({
-            title: 'NWC payment failed',
-            description: 'Falling back to manual payment.',
-            variant: 'destructive',
-          });
+          console.warn('NWC payment did not resolve:', error);
         }
       }
 
@@ -225,19 +226,9 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
           onPaid();
           return;
         } catch (error) {
-          // The wallet UI may have opened even though sendPayment didn't
-          // resolve (dismissed popup, slow confirmation, quirky provider).
-          // Don't report failure — fall back to the invoice below, which
-          // can only be paid once.
           console.warn('WebLN sendPayment did not resolve:', error);
         }
       }
-
-      setInvoice(newInvoice);
-      toast({
-        title: 'Confirm payment below',
-        description: "Your wallet didn't confirm automatically. Pay the invoice below — if you already paid in your wallet, you're all set.",
-      });
     } catch (error) {
       console.error('Feature zap error:', error);
       toast({
@@ -313,6 +304,9 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
             ) : (
               <div className="w-full max-w-[260px] aspect-square bg-muted animate-pulse rounded-lg mx-auto" />
             )}
+            <p className="text-xs text-muted-foreground text-center">
+              If your wallet opened, confirm the payment there — or pay via QR / copy below.
+            </p>
             <div className="flex gap-2">
               <Input value={invoice} readOnly onClick={(e) => e.currentTarget.select()} className="font-mono text-xs" />
               <Button variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
