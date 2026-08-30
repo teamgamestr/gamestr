@@ -1001,6 +1001,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-08-22",
     playerSigned: true,
   },
+
+  // Sum to Ten
+  "nopubkey:sum-ten": {
+    name: "Sum to Ten",
+    description:
+      "A number puzzle where you press digits that sum to the target. Simple, fast, addictive.",
+    image:
+      "https://sum10.7zark7.my.id/favicon.ico",
+    genres: ["puzzle", "casual"],
+    url: "https://sum10.7zark7.my.id/",
+    developer:
+      "npub1v6cmju0c2x8ku5rz5gsm929a8f9pe65l7sp83s28mzf7ahsn33wssx4h88",
+    featured: false,
+    addedAt: "2026-08-30",
+    playerSigned: true,
+  },
 };
 
 // Generate a hash from game configuration content
