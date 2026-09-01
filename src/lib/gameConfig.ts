@@ -592,7 +592,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/a4e13e0101d63ca405d6f38b5d69f30de5ddec58aeb803276f03730c25be5cce.svg",
     genres: ["arcade", "casual", "puzzle"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqyx66twv4ez6a33wmgevg",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqyx66twv4ez6a33wmgevg",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -607,7 +607,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/e19b12222085fa5fdc359f6d74acdcf8bbbbb310a1673542727552beda098340.svg",
     genres: ["arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqy8xmnpddjj6a33ae9uxl",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqy8xmnpddjj6a33ae9uxl",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -623,7 +623,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/5f12d0e5f642697bf7e48636d65acbd84afbc8230cf056647a9fc93f40c6de42.svg",
     genres: ["puzzle", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqykumejxq6rsttkxy0eq4ne",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqykumejxq6rsttkxy0eq4ne",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -639,7 +639,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/2d89d57515850a7ab5f877ae2e24921444a481a0f75f48a45700542abd3d3c65.svg",
     genres: ["puzzle", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qq8x66twv4ehwet9wpjhyttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vmq794g",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qq8x66twv4ehwet9wpjhyttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vmq794g",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -655,7 +655,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/6fde59b8c541c2111844543c7276debcf38412d8d62ac32843e75fdf728a0015.svg",
     genres: ["arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqykummzd36kkttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vltt8tu",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qqykummzd36kkttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vltt8tu",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -671,7 +671,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/990b98dad34d41bd72de5ba3d737e550ebfa45a2298e52d4ec2118702c9baeed.svg",
     genres: ["arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqykummwdamxzttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vklx39s",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qqykummwdamxzttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vklx39s",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -687,7 +687,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/fc02bdc37354eed723c081e625eec2f2a490c0603389d16228b5b064b7c2908b.svg",
     genres: ["puzzle", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqxkumm5d9j8jcm0d9hz6a33qgsfh5waucdg53ukfngllewgczq54q2c93u78pyp6h8x4z2tlsw6vzcrqsqqpq0nhrrczw",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qqxkumm5d9j8jcm0d9hz6a33qgsfh5waucdg53ukfngllewgczq54q2c93u78pyp6h8x4z2tlsw6vzcrqsqqpq0nhrrczw",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -703,7 +703,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/29c9da6812468af4c2938f97f2a83e8fd74b6524a1880af191c295d2e749188d.svg",
     genres: ["puzzle", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqyhxatyda4h2ttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vm8arap",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qqyhxatyda4h2ttkxypzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqvzqqqyp7vm8arap",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -719,7 +719,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/4d25a1ec64d4d2aa4988e958ff79d7ea7baf84465eb5419e4c0879d6dc5fd5e4.svg",
     genres: ["arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qqx8g6tdvfjhymtpdckhvvgzyzdarh0xr29y09jv68l7tjxqs99gzkpv083cfqw4ee4gjjlurknqkqcyqqqgrucwkkvkr",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qqx8g6tdvfjhymtpdckhvvgzyzdarh0xr29y09jv68l7tjxqs99gzkpv083cfqw4ee4gjjlurknqkqcyqqqgrucwkkvkr",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
@@ -735,7 +735,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     image:
       "https://cdn.hzrd149.com/62106940d7a5834172411e31be836f00d1d04caf873cd35a60ef07637be8c6de.svg",
     genres: ["arcade", "casual"],
-    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.lol/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqx8x6mevf6hyem9wgkhvvga8uvva",
+    url: "https://npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3.nsite.run/game/naddr1qvzqqqyp7vpzpx73mhnp4zj8jexdrll9erqgzj5ptqk8ncuys82uu65ff07pmfstqqx8x6mevf6hyem9wgkhvvga8uvva",
     developer:
       "npub1n0games63frevnx3llju3sypf2q4streuwzgr4wwd2y5hlqa5c9s29nfk3",
     featured: false,
