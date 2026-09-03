@@ -16,10 +16,10 @@ jobs:
     steps:
       - name: Select the production branch
         run: |
-          if ! git -C /home/ubuntu/gamestr diff --quiet || ! git -C /home/ubuntu/gamestr diff --cached --quiet; then
-            git -C /home/ubuntu/gamestr stash push --message "auto-stash before switching to master $(date +%Y%m%d-%H%M%S)"
+          if ! git -C /home/ubuntu/gamestr/gamestr diff --quiet || ! git -C /home/ubuntu/gamestr/gamestr diff --cached --quiet; then
+            git -C /home/ubuntu/gamestr/gamestr stash push --message "auto-stash before switching to master $(date +%Y%m%d-%H%M%S)"
           fi
-          git -C /home/ubuntu/gamestr fetch origin master
-          git -C /home/ubuntu/gamestr switch master
+          git -C /home/ubuntu/gamestr/gamestr fetch origin master
+          git -C /home/ubuntu/gamestr/gamestr switch master
       - name: Run deploy script
         run: /home/ubuntu/gamestr/deploy gamestr
