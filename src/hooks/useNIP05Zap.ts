@@ -3,8 +3,10 @@ import { nip57 } from 'nostr-tools';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useAppContext } from '@/hooks/useAppContext';
-import { useNWC } from '@/hooks/useNWCContext';
 import { useToast } from '@/hooks/useToast';
+import { useNWC } from '@/hooks/useNWCContext';
+import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
+import { resolveLnurlPay } from '@/lib/lnurlPay';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
@@ -48,31 +50,51 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
       setInvoice(null);
 
       try {
-        const zapEndpoint = await nip57.getZapEndpoint(author.data.event);
-        if (!zapEndpoint) {
-          throw new Error('Could not find a zap endpoint for the service account');
+        const { lud06, lud16 } = author.data.metadata ?? {};
+        let lnurlParams;
+        try {
+          lnurlParams = await resolveLnurlPay({ lud06, lud16 });
+        } catch (endpointError) {
+          throw new Error(
+            endpointError instanceof Error
+              ? endpointError.message
+              : 'Could not find a zap endpoint for the service account',
+          );
+        }
+        if (!lnurlParams.allowsNostr || !lnurlParams.nostrPubkey) {
+          throw new Error("The payment profile's lightning address does not support zaps");
         }
 
         const zapRequest = nip57.makeZapRequest({
           profile: servicePubkey,
           event: null,
           amount: amountMillisats,
-          relays: presetRelays?.map((r) => r.url) ?? ['wss://relay.damus.io'],
+          relays: presetRelays?.map((r) => r.url) ?? ['wss://nos.lol'],
           comment,
         });
 
-        const signedZapRequest = await user.signer.signEvent(zapRequest);
+        if (amountMillisats < lnurlParams.minSendable || amountMillisats > lnurlParams.maxSendable) {
+          throw new Error(
+            `This lightning address accepts between ${Math.ceil(lnurlParams.minSendable / 1000)} and ` +
+              `${Math.floor(lnurlParams.maxSendable / 1000)} sats.`,
+          );
+        }
 
-        const res = await fetch(
-          `${zapEndpoint}?amount=${amountMillisats}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`,
-        );
+        const signedZapRequest = await user.signer.signEvent(zapRequest);
+        const zapRequestJson = JSON.stringify(signedZapRequest);
+
+        // Build the query with URLSearchParams: `encodeURI` leaves `&`, `+`
+        // and `#` alone, so a comment containing any of them corrupted the
+        // request.
+        const zapUrl = new URL(lnurlParams.callback);
+        zapUrl.searchParams.set('amount', String(amountMillisats));
+        zapUrl.searchParams.set('nostr', zapRequestJson);
+
+        const res = await fetch(zapUrl.toString());
         const responseData = await res.json();
 
         if (!res.ok) {
           throw new Error(responseData.reason || `LNURL error (${res.status})`);
-        }
-        if (responseData.status === 'ERROR') {
-          throw new Error(responseData.reason || 'LNURL service returned an error');
         }
 
         const newInvoice = responseData.pr;
@@ -80,18 +102,24 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
           throw new Error('Lightning service did not return a valid invoice');
         }
 
-        const activeNWC = getActiveConnection();
-        if (activeNWC?.connectionString && activeNWC.isConnected) {
+        const decodedInvoice = assertInvoiceAmount(newInvoice, amountMillisats);
+        if (!invoiceCommitsTo(decodedInvoice, [zapRequestJson, lnurlParams.metadata])) {
+          throw new Error('Lightning service returned an invoice for a different request. Payment cancelled.');
+        }
+
+        // Inline payment cascade: NWC -> WebLN -> manual fallback.
+        const currentNWCConnection = getActiveConnection();
+        if (currentNWCConnection?.connectionString && currentNWCConnection.isConnected) {
           try {
-            await sendPayment(activeNWC, newInvoice);
+            await sendPayment(currentNWCConnection, newInvoice);
             toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats via NWC.` });
             setIsZapping(false);
             return true;
-          } catch (error) {
-            console.error('NWC payment failed, falling back:', error);
+          } catch (nwcError) {
+            console.error('NWC payment failed, falling back:', nwcError);
             toast({
               title: 'NWC payment failed',
-              description: error instanceof Error ? error.message : 'Falling back to manual payment',
+              description: `${nwcError instanceof Error ? nwcError.message : 'Unknown NWC error'}. Falling back to other payment methods...`,
               variant: 'destructive',
             });
           }
@@ -99,25 +127,27 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
 
         if (webln) {
           try {
-            let provider = webln;
+            let webLnProvider = webln;
             if (webln.enable && typeof webln.enable === 'function') {
-              const enabled = (await webln.enable()) as WebLNProvider | undefined;
-              if (enabled) provider = enabled;
+              const enabledProvider = await webln.enable();
+              const provider = enabledProvider as WebLNProvider | undefined;
+              if (provider) webLnProvider = provider;
             }
-            await provider.sendPayment(newInvoice);
+            await webLnProvider.sendPayment(newInvoice);
             toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });
             setIsZapping(false);
             return true;
-          } catch (error) {
-            console.error('WebLN payment failed, falling back:', error);
+          } catch (weblnError) {
+            console.error('WebLN payment failed, falling back:', weblnError);
             toast({
               title: 'WebLN payment failed',
-              description: error instanceof Error ? error.message : 'Pay the invoice manually',
+              description: `${weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error'}. Falling back to other payment methods...`,
               variant: 'destructive',
             });
           }
         }
 
+        // Payment not confirmed - show QR code and manual Lightning URI
         setInvoice(newInvoice);
         setIsZapping(false);
         return false;
@@ -132,7 +162,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         return false;
       }
     },
-    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, getActiveConnection, sendPayment, webln, amountMillisats],
+    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, sendPayment, getActiveConnection, webln, amountMillisats],
   );
 
   return {
