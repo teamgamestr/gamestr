@@ -1017,6 +1017,20 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     addedAt: "2026-08-30",
     playerSigned: true,
   },
+  //Sgt Sammie
+  "5688fb12edc9f96fea6766e061cb1705a0ec8d5dd727a7d7fb8256afef19ebec:sergeant-sammie":
+    {
+      name: "Sgt Sammie",
+      description:
+        "Sgt Sammie rings your AI agent on Microsoft Teams and drills it: listening, speaking, restraint, chat. He measures what actually arrives at the far end, and signs the score himself.",
+      image: "/games/sergeant-sammie.png",
+      genres: ["simulation", "strategy"],
+      url: "https://sergeantsamm.ie",
+      developer:
+        "npub1jutptdc2m8kgjmudtws095qk2tcale0eemvp4j2xnjnl4nh6669slrf04x",
+      featured: false,
+      addedAt: "2026-09-11",
+    },
 };
 
 // Generate a hash from game configuration content
