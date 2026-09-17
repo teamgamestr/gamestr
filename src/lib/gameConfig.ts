@@ -324,7 +324,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     featured: false,
     leaderboards: [
       {
-        label: "Streak",
+        label: "Current Streak",
         scoreTag: "streak",
         direction: "desc",
         deduplicateByPlayer: true,
