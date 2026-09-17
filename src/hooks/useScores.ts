@@ -132,20 +132,30 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
 }
 
 /**
- * Collapse scores to a single best entry per player. For "desc" boards the
- * best score is the highest; for "asc" it's the lowest. On ties the newest
- * event wins so the board reflects the player's current best.
+ * Collapse scores to a single entry per player.
+ *
+ * - "best": keep the best score per `direction` (highest for desc, lowest for
+ *   asc); on ties the newest event wins. Suited to all-time records such as a
+ *   best streak.
+ * - "latest": keep the player's most recent event, reflecting their current
+ *   state (e.g. a live streak, which resets when broken).
  */
-function deduplicateScoresByPlayer(scores: ParsedScore[], direction: ScoreDirection): ParsedScore[] {
+function deduplicateScoresByPlayer(
+  scores: ParsedScore[],
+  direction: ScoreDirection,
+  strategy: 'best' | 'latest',
+): ParsedScore[] {
   const bestByPlayer = new Map<string, ParsedScore>();
   for (const score of scores) {
     const existing = bestByPlayer.get(score.playerPubkey);
     const isBetter =
       !existing ||
-      (direction === 'asc'
-        ? score.score < existing.score
-        : score.score > existing.score) ||
-      (score.score === existing.score && score.event.created_at > existing.event.created_at);
+      (strategy === 'latest'
+        ? score.event.created_at > existing.event.created_at
+        : (direction === 'asc'
+          ? score.score < existing.score
+          : score.score > existing.score) ||
+          (score.score === existing.score && score.event.created_at > existing.event.created_at));
     if (isBetter) bestByPlayer.set(score.playerPubkey, score);
   }
   return Array.from(bestByPlayer.values());
@@ -709,7 +719,11 @@ export function useMultiLeaderboard(
         }
 
         if (config.deduplicateByPlayer) {
-          parsedScores = deduplicateScoresByPlayer(parsedScores, config.direction);
+          parsedScores = deduplicateScoresByPlayer(
+            parsedScores,
+            config.direction,
+            config.deduplicateByPlayer === 'latest' ? 'latest' : 'best',
+          );
         }
 
         const sorted = sortScores(parsedScores, config.direction);
