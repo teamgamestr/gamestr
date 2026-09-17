@@ -19,39 +19,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useAuthor } from '@/hooks/useAuthor';
 import { useToast } from '@/hooks/useToast';
 import { useWallet } from '@/hooks/useWallet';
-import { useNWC } from '@/hooks/useNWCContext';
-import { useAppContext } from '@/hooks/useAppContext';
+import { useZaps } from '@/hooks/useZaps';
 import {
   getAllGames,
   GAMESTR_PUBKEY,
-  GAMESTR_LIGHTNING_ADDRESS,
   FEATURED_GAME_PRICING,
 } from '@/lib/gameConfig';
-import { nip57 } from 'nostr-tools';
+import type { Event } from 'nostr-tools';
 import QRCode from 'qrcode';
-
-/**
- * Resolve the LNURL-pay callback for a static LUD-16 lightning address
- * (https://domain/.well-known/lnurlp/name). Returns null when the address
- * doesn't support Nostr zaps or can't be reached.
- */
-async function resolveCallbackFromLightningAddress(address: string): Promise<string | null> {
-  try {
-    const [name, domain] = address.split('@');
-    if (!name || !domain) return null;
-    const res = await fetch(`https://${domain}/.well-known/lnurlp/${name}`);
-    const params = await res.json();
-    if (res.ok && params.status !== 'ERROR' && params.allowsNostr && params.nostrPubkey) {
-      return params.callback as string;
-    }
-  } catch {
-    // fall through
-  }
-  return null;
-}
 
 interface FeatureGameDialogProps {
   children?: React.ReactNode;
@@ -63,23 +40,40 @@ const monthOptions = Array.from(
   (_, i) => FEATURED_GAME_PRICING.minMonths + i,
 );
 
+/**
+ * Synthetic target so useZaps can send a profile zap (NIP-57, no target
+ * event) to the Gamestr account. The account's real kind 0 profile on the
+ * relays provides the lightning address.
+ */
+function useGamestrZapTarget(): Event {
+  return useMemo(
+    () =>
+      ({
+        id: '',
+        pubkey: GAMESTR_PUBKEY,
+        kind: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        content: JSON.stringify({ lud16: 'zaps@gamestr.io' }),
+        tags: [],
+        sig: '',
+      }) as unknown as Event,
+    [],
+  );
+}
+
 export function FeatureGameDialog({ children, className }: FeatureGameDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string>('');
   const [customName, setCustomName] = useState('');
   const [customUrl, setCustomUrl] = useState('');
   const [months, setMonths] = useState(1);
-  const [invoice, setInvoice] = useState<string | null>(null);
-  const [isZapping, setIsZapping] = useState(false);
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   const { user } = useCurrentUser();
-  const { data: recipient } = useAuthor(GAMESTR_PUBKEY);
   const { toast } = useToast();
   const { webln } = useWallet();
-  const { sendPayment, getActiveConnection } = useNWC();
-  const { presetRelays } = useAppContext();
+  const target = useGamestrZapTarget();
 
   const games = useMemo(
     () =>
@@ -89,20 +83,31 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
     [],
   );
 
-  const totalSats =
-    FEATURED_GAME_PRICING.satsPerMonth * Math.max(months, 0);
+  const totalSats = FEATURED_GAME_PRICING.satsPerMonth * Math.max(months, 0);
 
-  // Generate QR code for the invoice
+  const resetForm = () => {
+    setSelectedGame('');
+    setCustomName('');
+    setCustomUrl('');
+    setMonths(1);
+  };
+
+  const onZapSuccess = () => {
+    setOpen(false);
+    resetForm();
+    toast({
+      title: 'Featured placement requested!',
+      description: 'Thanks for the zap! The Gamestr team will activate your placement shortly.',
+    });
+  };
+
+  const { zap, isZapping, invoice, setInvoice } = useZaps(target, webln, null, onZapSuccess);
+
+  // QR code for the manual-payment fallback (no WebLN wallet registered)
   useEffect(() => {
     let cancelled = false;
-    if (!invoice) {
-      setQrCodeUrl('');
-      return;
-    }
-    QRCode.toDataURL(invoice.toUpperCase(), {
-      width: 512,
-      margin: 2,
-    })
+    if (!invoice) return;
+    QRCode.toDataURL(invoice.toUpperCase(), { width: 512, margin: 2 })
       .then((url) => {
         if (!cancelled) setQrCodeUrl(url);
       })
@@ -111,144 +116,6 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
       cancelled = true;
     };
   }, [invoice]);
-
-  const buildComment = () => {
-    const monthsLabel = `${months} month${months > 1 ? 's' : ''}`;
-    if (selectedGame === '__other__') {
-      return `[feature-request] new game "${customName.trim()}" ${customUrl.trim()} — featured placement ${monthsLabel}`;
-    }
-    const game = games.find((g) => g.key === selectedGame);
-    return `[feature-request] game=${game?.key ?? selectedGame} (${game?.name ?? ''}) — featured placement ${monthsLabel}`;
-  };
-
-  const handleZap = async () => {
-    if (!user) {
-      toast({
-        title: 'Login required',
-        description: 'You must be logged in to request a featured placement.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    if (selectedGame === '__other__' && (!customName.trim() || !customUrl.trim())) {
-      toast({
-        title: 'Missing details',
-        description: 'Add the game name and URL so we can review it.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsZapping(true);
-    setInvoice(null);
-
-    try {
-      if (!user.signer) throw new Error('No signer available');
-
-      const zapRequest = nip57.makeZapRequest({
-        profile: GAMESTR_PUBKEY,
-        event: null,
-        amount: totalSats * 1000,
-        relays: presetRelays?.map((r) => r.url) ?? ['wss://relay.damus.io'],
-        comment: buildComment(),
-      });
-
-      const signedZapRequest = await user.signer.signEvent(zapRequest);
-      const nostrParam = encodeURIComponent(JSON.stringify(signedZapRequest));
-
-      // Candidate LNURL-pay callbacks: the Gamestr account's Nostr profile
-      // first, then the static Gamestr lightning address as a fallback in
-      // case the profile hasn't loaded or is missing a lightning address.
-      const candidates: string[] = [];
-      if (recipient?.event) {
-        const profileEndpoint = await nip57
-          .getZapEndpoint(recipient.event)
-          .catch(() => null);
-        if (profileEndpoint) candidates.push(profileEndpoint);
-      }
-      const fallbackCallback = await resolveCallbackFromLightningAddress(
-        GAMESTR_LIGHTNING_ADDRESS,
-      );
-      if (fallbackCallback && !candidates.includes(fallbackCallback)) {
-        candidates.push(fallbackCallback);
-      }
-
-      if (candidates.length === 0) {
-        throw new Error('No Lightning payment endpoint found for the Gamestr account');
-      }
-
-      let newInvoice: string | null = null;
-      let lastError: Error = new Error('Could not create invoice');
-      for (const callback of candidates) {
-        try {
-          const res = await fetch(`${callback}?amount=${totalSats * 1000}&nostr=${nostrParam}`);
-          const responseData = await res.json();
-          if (!res.ok || responseData.status === 'ERROR') {
-            throw new Error(responseData.reason || `LNURL error (${res.status})`);
-          }
-          if (!responseData.pr || typeof responseData.pr !== 'string') {
-            throw new Error('Lightning service did not return a valid invoice');
-          }
-          newInvoice = responseData.pr;
-          break;
-        } catch (error) {
-          console.error('Invoice request failed:', callback, error);
-          lastError = error as Error;
-        }
-      }
-      if (!newInvoice) throw lastError;
-
-      // Show the invoice (QR) immediately as the primary payment view.
-      setInvoice(newInvoice);
-
-      // Then try automatic payment methods quietly. If they fail, the
-      // invoice stays on screen — no error toast, since the wallet UI may
-      // still be open and the invoice can only be paid once.
-      const activeNWC = getActiveConnection();
-      if (activeNWC?.connectionString && activeNWC.isConnected) {
-        try {
-          await sendPayment(activeNWC, newInvoice);
-          onPaid();
-          return;
-        } catch (error) {
-          console.warn('NWC payment did not resolve:', error);
-        }
-      }
-
-      if (webln) {
-        try {
-          let provider = webln;
-          if (webln.enable && typeof webln.enable === 'function') {
-            const enabled = (await webln.enable()) as typeof webln | undefined;
-            if (enabled) provider = enabled;
-          }
-          await provider.sendPayment(newInvoice);
-          onPaid();
-          return;
-        } catch (error) {
-          console.warn('WebLN sendPayment did not resolve:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Feature zap error:', error);
-      toast({
-        title: 'Could not create invoice',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsZapping(false);
-    }
-  };
-
-  const onPaid = () => {
-    setInvoice(null);
-    setOpen(false);
-    toast({
-      title: 'Featured placement requested!',
-      description: 'Thanks for the zap! The Gamestr team will activate your placement shortly.',
-    });
-  };
 
   const handleCopy = async () => {
     if (invoice) {
@@ -259,6 +126,27 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
     }
   };
 
+  const buildComment = () => {
+    const monthsLabel = `${months} month${months > 1 ? 's' : ''}`;
+    if (selectedGame === '__other__') {
+      return `[feature-request] new game "${customName.trim()}" ${customUrl.trim()} — featured placement ${monthsLabel}`;
+    }
+    const game = games.find((g) => g.key === selectedGame);
+    return `[feature-request] game=${game?.key ?? selectedGame} (${game?.name ?? ''}) — featured placement ${monthsLabel}`;
+  };
+
+  const handleZap = () => {
+    if (selectedGame === '__other__' && (!customName.trim() || !customUrl.trim())) {
+      toast({
+        title: 'Missing details',
+        description: 'Add the game name and URL so we can review it.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    zap(totalSats, buildComment());
+  };
+
   return (
     <Dialog
       open={open}
@@ -266,10 +154,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
         setOpen(next);
         if (!next) {
           setInvoice(null);
-          setSelectedGame('');
-          setCustomName('');
-          setCustomUrl('');
-          setMonths(1);
+          resetForm();
         }
       }}
     >
@@ -296,7 +181,7 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
             <div className="text-center">
               <div className="text-2xl font-bold">{totalSats.toLocaleString()} sats</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Pay to confirm your featured placement request.
+                Pay with any Lightning wallet to confirm your request.
               </p>
             </div>
             {qrCodeUrl ? (
@@ -304,9 +189,6 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
             ) : (
               <div className="w-full max-w-[260px] aspect-square bg-muted animate-pulse rounded-lg mx-auto" />
             )}
-            <p className="text-xs text-muted-foreground text-center">
-              If your wallet opened, confirm the payment there — or pay via QR / copy below.
-            </p>
             <div className="flex gap-2">
               <Input value={invoice} readOnly onClick={(e) => e.currentTarget.select()} className="font-mono text-xs" />
               <Button variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
