@@ -131,6 +131,26 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
   return scores.sort((a, b) => b.score - a.score);
 }
 
+/**
+ * Collapse scores to a single best entry per player. For "desc" boards the
+ * best score is the highest; for "asc" it's the lowest. On ties the newest
+ * event wins so the board reflects the player's current best.
+ */
+function deduplicateScoresByPlayer(scores: ParsedScore[], direction: ScoreDirection): ParsedScore[] {
+  const bestByPlayer = new Map<string, ParsedScore>();
+  for (const score of scores) {
+    const existing = bestByPlayer.get(score.playerPubkey);
+    const isBetter =
+      !existing ||
+      (direction === 'asc'
+        ? score.score < existing.score
+        : score.score > existing.score) ||
+      (score.score === existing.score && score.event.created_at > existing.event.created_at);
+    if (isBetter) bestByPlayer.set(score.playerPubkey, score);
+  }
+  return Array.from(bestByPlayer.values());
+}
+
 export type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly' | 'all-time';
 
 /**
@@ -686,6 +706,10 @@ export function useMultiLeaderboard(
         }
         if (mode) {
           parsedScores = parsedScores.filter(score => score.mode === mode);
+        }
+
+        if (config.deduplicateByPlayer) {
+          parsedScores = deduplicateScoresByPlayer(parsedScores, config.direction);
         }
 
         const sorted = sortScores(parsedScores, config.direction);
