@@ -23,7 +23,7 @@ import { ScoreZapButton } from '@/components/ScoreZapButton';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
-import { isNoPubkeyGame, isKind5555Game, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, GAMESTR_PUBKEY, type LeaderboardConfig } from '@/lib/gameConfig';
+import { isNoPubkeyGame, isKind5555Game, isDualKindGame, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, GAMESTR_PUBKEY, type LeaderboardConfig } from '@/lib/gameConfig';
 
 
 export function GameDetail() {
@@ -45,6 +45,9 @@ export function GameDetail() {
   const metadata = resolved?.metadata || (gameIdentifier ? FALLBACK_GAME_METADATA : null);
   const isNoPubkey = pubkey ? isNoPubkeyGame(pubkey) : false;
   const isK5555 = gameIdentifier ? isKind5555Game(gameIdentifier) : false;
+  // Dual-source games (legacy kind 5555 + server-signed kind 30762) query both
+  // kinds so no history is lost during the migration.
+  const isDualKind = gameIdentifier ? isDualKindGame(gameIdentifier) : false;
   const isPlayerSigned = metadata?.playerSigned === true;
   const hasLeaderboard = !isNoPubkey || isK5555 || isPlayerSigned;
 
@@ -137,7 +140,7 @@ export function GameDetail() {
       developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
       limit: 100,
       enabled: hasLeaderboard && !hasMultiLeaderboard,
-      kind5555Only: isK5555,
+      kind5555Only: isK5555 && !isDualKind,
     }
   );
 
@@ -151,7 +154,7 @@ export function GameDetail() {
       developerPubkey: (isK5555 || isPlayerSigned) ? undefined : pubkey,
       limit: 100,
       enabled: hasLeaderboard && hasMultiLeaderboard,
-      kind5555Only: isK5555,
+      kind5555Only: isK5555 && !isDualKind,
     }
   );
 

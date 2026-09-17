@@ -267,6 +267,18 @@ export function isKind5555Game(gameTag: string): boolean {
   return gameTag in KIND_5555_GAMES;
 }
 
+/**
+ * A game is "dual source" when it still has a KIND_5555_GAMES entry (legacy
+ * player-signed history) while ALSO registered in INITIAL_GAME_CONFIG as a
+ * kind 30762 game (server-signed scores). Such games query both kinds so no
+ * history is lost during a migration.
+ */
+export function isDualKindGame(gameIdentifier: string): boolean {
+  if (!isKind5555Game(gameIdentifier)) return false;
+  const resolved = resolveGameByIdentifier(gameIdentifier);
+  return !!resolved && resolved.pubkey !== NO_PUBKEY_PREFIX;
+}
+
 export function getAllKind5555Games(): Array<{
   gameTag: string;
   config: Kind5555GameConfig;
@@ -291,6 +303,24 @@ export const FALLBACK_GAME_METADATA: GameMetadata = {
 export const INITIAL_GAME_CONFIG: GameConfigMap = {
   // Example game configurations
   // Format: "<developer-pubkey>:<game-identifier>"
+
+  // Word5 — server-authoritative kind 30762 scores (also retained in
+  // KIND_5555_GAMES to keep legacy player-signed history visible).
+  "7ec3e0ce6b726060643b51abe40ab5bf871eb8dcbda4bfd9b4761bb8913b5c3f:word5": {
+    name: "Word5",
+    description:
+      "A daily word puzzle game. Guess the 5-letter word in as few tries as possible!",
+    image:
+      "https://images.pexels.com/photos/278888/pexels-photo-278888.jpeg?auto=compress&cs=tinysrgb&w=800",
+    genres: ["puzzle", "casual"],
+    url: "https://word5.otherstuff.ai",
+    developer: "otherstuff.ai",
+    featured: false,
+    leaderboards: [
+      { label: "Streak", scoreTag: "streak", direction: "desc" },
+      { label: "Best Streak", scoreTag: "maxStreak", direction: "desc" },
+    ],
+  },
 
   //Blockstr
   "c70f635895bf0cade4f4c80863fe662a1d6e72153c9be357dc5fa5064c3624de:blockstr": {
