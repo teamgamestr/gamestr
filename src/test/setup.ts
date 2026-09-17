@@ -38,3 +38,20 @@ global.ResizeObserver = vi.fn().mockImplementation((_callback) => ({
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
+
+// Mock localStorage (some runtimes expose a Node-native localStorage that lacks
+// getItem on `window`, which breaks library code reading it during render)
+const localStorageStore = new Map<string, string>();
+Object.defineProperty(window, 'localStorage', {
+  writable: true,
+  value: {
+    getItem: vi.fn((key: string) => localStorageStore.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => void localStorageStore.set(key, value)),
+    removeItem: vi.fn((key: string) => void localStorageStore.delete(key)),
+    clear: vi.fn(() => void localStorageStore.clear()),
+    key: vi.fn((index: number) => Array.from(localStorageStore.keys())[index] ?? null),
+    get length() {
+      return localStorageStore.size;
+    },
+  },
+});

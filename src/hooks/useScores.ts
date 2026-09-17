@@ -45,7 +45,10 @@ export function validateScoreEvent(event: NostrEvent): ParsedScore | null {
 
 function validateKind30762(event: NostrEvent): ParsedScore | null {
   const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
-  const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
+  // Legacy kind 5555 games use a per-game score field (e.g. streak); read that
+  // tag from kind 30762 events so both sources normalize to the same metric.
+  const scoreField = getKind5555Config(gameTag ?? '')?.scoreField ?? 'score';
+  const scoreTag = event.tags.find(([name]) => name === scoreField)?.[1];
   const playerTag = event.tags.find(([name]) => name === 'p')?.[1];
 
   if (!gameTag || !scoreTag || !playerTag) return null;
