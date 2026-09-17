@@ -338,7 +338,7 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
         label: "Best Streak",
         scoreTag: "maxStreak",
         direction: "desc",
-        deduplicateByPlayer: "best",
+        deduplicateByPlayer: "latest",
       },
     ],
   },
