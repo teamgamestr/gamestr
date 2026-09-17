@@ -117,6 +117,12 @@ export interface LeaderboardConfig {
   scoreFormat?: ScoreFormat;
   /** Input units for the score when scoreFormat is "time" (defaults to "s"). */
   scoreUnit?: "ms" | "s";
+  /**
+   * Collapse the board to a single best entry per player rather than listing
+   * every submitted score. Intended for repeatable metrics like streaks where
+   * one player's many games would otherwise fill the leaderboard.
+   */
+  deduplicateByPlayer?: boolean;
 }
 
 /**
@@ -317,8 +323,18 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
     developer: "otherstuff.ai",
     featured: false,
     leaderboards: [
-      { label: "Streak", scoreTag: "streak", direction: "desc" },
-      { label: "Best Streak", scoreTag: "maxStreak", direction: "desc" },
+      {
+        label: "Streak",
+        scoreTag: "streak",
+        direction: "desc",
+        deduplicateByPlayer: true,
+      },
+      {
+        label: "Best Streak",
+        scoreTag: "maxStreak",
+        direction: "desc",
+        deduplicateByPlayer: true,
+      },
     ],
   },
 
