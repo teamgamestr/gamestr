@@ -164,7 +164,13 @@ export function GameDetail() {
   const isLoading = hasMultiLeaderboard ? multiLeaderboard.isLoading : singleLeaderboard.isLoading;
 
   const difficulties = Array.from(new Set(scores?.map(s => s.difficulty).filter(Boolean))) as string[];
-  const modes = Array.from(new Set(scores?.map(s => s.mode).filter(Boolean))) as string[];
+  // Only surface the mode filter when a score's `mode` means something distinct
+  // from its `difficulty`. Some games (e.g. Word5) publish both tags with the
+  // same value, which would otherwise render duplicate filter chips.
+  const hasMeaningfulMode = (scores ?? []).some(s => s.mode && (!s.difficulty || s.mode !== s.difficulty));
+  const modes = hasMeaningfulMode
+    ? Array.from(new Set(scores?.map(s => s.mode).filter(Boolean))) as string[]
+    : [];
 
   if (!gameIdentifier || !metadata) {
     return (
