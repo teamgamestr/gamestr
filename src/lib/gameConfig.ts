@@ -118,11 +118,16 @@ export interface LeaderboardConfig {
   /** Input units for the score when scoreFormat is "time" (defaults to "s"). */
   scoreUnit?: "ms" | "s";
   /**
-   * Collapse the board to a single best entry per player rather than listing
-   * every submitted score. Intended for repeatable metrics like streaks where
-   * one player's many games would otherwise fill the leaderboard.
+   * Collapse the board to a single entry per player rather than listing every
+   * submitted score. Intended for repeatable metrics like streaks where one
+   * player's many games would otherwise fill the leaderboard.
+   *
+   * - "best" (or `true`): keep the player's best score per `direction` (e.g.
+   *   an all-time "Best Streak" record).
+   * - "latest": keep the player's most recent score, reflecting current state
+   *   (e.g. a live "Current Streak").
    */
-  deduplicateByPlayer?: boolean;
+  deduplicateByPlayer?: boolean | 'best' | 'latest';
 }
 
 /**
@@ -327,13 +332,13 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
         label: "Current Streak",
         scoreTag: "streak",
         direction: "desc",
-        deduplicateByPlayer: true,
+        deduplicateByPlayer: "latest",
       },
       {
         label: "Best Streak",
         scoreTag: "maxStreak",
         direction: "desc",
-        deduplicateByPlayer: true,
+        deduplicateByPlayer: "best",
       },
     ],
   },
