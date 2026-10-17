@@ -1,8 +1,11 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [master]
+  # Deploys are driven by the nostr deploy watcher on the VPS, which pulls this
+  # repository's canonical copy from grasp.day.ag and runs the same deploy
+  # script this workflow runs. Keeping the push trigger as well deployed every
+  # publish twice, from two paths. Manual dispatch stays as a fallback, but the
+  # self-hosted runner is stopped, so start that service again to use it.
   workflow_dispatch:
 
 concurrency:
@@ -14,5 +17,12 @@ jobs:
     runs-on: [self-hosted, gamestr]
     timeout-minutes: 10
     steps:
+      - name: Select the production branch
+        run: |
+          if ! git -C /home/ubuntu/gamestr/gamestr diff --quiet || ! git -C /home/ubuntu/gamestr/gamestr diff --cached --quiet; then
+            git -C /home/ubuntu/gamestr/gamestr stash push --message "auto-stash before switching to master $(date +%Y%m%d-%H%M%S)"
+          fi
+          git -C /home/ubuntu/gamestr/gamestr fetch origin master
+          git -C /home/ubuntu/gamestr/gamestr switch master
       - name: Run deploy script
         run: /home/ubuntu/gamestr/deploy gamestr

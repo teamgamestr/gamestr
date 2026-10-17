@@ -45,7 +45,10 @@ export function validateScoreEvent(event: NostrEvent): ParsedScore | null {
 
 function validateKind30762(event: NostrEvent): ParsedScore | null {
   const gameTag = event.tags.find(([name]) => name === 'game')?.[1];
-  const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
+  // Legacy kind 5555 games use a per-game score field (e.g. streak); read that
+  // tag from kind 30762 events so both sources normalize to the same metric.
+  const scoreField = getKind5555Config(gameTag ?? '')?.scoreField ?? 'score';
+  const scoreTag = event.tags.find(([name]) => name === scoreField)?.[1];
   const playerTag = event.tags.find(([name]) => name === 'p')?.[1];
 
   if (!gameTag || !scoreTag || !playerTag) return null;
@@ -126,6 +129,36 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
     return scores.sort((a, b) => a.score - b.score);
   }
   return scores.sort((a, b) => b.score - a.score);
+}
+
+/**
+ * Collapse scores to a single entry per player.
+ *
+ * - "best": keep the best score per `direction` (highest for desc, lowest for
+ *   asc); on ties the newest event wins. Suited to all-time records such as a
+ *   best streak.
+ * - "latest": keep the player's most recent event, reflecting their current
+ *   state (e.g. a live streak, which resets when broken).
+ */
+function deduplicateScoresByPlayer(
+  scores: ParsedScore[],
+  direction: ScoreDirection,
+  strategy: 'best' | 'latest',
+): ParsedScore[] {
+  const bestByPlayer = new Map<string, ParsedScore>();
+  for (const score of scores) {
+    const existing = bestByPlayer.get(score.playerPubkey);
+    const isBetter =
+      !existing ||
+      (strategy === 'latest'
+        ? score.event.created_at > existing.event.created_at
+        : (direction === 'asc'
+          ? score.score < existing.score
+          : score.score > existing.score) ||
+          (score.score === existing.score && score.event.created_at > existing.event.created_at));
+    if (isBetter) bestByPlayer.set(score.playerPubkey, score);
+  }
+  return Array.from(bestByPlayer.values());
 }
 
 export type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly' | 'all-time';
@@ -683,6 +716,14 @@ export function useMultiLeaderboard(
         }
         if (mode) {
           parsedScores = parsedScores.filter(score => score.mode === mode);
+        }
+
+        if (config.deduplicateByPlayer) {
+          parsedScores = deduplicateScoresByPlayer(
+            parsedScores,
+            config.direction,
+            config.deduplicateByPlayer === 'latest' ? 'latest' : 'best',
+          );
         }
 
         const sorted = sortScores(parsedScores, config.direction);

@@ -162,7 +162,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         return false;
       }
     },
-    [user, orderId, servicePubkey, author.data?.event, presetRelays, toast, sendPayment, getActiveConnection, webln, amountMillisats],
+    [user, orderId, servicePubkey, author.data?.event, author.data?.metadata, presetRelays, toast, sendPayment, getActiveConnection, webln, amountMillisats],
   );
 
   return {
