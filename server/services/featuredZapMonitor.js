@@ -20,7 +20,7 @@ const MONTH_SECONDS = 30 * 24 * 60 * 60;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 
 const DEFAULT_RELAYS = [
-  'wss://main.relay.gamestr.io',
+  'wss://relay.gamestr.io',
   'wss://relay.ditto.pub',
   'wss://nos.lol',
   'wss://relay.damus.io',

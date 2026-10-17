@@ -29,7 +29,7 @@ export const SCORE_BOT_CONFIG = {
 
   // Relays to publish bot announcements to
   publishRelays: [
-    "wss://main.relay.gamestr.io",
+    "wss://relay.gamestr.io",
     "wss://relay.ditto.pub",
     "wss://relay.damus.io",
     "wss://nos.lol",
@@ -37,7 +37,7 @@ export const SCORE_BOT_CONFIG = {
 
   // Relays to subscribe to for score events
   subscribeRelays: [
-    "wss://main.relay.gamestr.io",
+    "wss://relay.gamestr.io",
     "wss://relay.ditto.pub",
     "wss://relay.damus.io",
     "wss://nos.lol",
