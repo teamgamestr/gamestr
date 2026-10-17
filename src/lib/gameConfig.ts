@@ -1082,6 +1082,21 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       featured: false,
       addedAt: "2026-09-11",
     },
+
+  // Plume Snake — scores are signed by the game's own account, after the
+  // server replays and verifies the run.
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-snake":
+    {
+      name: "Plume Snake",
+      description:
+        "Classic Snake, built into the Plume client. Eat, grow, don't hit the wall or yourself — arrow keys, WASD or swipe. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-snake-icon.png",
+      genres: ["arcade", "casual", "retro"],
+      url: "https://plume.website/",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-17",
+    },
 };
 
 // Generate a hash from game configuration content
