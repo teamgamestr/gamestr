@@ -1097,6 +1097,22 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       featured: false,
       addedAt: "2026-10-17",
     },
+
+  // Plume Minesweeper — same game account and verification shape as Plume Snake.
+  // The score is the speed of a win (6000 minus a tenth of a second elapsed),
+  // so the default descending numeric board is the right one.
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-minesweeper":
+    {
+      name: "Plume Minesweeper",
+      description:
+        "Classic Minesweeper on a 9 × 9 board, built into the Plume client. Clear every safe square as fast as you can — the quicker the win, the higher the score. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-minesweeper.png",
+      genres: ["puzzle", "casual", "retro"],
+      url: "https://plume.website/",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-17",
+    },
 };
 
 // Generate a hash from game configuration content
