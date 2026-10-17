@@ -11,12 +11,16 @@ import type { WebLNProvider } from '@webbtc/webln-types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent } from '@nostrify/nostrify';
+import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
+import { resolveLnurlPay, type LnurlPayParams, type LnurlSource } from '@/lib/lnurlPay';
 
 export function useZaps(
   target: Event | Event[],
   webln: WebLNProvider | null,
   _nwcConnection: NWCConnection | null,
-  onZapSuccess?: () => void
+  onZapSuccess?: () => void,
+  /** Payment pointer to fall back on when the target's profile has none (or has not loaded). */
+  fallbackLightningAddress?: string
 ) {
   const { nostr } = useNostr();
   const { toast } = useToast();
@@ -41,16 +45,16 @@ export function useZaps(
   }, []);
 
   const { data: zapEvents, ...query } = useQuery<NostrEvent[], Error>({
-    queryKey: ['zaps', actualTarget?.id],
+    queryKey: ['nostr', 'zaps', actualTarget?.id],
     staleTime: 30000, // 30 seconds
     refetchInterval: (query) => {
       // Only refetch if the query is currently being observed (component is mounted)
       return query.getObserversCount() > 0 ? 60000 : false;
     },
-    queryFn: async (c) => {
+    queryFn: async () => {
       if (!actualTarget) return [];
 
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(5000)]);
+      const signal = AbortSignal.timeout(5000);
 
       // Query for zap receipts for this specific event
       if (actualTarget.kind >= 30000 && actualTarget.kind < 40000) {
@@ -159,18 +163,20 @@ export function useZaps(
     }
 
     try {
-      if (!author.data || !author.data?.metadata || !author.data?.event ) {
-        toast({
-          title: 'Author not found',
-          description: 'Could not find the author of this item.',
-          variant: 'destructive',
-        });
-        setIsZapping(false);
-        return;
+      // Candidate payment pointers: the target's own profile first, then the
+      // caller's fallback address. The fallback matters for the Gamestr account,
+      // whose static address keeps the featured-placement flow working when the
+      // profile has not loaded yet or carries no lightning address.
+      const sources: LnurlSource[] = [];
+      const { lud06, lud16 } = author.data?.metadata ?? {};
+      if (lud06 || lud16) {
+        sources.push({ lud06, lud16 });
+      }
+      if (fallbackLightningAddress) {
+        sources.push({ lud16: fallbackLightningAddress });
       }
 
-      const { lud06, lud16 } = author.data.metadata;
-      if (!lud06 && !lud16) {
+      if (sources.length === 0) {
         toast({
           title: 'Lightning address not found',
           description: 'The author does not have a lightning address configured.',
@@ -180,12 +186,37 @@ export function useZaps(
         return;
       }
 
-      // Get zap endpoint using the old reliable method
-      const zapEndpoint = await nip57.getZapEndpoint(author.data.event);
-      if (!zapEndpoint) {
+      // Resolve the recipient's LNURL-pay endpoint. `nip57.getZapEndpoint`
+      // returns only the callback URL and discards the `minSendable` /
+      // `maxSendable` bounds and the `metadata` string needed to check that
+      // the invoice we get back is the one we asked for.
+      let lnurlParams: LnurlPayParams | null = null;
+      let endpointError: unknown = null;
+      for (const source of sources) {
+        try {
+          lnurlParams = await resolveLnurlPay(source);
+          break;
+        } catch (error) {
+          endpointError = error;
+        }
+      }
+
+      if (!lnurlParams) {
         toast({
           title: 'Zap endpoint not found',
-          description: 'Could not find a zap endpoint for the author.',
+          description: endpointError instanceof Error
+            ? endpointError.message
+            : 'Could not find a zap endpoint for the author.',
+          variant: 'destructive',
+        });
+        setIsZapping(false);
+        return;
+      }
+
+      if (!lnurlParams.allowsNostr || !lnurlParams.nostrPubkey) {
+        toast({
+          title: 'Zaps not supported',
+          description: "This author's lightning address does not support zaps.",
           variant: 'destructive',
         });
         setIsZapping(false);
@@ -201,11 +232,25 @@ export function useZaps(
 
       const zapAmount = amount * 1000; // convert to millisats
 
+      // The endpoint advertises what it will accept; asking for anything
+      // outside that range can only produce an invoice we'd have to reject.
+      if (zapAmount < lnurlParams.minSendable || zapAmount > lnurlParams.maxSendable) {
+        toast({
+          title: 'Amount out of range',
+          description:
+            `This lightning address accepts between ${Math.ceil(lnurlParams.minSendable / 1000)} and ` +
+            `${Math.floor(lnurlParams.maxSendable / 1000)} sats.`,
+          variant: 'destructive',
+        });
+        setIsZapping(false);
+        return;
+      }
+
       const zapRequest = nip57.makeZapRequest({
         profile: actualTarget.pubkey,
         event: event,
         amount: zapAmount,
-        relays: presetRelays?.map(r => r.url) ?? ['wss://relay.damus.io'],
+        relays: presetRelays?.map(r => r.url) ?? ['wss://nos.lol'],
         comment
       });
 
@@ -214,22 +259,41 @@ export function useZaps(
         throw new Error('No signer available');
       }
       const signedZapRequest = await user.signer.signEvent(zapRequest);
+      const zapRequestJson = JSON.stringify(signedZapRequest);
 
       try {
-        const res = await fetch(`${zapEndpoint}?amount=${zapAmount}&nostr=${encodeURIComponent(JSON.stringify(signedZapRequest))}`);
+        // Build the query with URLSearchParams: `encodeURI` leaves `&`, `+`
+        // and `#` alone, so a comment containing any of them corrupted the
+        // request.
+        const zapUrl = new URL(lnurlParams.callback);
+        zapUrl.searchParams.set('amount', String(zapAmount));
+        zapUrl.searchParams.set('nostr', zapRequestJson);
+
+        const res = await fetch(zapUrl.toString());
             const responseData = await res.json();
 
             if (!res.ok) {
               throw new Error(`HTTP ${res.status}: ${responseData.reason || 'Unknown error'}`);
             }
 
-            if (responseData.status === 'ERROR') {
-              throw new Error(responseData.reason || 'LNURL service returned an error');
-            }
-
             const newInvoice = responseData.pr;
             if (!newInvoice || typeof newInvoice !== 'string') {
               throw new Error('Lightning service did not return a valid invoice');
+            }
+
+            // The endpoint that produced this invoice is chosen by the
+            // recipient, so the invoice is not trusted: decode it and require
+            // that it charges exactly what the user approved. Without this the
+            // recipient — not the sender — decides how much the sender pays,
+            // and nothing downstream ever reads the invoice. Throwing here
+            // aborts before any wallet is touched, on every payment path.
+            const decodedInvoice = assertInvoiceAmount(newInvoice, zapAmount);
+
+            // LUD-06 binds the invoice to the endpoint's `metadata`; NIP-57
+            // binds it to the zap request instead. Either is fine, anything
+            // else means the invoice was not issued for this request.
+            if (!invoiceCommitsTo(decodedInvoice, [zapRequestJson, lnurlParams.metadata])) {
+              throw new Error('Lightning service returned an invoice for a different request. Payment cancelled.');
             }
 
             // Get the current active NWC connection dynamically
@@ -250,19 +314,21 @@ export function useZaps(
                 });
 
                 // Invalidate zap queries to refresh counts
-                queryClient.invalidateQueries({ queryKey: ['zaps'] });
+                queryClient.invalidateQueries({ queryKey: ['nostr', 'zaps'] });
 
                 // Close dialog last to ensure clean state
                 onZapSuccess?.();
                 return;
               } catch (nwcError) {
-                console.error('NWC payment failed, falling back:', nwcError);
+                console.error('NWC payment did not confirm:', nwcError);
 
-                // Show specific NWC error to user for debugging
+                // Same ambiguity as WebLN: a timeout or a dismissed request does
+                // not prove the payment failed.
                 const errorMessage = nwcError instanceof Error ? nwcError.message : 'Unknown NWC error';
                 toast({
-                  title: 'NWC payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
+                  title: 'Payment not confirmed',
+                  description:
+                    `${errorMessage}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
                   variant: 'destructive',
                 });
               }
@@ -294,18 +360,22 @@ export function useZaps(
                 });
 
                 // Invalidate zap queries to refresh counts
-                queryClient.invalidateQueries({ queryKey: ['zaps'] });
+                queryClient.invalidateQueries({ queryKey: ['nostr', 'zaps'] });
 
                 // Close dialog last to ensure clean state
                 onZapSuccess?.();
               } catch (weblnError) {
-                console.error('WebLN payment failed, falling back:', weblnError);
+                console.error('WebLN payment did not confirm:', weblnError);
 
-                // Show specific WebLN error to user for debugging
+                // The wallet's own UI may have completed (or still be completing)
+                // the payment even though the API call did not resolve, so this
+                // says "could not confirm" rather than "failed" — and tells the
+                // payer to check before paying a second time.
                 const errorMessage = weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error';
                 toast({
-                  title: 'WebLN payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
+                  title: 'Payment not confirmed',
+                  description:
+                    `${errorMessage}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
                   variant: 'destructive',
                 });
 
