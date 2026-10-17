@@ -116,10 +116,10 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
             setIsZapping(false);
             return true;
           } catch (nwcError) {
-            console.error('NWC payment failed, falling back:', nwcError);
+            console.error('NWC payment did not confirm:', nwcError);
             toast({
-              title: 'NWC payment failed',
-              description: `${nwcError instanceof Error ? nwcError.message : 'Unknown NWC error'}. Falling back to other payment methods...`,
+              title: 'Payment not confirmed',
+              description: `${nwcError instanceof Error ? nwcError.message : 'Unknown NWC error'}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
               variant: 'destructive',
             });
           }
@@ -138,10 +138,10 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
             setIsZapping(false);
             return true;
           } catch (weblnError) {
-            console.error('WebLN payment failed, falling back:', weblnError);
+            console.error('WebLN payment did not confirm:', weblnError);
             toast({
-              title: 'WebLN payment failed',
-              description: `${weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error'}. Falling back to other payment methods...`,
+              title: 'Payment not confirmed',
+              description: `${weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error'}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
               variant: 'destructive',
             });
           }

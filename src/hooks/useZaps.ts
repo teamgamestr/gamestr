@@ -12,13 +12,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
-import { resolveLnurlPay, type LnurlPayParams } from '@/lib/lnurlPay';
+import { resolveLnurlPay, type LnurlPayParams, type LnurlSource } from '@/lib/lnurlPay';
 
 export function useZaps(
   target: Event | Event[],
   webln: WebLNProvider | null,
   _nwcConnection: NWCConnection | null,
-  onZapSuccess?: () => void
+  onZapSuccess?: () => void,
+  /** Payment pointer to fall back on when the target's profile has none (or has not loaded). */
+  fallbackLightningAddress?: string
 ) {
   const { nostr } = useNostr();
   const { toast } = useToast();
@@ -161,18 +163,20 @@ export function useZaps(
     }
 
     try {
-      if (!author.data || !author.data?.metadata || !author.data?.event ) {
-        toast({
-          title: 'Author not found',
-          description: 'Could not find the author of this item.',
-          variant: 'destructive',
-        });
-        setIsZapping(false);
-        return;
+      // Candidate payment pointers: the target's own profile first, then the
+      // caller's fallback address. The fallback matters for the Gamestr account,
+      // whose static address keeps the featured-placement flow working when the
+      // profile has not loaded yet or carries no lightning address.
+      const sources: LnurlSource[] = [];
+      const { lud06, lud16 } = author.data?.metadata ?? {};
+      if (lud06 || lud16) {
+        sources.push({ lud06, lud16 });
+      }
+      if (fallbackLightningAddress) {
+        sources.push({ lud16: fallbackLightningAddress });
       }
 
-      const { lud06, lud16 } = author.data.metadata;
-      if (!lud06 && !lud16) {
+      if (sources.length === 0) {
         toast({
           title: 'Lightning address not found',
           description: 'The author does not have a lightning address configured.',
@@ -186,10 +190,18 @@ export function useZaps(
       // returns only the callback URL and discards the `minSendable` /
       // `maxSendable` bounds and the `metadata` string needed to check that
       // the invoice we get back is the one we asked for.
-      let lnurlParams: LnurlPayParams;
-      try {
-        lnurlParams = await resolveLnurlPay({ lud06, lud16 });
-      } catch (endpointError) {
+      let lnurlParams: LnurlPayParams | null = null;
+      let endpointError: unknown = null;
+      for (const source of sources) {
+        try {
+          lnurlParams = await resolveLnurlPay(source);
+          break;
+        } catch (error) {
+          endpointError = error;
+        }
+      }
+
+      if (!lnurlParams) {
         toast({
           title: 'Zap endpoint not found',
           description: endpointError instanceof Error
@@ -308,13 +320,15 @@ export function useZaps(
                 onZapSuccess?.();
                 return;
               } catch (nwcError) {
-                console.error('NWC payment failed, falling back:', nwcError);
+                console.error('NWC payment did not confirm:', nwcError);
 
-                // Show specific NWC error to user for debugging
+                // Same ambiguity as WebLN: a timeout or a dismissed request does
+                // not prove the payment failed.
                 const errorMessage = nwcError instanceof Error ? nwcError.message : 'Unknown NWC error';
                 toast({
-                  title: 'NWC payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
+                  title: 'Payment not confirmed',
+                  description:
+                    `${errorMessage}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
                   variant: 'destructive',
                 });
               }
@@ -351,13 +365,17 @@ export function useZaps(
                 // Close dialog last to ensure clean state
                 onZapSuccess?.();
               } catch (weblnError) {
-                console.error('WebLN payment failed, falling back:', weblnError);
+                console.error('WebLN payment did not confirm:', weblnError);
 
-                // Show specific WebLN error to user for debugging
+                // The wallet's own UI may have completed (or still be completing)
+                // the payment even though the API call did not resolve, so this
+                // says "could not confirm" rather than "failed" — and tells the
+                // payer to check before paying a second time.
                 const errorMessage = weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error';
                 toast({
-                  title: 'WebLN payment failed',
-                  description: `${errorMessage}. Falling back to other payment methods...`,
+                  title: 'Payment not confirmed',
+                  description:
+                    `${errorMessage}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
                   variant: 'destructive',
                 });
 

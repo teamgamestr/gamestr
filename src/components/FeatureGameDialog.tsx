@@ -25,6 +25,7 @@ import { useZaps } from '@/hooks/useZaps';
 import {
   getAllGames,
   GAMESTR_PUBKEY,
+  GAMESTR_LIGHTNING_ADDRESS,
   FEATURED_GAME_PRICING,
 } from '@/lib/gameConfig';
 import type { Event } from 'nostr-tools';
@@ -42,8 +43,9 @@ const monthOptions = Array.from(
 
 /**
  * Synthetic target so useZaps can send a profile zap (NIP-57, no target
- * event) to the Gamestr account. The account's real kind 0 profile on the
- * relays provides the lightning address.
+ * event) to the Gamestr account. Only the pubkey is read here — the lightning
+ * address comes from the account's real kind 0 profile on the relays, with the
+ * static address passed to useZaps as the fallback.
  */
 function useGamestrZapTarget(): Event {
   return useMemo(
@@ -53,7 +55,7 @@ function useGamestrZapTarget(): Event {
         pubkey: GAMESTR_PUBKEY,
         kind: 0,
         created_at: Math.floor(Date.now() / 1000),
-        content: JSON.stringify({ lud16: 'zaps@gamestr.io' }),
+        content: '',
         tags: [],
         sig: '',
       }) as unknown as Event,
@@ -101,7 +103,13 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
     });
   };
 
-  const { zap, isZapping, invoice, setInvoice } = useZaps(target, webln, null, onZapSuccess);
+  const { zap, isZapping, invoice, setInvoice } = useZaps(
+    target,
+    webln,
+    null,
+    onZapSuccess,
+    GAMESTR_LIGHTNING_ADDRESS,
+  );
 
   // QR code for the manual-payment fallback (no WebLN wallet registered)
   useEffect(() => {
@@ -184,6 +192,10 @@ export function FeatureGameDialog({ children, className }: FeatureGameDialogProp
                 Pay with any Lightning wallet to confirm your request.
               </p>
             </div>
+            <p className="text-xs text-muted-foreground text-center">
+              If your wallet already shows this payment as sent, you're all set — this invoice is
+              only needed if it didn't go through.
+            </p>
             {qrCodeUrl ? (
               <img src={qrCodeUrl} alt="Lightning Invoice QR Code" className="mx-auto rounded-lg w-full max-w-[260px]" />
             ) : (
