@@ -13,6 +13,7 @@ import { useNostr } from '@nostrify/react';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
 import { resolveLnurlPay, type LnurlPayParams, type LnurlSource } from '@/lib/lnurlPay';
+import { isAddressable, unverifiableInvoiceMessage, zapPointerTag } from '@/lib/zapRequests';
 
 export function useZaps(
   target: Event | Event[],
@@ -57,14 +58,24 @@ export function useZaps(
       const signal = AbortSignal.timeout(5000);
 
       // Query for zap receipts for this specific event
-      if (actualTarget.kind >= 30000 && actualTarget.kind < 40000) {
-        // Addressable event
+      if (isAddressable(actualTarget)) {
+        // Addressable event. Our own zap requests point at the score's event
+        // id rather than its coordinate (see `zapPointerTag`), while receipts
+        // written by other clients point at the address, so ask for both in a
+        // single request and dedupe.
         const identifier = actualTarget.tags.find((t) => t[0] === 'd')?.[1] || '';
-        const events = await nostr.query([{
-          kinds: [9735],
-          '#a': [`${actualTarget.kind}:${actualTarget.pubkey}:${identifier}`],
-        }], { signal });
-        return events;
+        const events = await nostr.query([
+          {
+            kinds: [9735],
+            '#e': [actualTarget.id],
+          },
+          {
+            kinds: [9735],
+            '#a': [`${actualTarget.kind}:${actualTarget.pubkey}:${identifier}`],
+          },
+        ], { signal });
+        // A receipt carrying both an `e` and an `a` tag matches both filters.
+        return [...new Map(events.map((event) => [event.id, event])).values()];
       } else {
         // Regular event
         const events = await nostr.query([{
@@ -223,13 +234,6 @@ export function useZaps(
         return;
       }
 
-      // Create zap request - use appropriate event format based on kind
-      // For addressable events (30000-39999), pass the object to get 'a' tag
-      // For all other events, pass the ID string to get 'e' tag
-      const event = (actualTarget.kind >= 30000 && actualTarget.kind < 40000)
-        ? actualTarget
-        : actualTarget.id;
-
       const zapAmount = amount * 1000; // convert to millisats
 
       // The endpoint advertises what it will accept; asking for anything
@@ -246,13 +250,22 @@ export function useZaps(
         return;
       }
 
+      // Anchor the zap request to the event being zapped. `makeZapRequest`
+      // only knows how to build an `e` pointer from a bare id and an `a`
+      // pointer from a whole event, so it is given no target and the tag that
+      // suits this event is pushed here instead (see `zapPointerTag`).
       const zapRequest = nip57.makeZapRequest({
         profile: actualTarget.pubkey,
-        event: event,
+        event: null,
         amount: zapAmount,
         relays: presetRelays?.map(r => r.url) ?? ['wss://nos.lol'],
         comment
       });
+
+      const pointerTag = zapPointerTag(actualTarget);
+      if (pointerTag) {
+        zapRequest.tags.push(pointerTag);
+      }
 
       // Sign the zap request (but don't publish to relays - only send to LNURL endpoint)
       if (!user.signer) {
@@ -293,7 +306,7 @@ export function useZaps(
             // binds it to the zap request instead. Either is fine, anything
             // else means the invoice was not issued for this request.
             if (!invoiceCommitsTo(decodedInvoice, [zapRequestJson, lnurlParams.metadata])) {
-              throw new Error('Lightning service returned an invoice for a different request. Payment cancelled.');
+              throw new Error(unverifiableInvoiceMessage(lnurlParams.callback));
             }
 
             // Get the current active NWC connection dynamically

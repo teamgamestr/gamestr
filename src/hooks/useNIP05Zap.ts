@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/useToast';
 import { useNWC } from '@/hooks/useNWCContext';
 import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
 import { resolveLnurlPay } from '@/lib/lnurlPay';
+import { unverifiableInvoiceMessage } from '@/lib/zapRequests';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
@@ -104,7 +105,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
 
         const decodedInvoice = assertInvoiceAmount(newInvoice, amountMillisats);
         if (!invoiceCommitsTo(decodedInvoice, [zapRequestJson, lnurlParams.metadata])) {
-          throw new Error('Lightning service returned an invoice for a different request. Payment cancelled.');
+          throw new Error(unverifiableInvoiceMessage(lnurlParams.callback));
         }
 
         // Inline payment cascade: NWC -> WebLN -> manual fallback.
