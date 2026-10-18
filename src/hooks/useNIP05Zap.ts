@@ -8,6 +8,7 @@ import { useNWC } from '@/hooks/useNWCContext';
 import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
 import { resolveLnurlPay } from '@/lib/lnurlPay';
 import { unverifiableInvoiceMessage } from '@/lib/zapRequests';
+import { WebLnUnavailableError, resolveWebLnProvider } from '@/lib/webln';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
@@ -109,9 +110,12 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         }
 
         // Inline payment cascade: NWC -> WebLN -> manual fallback.
+        let walletAttempted = false;
+        let walletUnavailable: string | null = null;
         const currentNWCConnection = getActiveConnection();
         if (currentNWCConnection?.connectionString && currentNWCConnection.isConnected) {
           try {
+            walletAttempted = true;
             await sendPayment(currentNWCConnection, newInvoice);
             toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats via NWC.` });
             setIsZapping(false);
@@ -128,24 +132,34 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
 
         if (webln) {
           try {
-            let webLnProvider = webln;
-            if (webln.enable && typeof webln.enable === 'function') {
-              const enabledProvider = await webln.enable();
-              const provider = enabledProvider as WebLNProvider | undefined;
-              if (provider) webLnProvider = provider;
-            }
-            await webLnProvider.sendPayment(newInvoice);
+            const provider = await resolveWebLnProvider(webln);
+            walletAttempted = true;
+            await provider.sendPayment(newInvoice);
             toast({ title: 'Zap sent!', description: `You sent ${(amountMillisats / 1000).toLocaleString()} sats.` });
             setIsZapping(false);
             return true;
           } catch (weblnError) {
             console.error('WebLN payment did not confirm:', weblnError);
-            toast({
-              title: 'Payment not confirmed',
-              description: `${weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error'}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
-              variant: 'destructive',
-            });
+            if (weblnError instanceof WebLnUnavailableError) {
+              walletUnavailable = weblnError.message;
+            } else {
+              toast({
+                title: 'Payment not confirmed',
+                description: `${weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error'}. Check your wallet before paying again — the invoice below is only needed if it did not go through.`,
+                variant: 'destructive',
+              });
+            }
           }
+        }
+
+        // Nothing was asked to pay: the provider in this browser cannot pay, and
+        // the payer needs to know which wallet to try instead.
+        if (walletUnavailable && !walletAttempted) {
+          toast({
+            title: 'WebLN provider cannot pay',
+            description: walletUnavailable,
+            variant: 'destructive',
+          });
         }
 
         // Payment not confirmed - show QR code and manual Lightning URI

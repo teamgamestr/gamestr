@@ -19,6 +19,7 @@ import {
   type ZapPointerTag,
 } from '@/lib/zapRequests';
 import { waitForZapReceipt } from '@/lib/zapReceipts';
+import { WebLnUnavailableError, resolveWebLnProvider } from '@/lib/webln';
 
 export function useZaps(
   target: Event | Event[],
@@ -183,10 +184,15 @@ export function useZaps(
   ) => {
     let walletError = '';
     let walletPaid = false;
+    /** True once a wallet has actually been asked to pay, whatever it answered. */
+    let walletAttempted = false;
+    /** A capability failure: nothing was asked to pay, so nothing can be "unconfirmed". */
+    let walletUnavailable: string | null = null;
 
     const currentNWCConnection = getActiveConnection();
     if (currentNWCConnection && currentNWCConnection.connectionString && currentNWCConnection.isConnected) {
       try {
+        walletAttempted = true;
         await sendPayment(currentNWCConnection, invoiceToPay);
         walletPaid = true;
       } catch (nwcError) {
@@ -197,24 +203,22 @@ export function useZaps(
 
     if (!walletPaid && webln) {
       try {
-        // For native WebLN, we may need to enable it first
-        let webLnProvider = webln;
-        if (webln.enable && typeof webln.enable === 'function') {
-          const enabledProvider = await webln.enable();
-          // Some implementations return the provider, others return void
-          // Cast to WebLNProvider to handle both cases
-          const provider = enabledProvider as WebLNProvider | undefined;
-          if (provider) {
-            webLnProvider = provider;
-          }
-        }
-
-        await webLnProvider.sendPayment(invoiceToPay);
+        // `enable()` may hand back the provider, or `void`, or `true` — only an
+        // object that can actually pay is used (see `@/lib/webln`), so a
+        // provider that cannot pay reports that instead of throwing
+        // "sendPayment is not a function" from minified code.
+        const provider = await resolveWebLnProvider(webln);
+        walletAttempted = true;
+        await provider.sendPayment(invoiceToPay);
         walletPaid = true;
         walletError = '';
       } catch (weblnError) {
         console.error('WebLN payment did not confirm:', weblnError);
-        walletError = weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error';
+        if (weblnError instanceof WebLnUnavailableError) {
+          walletUnavailable = weblnError.message;
+        } else {
+          walletError = weblnError instanceof Error ? weblnError.message : 'Unknown WebLN error';
+        }
       }
     }
 
@@ -275,7 +279,7 @@ export function useZaps(
       return;
     }
 
-    if (walletError) {
+    if (walletError && walletAttempted) {
       // The wallet's own UI may have completed (or still be completing) the
       // payment even though the API call did not resolve, so this says "could
       // not confirm" rather than "failed" — and tells the payer to check before
@@ -285,6 +289,15 @@ export function useZaps(
         description:
           `${walletError}. Check your wallet before paying again — the invoice below is only ` +
           'needed if it did not go through.',
+        variant: 'destructive',
+      });
+    } else if (walletUnavailable) {
+      // Nothing was asked to pay, so this is not an unconfirmed payment: the
+      // provider in this browser simply cannot pay, and the payer needs to know
+      // which wallet to try instead.
+      toast({
+        title: 'WebLN provider cannot pay',
+        description: walletUnavailable,
         variant: 'destructive',
       });
     }

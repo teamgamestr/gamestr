@@ -38,7 +38,7 @@ export function ScoreDetail() {
   const { webln, activeNWC } = useWallet();
 
   // Fetch the score event
-  const { data: scoreData, isLoading } = useQuery({
+  const { data: scoreData, isLoading, isError, refetch } = useQuery({
     queryKey: ['score', eventId],
     queryFn: async (c) => {
       if (!eventId) return null;
@@ -97,6 +97,30 @@ export function ScoreDetail() {
           <CardContent className="space-y-4">
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-32 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    // A relay that timed out or errored is not the same as a score that does
+    // not exist: the first is worth another try, and saying "not found" for it
+    // sends the reader away convinced the link is dead.
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-muted-foreground mb-4">
+              Could not load this score — the relays did not answer in time.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => refetch()}>Try again</Button>
+              <Button variant="outline" asChild>
+                <Link to="/">Back to Home</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
