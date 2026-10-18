@@ -31,9 +31,16 @@ export function isAddressable(event: { kind: number }): boolean {
  * targets are the awkward case here: score events (kind 30762) use a
  * colon-laden `d` tag — `<game>:<player>:<timestamp>` — so a coordinate built
  * from one has more than the three colon-separated parts some zap servers
- * expect. wallet-of-satoshi's LNURL server is one of them: it discards the
- * whole zap request and answers with a plain LUD-06 invoice, whose description
- * hash commits to nothing we sent, so the zap dies as unverifiable.
+ * expect. Their behaviour diverges, and all of it costs the payer:
+ *
+ * - plume.website's own LNURL server discards the whole zap request when the
+ *   coordinate is not exactly three parts, and answers with a plain LUD-06
+ *   invoice whose description hash commits to nothing we sent — the zap then
+ *   fails as unverifiable while the same zap works elsewhere.
+ * - wallet-of-satoshi's server (livingroomofsatoshi.com) falls back to a
+ *   LUD-06 invoice whose description hash *is* its metadata. That passes the
+ *   commitment check, but no zap receipt can ever follow it, so the payer gets
+ *   a payment recorded as no zap at all.
  *
  * An event id identifies the same event, contains no colons, and is accepted
  * everywhere (NIP-57 Appendix D allows 0 or 1 `e` tags), so it is used

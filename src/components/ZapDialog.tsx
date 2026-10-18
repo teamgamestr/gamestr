@@ -56,6 +56,7 @@ interface ZapContentProps {
   amount: number | string;
   comment: string;
   isZapping: boolean;
+  isConfirming: boolean;
   qrCodeUrl: string;
   copied: boolean;
   webln: WebLNProvider | null;
@@ -66,6 +67,13 @@ interface ZapContentProps {
   setComment: (comment: string) => void;
   inputRef: React.RefObject<HTMLInputElement>;
   zap: (amount: number, comment: string) => void;
+  /** Host of a lightning service that returned an invoice it cannot have minted for us. */
+  plainTipHost: string | null;
+  /** Sats the payer approved, for the plain-tip offer. */
+  plainTipSats: number;
+  sendPlainTip: () => void;
+  /** Whether a wallet (NWC or WebLN) is available to pay from. */
+  hasWallet: boolean;
 }
 
 // Moved ZapContent outside of ZapDialog to prevent re-renders causing focus loss
@@ -74,6 +82,7 @@ const ZapContent = forwardRef<HTMLDivElement, ZapContentProps>(({
   amount,
   comment,
   isZapping,
+  isConfirming,
   qrCodeUrl,
   copied,
   webln,
@@ -84,6 +93,10 @@ const ZapContent = forwardRef<HTMLDivElement, ZapContentProps>(({
   setComment,
   inputRef,
   zap,
+  plainTipHost,
+  plainTipSats,
+  sendPlainTip,
+  hasWallet,
 }, ref) => (
   <div ref={ref}>
     {invoice ? (
@@ -94,6 +107,35 @@ const ZapContent = forwardRef<HTMLDivElement, ZapContentProps>(({
         </div>
 
         <Separator className="my-4" />
+
+        {isConfirming && (
+          <div className="text-center text-xs text-muted-foreground px-4 pb-2">
+            Payment sent — waiting for the recipient's zap receipt…
+          </div>
+        )}
+
+        {plainTipHost && (
+          <Card className="border-dashed mx-2 mb-2">
+            <CardContent className="py-3 px-4 space-y-3">
+              <p className="text-xs text-muted-foreground">
+                {plainTipHost} returned an invoice that is not bound to this zap request, so it
+                cannot produce a zap receipt. Paying it still sends {plainTipSats} sats to the
+                recipient — as a plain tip, which will not show up as a zap.
+              </p>
+              {hasWallet && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={sendPlainTip}
+                  disabled={isZapping}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  {isZapping ? 'Sending...' : `Send ${plainTipSats} sats as a plain tip`}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex flex-col justify-center min-h-0 flex-1 px-2">
           {/* QR Code */}
@@ -147,12 +189,12 @@ const ZapContent = forwardRef<HTMLDivElement, ZapContentProps>(({
                   const finalAmount = typeof amount === 'string' ? parseInt(amount, 10) : amount;
                   zap(finalAmount, comment);
                 }}
-                disabled={isZapping}
+                disabled={isZapping || isConfirming}
                 className="w-full"
                 size="lg"
               >
                 <Zap className="h-4 w-4 mr-2" />
-                {isZapping ? "Processing..." : "Pay with WebLN"}
+                {isZapping || isConfirming ? "Processing..." : "Pay with WebLN"}
               </Button>
             )}
 
@@ -245,7 +287,16 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
   const { data: author } = useAuthor(target.pubkey);
   const { toast } = useToast();
   const { webln, activeNWC } = useWallet();
-  const { zap, isZapping, invoice, setInvoice } = useZaps(target, webln, activeNWC, () => setOpen(false));
+  const {
+    zap,
+    isZapping,
+    isConfirming,
+    invoice,
+    plainTip,
+    sendPlainTip,
+    hasWallet,
+    resetInvoice,
+  } = useZaps(target, webln, activeNWC, () => setOpen(false));
   const [amount, setAmount] = useState<number | string>(100);
   const [comment, setComment] = useState<string>('');
   const [copied, setCopied] = useState(false);
@@ -318,17 +369,17 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
   useEffect(() => {
     if (open) {
       setAmount(100);
-      setInvoice(null);
+      resetInvoice();
       setCopied(false);
       setQrCodeUrl('');
     } else {
       // Clean up state when dialog closes
       setAmount(100);
-      setInvoice(null);
+      resetInvoice();
       setCopied(false);
       setQrCodeUrl('');
     }
-  }, [open, setInvoice]);
+  }, [open, resetInvoice]);
 
   const handleZap = () => {
     const finalAmount = typeof amount === 'string' ? parseInt(amount, 10) : amount;
@@ -340,6 +391,7 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
     amount,
     comment,
     isZapping,
+    isConfirming,
     qrCodeUrl,
     copied,
     webln,
@@ -350,6 +402,10 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
     setComment,
     inputRef,
     zap,
+    plainTipHost: plainTip?.host ?? null,
+    plainTipSats: plainTip?.sats ?? 0,
+    sendPlainTip,
+    hasWallet,
   };
 
   if (!user || user.pubkey === target.pubkey || !author?.metadata?.lud06 && !author?.metadata?.lud16) {
@@ -364,7 +420,7 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
         onOpenChange={(newOpen) => {
           // Reset invoice when closing
           if (!newOpen) {
-            setInvoice(null);
+            resetInvoice();
             setQrCodeUrl('');
           }
           setOpen(newOpen);
@@ -396,7 +452,7 @@ export function ZapDialog({ target, children, className, open: externalOpen, onO
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setInvoice(null);
+                  resetInvoice();
                   setQrCodeUrl('');
                 }}
                 className="absolute left-4 top-4 flex items-center gap-2"
