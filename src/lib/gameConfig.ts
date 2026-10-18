@@ -1113,6 +1113,68 @@ export const INITIAL_GAME_CONFIG: GameConfigMap = {
       featured: false,
       addedAt: "2026-10-17",
     },
+
+  // ===== Plume Arcade, the newer titles =====
+  // Same game account as Plume Snake and Plume Minesweeper (the server signs
+  // each score after replaying the run), same deep-link shape
+  // (?play=<game key>), and the same plain points board: one numeric `score`
+  // tag, higher is better, with no per-level split.
+
+  // Featherfall — falling blocks
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-featherfall":
+    {
+      name: "Featherfall",
+      description:
+        "Falling blocks, built into the Plume client. Clear rows to score and level up — keys or touch buttons. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-featherfall.png",
+      genres: ["puzzle", "arcade", "retro"],
+      url: "https://plume.website/?play=featherfall",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-18",
+    },
+
+  // Quill Quest — five-level side-scrolling platformer
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-quillquest":
+    {
+      name: "Quill Quest",
+      description:
+        "A side-scrolling platformer in five levels, built into the Plume client. Keys or touch buttons. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-quillquest.png",
+      genres: ["arcade", "action", "adventure"],
+      url: "https://plume.website/?play=quillquest",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-18",
+    },
+
+  // Swarmguard — wave-defence shooter
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-swarmguard":
+    {
+      name: "Swarmguard",
+      description:
+        "Hold off waves of drones from behind four crumbling shields, built into the Plume client. Keys or touch buttons. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-swarmguard.png",
+      genres: ["arcade", "shooter", "action"],
+      url: "https://plume.website/?play=swarmguard",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-18",
+    },
+
+  // Thornworm — worm-in-the-thorns shooter
+  "d59947fb69deaf96c504ecc3e975adbc9db2959865fb85ef052b80a947e6ed7e:plume-thornworm":
+    {
+      name: "Thornworm",
+      description:
+        "Shoot a many-legged worm as it winds down through a garden of thorns, built into the Plume client. Keys or touch buttons. Every run is replayed and checked by the server before the score is signed and published to Nostr.",
+      image: "https://plume.website/plume-thornworm.png",
+      genres: ["arcade", "shooter", "retro"],
+      url: "https://plume.website/?play=thornworm",
+      developer: "plume.website",
+      featured: false,
+      addedAt: "2026-10-18",
+    },
 };
 
 // Generate a hash from game configuration content
