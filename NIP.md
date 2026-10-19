@@ -1,4 +1,4 @@
-# NIP-XX: Game Scores
+# [Game Scores](nostr:naddr1qvzqqqrcvypzpya05cyagkyza053uthu5sx9mnf0qc22nzv2erlrfecdtaah4lvtqqzhxcm0wfjsluetkf)
 
 `draft` `optional`
 
