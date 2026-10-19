@@ -2,6 +2,9 @@
 
 `draft` `optional`
 
+Also published on NostrHub, the canonical copy for discussion and updates:
+<https://nostrhub.io/naddr1qvzqqqrcvypzpya05cyagkyza053uthu5sx9mnf0qc22nzv2erlrfecdtaah4lvtqqzhxcm0wfjsluetkf>
+
 This NIP defines a standardized format for publishing game scores to the Nostr network, enabling decentralized leaderboards, player achievements, and social gaming features.
 
 ## Event Kind
@@ -20,6 +23,23 @@ The event MUST include the following tags:
 - `game` - Game identifier (unique string chosen by game developer)
 - `score` - Numeric score value (as string)
 - `p` - Player's pubkey (the person who achieved this score)
+- `i` - The game's canonical URL as a [NIP-73](https://github.com/nostr-protocol/nips/blob/master/73.md) external content id (e.g. `["i", "https://example.com/snake-game"]`)
+- `k` - The external content id kind from NIP-73, always `web` for a game URL (`["k", "web"]`)
+
+### Why scores carry `i` and `k`
+
+Relays index **single-letter tags only**, so `game` is not filterable at the relay level: a REQ
+containing `#game` is not portable (some relays ignore it, others reject the subscription
+outright). The game's URL is its stable, externally resolvable identity, and NIP-73 gives it a
+standard single-letter home - `i` holds the URL, `k` names the id kind - so `#i` works as a
+relay-side filter everywhere.
+
+- The URL MUST be normalised (no fragment) and MUST NOT change between releases: it is the game's
+  query identity. Use the game's own page, not a shared domain root.
+- `game` remains the short identifier carried on the event and in the `d` tag. Clients SHOULD
+  treat an event's `game` and `i` as naming the same game, and prefer `i` for queries.
+- Events published before this revision lack `i`; clients SHOULD fall back to client-side
+  filtering on `game` for those.
 
 ### Optional Tags
 
@@ -56,6 +76,8 @@ The content field MAY be empty if no description is provided.
   "tags": [
     ["d", "snake-game:player-pubkey:level-12"],
     ["game", "snake-game"],
+    ["i", "https://example.com/snake-game"],
+    ["k", "web"],
     ["score", "15000"],
     ["p", "player-pubkey"],
     ["state", "active"],
@@ -106,11 +128,14 @@ The `state` tag tracks the lifecycle of a score:
 
 ### All Scores for a Game
 
+Filter by the game's URL `i` tag (see "Why scores carry `i` and `k`" above) - `#game` cannot be
+used here, because relays index single-letter tags only.
+
 ```typescript
 const events = await nostr.query([{
   kinds: [30762],
-  authors: [gameDeveloperPubkey],
-  '#game': ['snake-game'],
+  authors: [gameDeveloperPubkey],   // optional: omit to include player-published scores
+  '#i': ['https://example.com/snake-game'],
   limit: 100
 }], { signal });
 ```
@@ -127,17 +152,24 @@ const events = await nostr.query([{
 
 ### Top Scores by Game and Difficulty
 
+`difficulty` is a multi-letter tag and is therefore not relay-indexed: query by `#i` and filter in
+JavaScript.
+
 ```typescript
 const events = await nostr.query([{
   kinds: [30762],
   authors: [gameDeveloperPubkey],
-  '#game': ['snake-game'],
-  '#difficulty': ['hard'],
+  '#i': ['https://example.com/snake-game'],
   limit: 100
 }], { signal });
 
+// difficulty is not relay-indexed: filter in JavaScript
+const hard = events.filter(
+  e => e.tags.find(([name]) => name === 'difficulty')?.[1] === 'hard'
+);
+
 // Sort by score in JavaScript
-const topScores = events
+const topScores = hard
   .map(e => ({
     event: e,
     score: parseInt(e.tags.find(([name]) => name === 'score')?.[1] || '0')
@@ -158,13 +190,18 @@ const events = await nostr.query([{
 
 ### Only Verified Scores
 
+`state` is a multi-letter tag, so query by `#i` and filter it in JavaScript.
+
 ```typescript
 const events = await nostr.query([{
   kinds: [30762],
-  '#game': ['snake-game'],
-  '#state': ['verified'],
+  '#i': ['https://example.com/snake-game'],
   limit: 100
 }], { signal });
+
+const verified = events.filter(
+  e => e.tags.find(([name]) => name === 'state')?.[1] === 'verified'
+);
 ```
 
 ## Leaderboard Time Periods
@@ -175,28 +212,28 @@ Clients can filter scores by time period using the `since` and `until` filters:
 // Last 24 hours (daily)
 const daily = await nostr.query([{
   kinds: [30762],
-  '#game': ['snake-game'],
+  '#i': ['https://example.com/snake-game'],
   since: Math.floor(Date.now() / 1000) - 86400
 }], { signal });
 
 // Last 7 days (weekly)
 const weekly = await nostr.query([{
   kinds: [30762],
-  '#game': ['snake-game'],
+  '#i': ['https://example.com/snake-game'],
   since: Math.floor(Date.now() / 1000) - 604800
 }], { signal });
 
 // Last 30 days (monthly)
 const monthly = await nostr.query([{
   kinds: [30762],
-  '#game': ['snake-game'],
+  '#i': ['https://example.com/snake-game'],
   since: Math.floor(Date.now() / 1000) - 2592000
 }], { signal });
 
 // All time (no since filter)
 const allTime = await nostr.query([{
   kinds: [30762],
-  '#game': ['snake-game']
+  '#i': ['https://example.com/snake-game']
 }], { signal });
 ```
 
@@ -228,6 +265,8 @@ await nostr.event({
   tags: [
     ["d", "snake-game:player-pubkey:level-12"],
     ["game", "snake-game"],
+    ["i", "https://example.com/snake-game"],
+    ["k", "web"],
     ["score", "10000"],
     ["p", "player-pubkey"],
     ["state", "active"],
@@ -242,6 +281,8 @@ await nostr.event({
   tags: [
     ["d", "snake-game:player-pubkey:level-12"], // Same d tag
     ["game", "snake-game"],
+    ["i", "https://example.com/snake-game"],
+    ["k", "web"],
     ["score", "15000"], // Improved score
     ["p", "player-pubkey"],
     ["state", "verified"], // Updated state
@@ -291,3 +332,7 @@ Score events are public by default. Players concerned about privacy should:
 - The `state` tag allows score verification workflows without creating new events
 - Clients SHOULD filter out scores with `state: invalidated` from leaderboards
 - Relays will only store the most recent version of each score (based on `d` tag)
+- Relays index single-letter tags only: `i`/`k` carry the game identity for relay-side filtering,
+  while `game`, `difficulty` and `state` are for clients to read and filter locally
+- `k` on a score event is the NIP-73 external content id kind (`web`); on comment events
+  (kind 1111) `k` means the commented event's kind (NIP-22) - different event kinds, no conflict
