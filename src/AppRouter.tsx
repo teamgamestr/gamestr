@@ -15,12 +15,21 @@ import NotFound from "./pages/NotFound";
 
 const NIP19_PREFIXES = ['npub1', 'note1', 'nevent1', 'nprofile1', 'naddr1'];
 
+/**
+ * NIP-19 bech32 is case-insensitive and clients are expected to accept the
+ * all-uppercase form, so match prefixes against a lowercased slug. The decoder
+ * in NIP19Page handles the uppercase identifier itself.
+ */
+export function isNip19Identifier(value: string): boolean {
+  const lower = value.toLowerCase();
+  return NIP19_PREFIXES.some(prefix => lower.startsWith(prefix));
+}
+
 function DynamicRoute() {
   const { slug } = useParams<{ slug: string }>();
   if (!slug) return <NotFound />;
 
-  const isNip19 = NIP19_PREFIXES.some(prefix => slug.startsWith(prefix));
-  if (isNip19) return <NIP19Page />;
+  if (isNip19Identifier(slug)) return <NIP19Page />;
 
   return <GameDetail />;
 }
@@ -46,6 +55,12 @@ export function AppRouter() {
           <Route path="/developers" element={<Developers />} />
           <Route path="/me" element={<NIP05Store />} />
           <Route path="/messages" element={<Messages />} />
+          {/* NIP-89 handler-style deep-link aliases: /e/<bech32>, /p/<bech32>, /a/<bech32>.
+              NostrHub's listing form offers these alongside the bare /<bech32> form, so a
+              client that deep-links that way still lands on the right view. */}
+          <Route path="/e/:slug" element={<NIP19Page />} />
+          <Route path="/p/:slug" element={<NIP19Page />} />
+          <Route path="/a/:slug" element={<NIP19Page />} />
           <Route path="/:slug" element={<DynamicRoute />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -470,9 +470,12 @@ export function NIP19Page() {
     return <NotFound />;
   }
 
-  // Validate that the identifier looks like a NIP-19 identifier before attempting to decode
+  // Validate that the identifier looks like a NIP-19 identifier before attempting to decode.
+  // NIP-19 bech32 is case-insensitive, so accept the all-uppercase form too; nip19.decode
+  // normalises the case itself.
   const validPrefixes = ['npub1', 'nprofile1', 'note1', 'nevent1', 'naddr1'];
-  const hasValidPrefix = validPrefixes.some(prefix => identifier.startsWith(prefix));
+  const lowerIdentifier = identifier.toLowerCase();
+  const hasValidPrefix = validPrefixes.some(prefix => lowerIdentifier.startsWith(prefix));
   
   if (!hasValidPrefix) {
     return <NotFound />;
