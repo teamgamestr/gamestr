@@ -24,6 +24,7 @@ import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 import { nip19 } from 'nostr-tools';
 import { isNoPubkeyGame, isKind5555Game, isDualKindGame, resolveGameByIdentifier, resolveLeaderboards, formatScoreValue, FALLBACK_GAME_METADATA, GAMESTR_PUBKEY, type LeaderboardConfig } from '@/lib/gameConfig';
+import { encodeNevent, playerPath } from '@/lib/nostrLinks';
 
 
 export function GameDetail() {
@@ -272,8 +273,7 @@ export function GameDetail() {
                 )}
                 {/* Server/Game Developer Button - "From xxx" */}
                 {pubkey && !isNoPubkey && (() => {
-                  const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
-                  const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
+                  const profileUrl = playerPath(pubkey);
                   const displayName = developerMetadata?.name || genUserName(pubkey);
                   
                   return (
@@ -582,7 +582,7 @@ function LeaderboardRow({ rank, score, config, developerPubkey, gameIdentifier, 
   return (
     <div className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group">
       <Link
-        to={`/${gameIdentifier}/score/${score.event.id}`}
+        to={`/${gameIdentifier}/score/${encodeNevent(score.event.id)}`}
         className="flex items-center gap-4 flex-1 min-w-0"
       >
         {/* Rank */}

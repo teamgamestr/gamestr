@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isFeaturedActive, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
+import { encodeNevent } from '@/lib/nostrLinks';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -489,7 +490,7 @@ function LatestScoreCard({ score, gameConfig }: LatestScoreCardProps) {
   const scorePrefs = getScoreDisplayPrefs(gameMetadata);
 
   return (
-    <Link to={`/${score.gameIdentifier}/score/${score.event.id}`} className="group block min-w-[240px] flex-1 snap-start rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:min-w-[280px]">
+    <Link to={`/${score.gameIdentifier}/score/${encodeNevent(score.event.id)}`} className="group block min-w-[240px] flex-1 snap-start rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:min-w-[280px]">
       <Card className="h-full overflow-hidden bg-background/75 transition-all group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-xl group-hover:shadow-primary/10">
         <CardHeader className="space-y-3 pb-3">
           <div className="flex items-center justify-between gap-2">

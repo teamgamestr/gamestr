@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NostrEvent } from '@nostrify/nostrify';
-import { nip19 } from 'nostr-tools';
 import type { Event } from 'nostr-tools';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useComments } from '@/hooks/useComments';
@@ -16,6 +15,7 @@ import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu
 import { MessageSquare, ChevronDown, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { genUserName } from '@/lib/genUserName';
+import { playerPath } from '@/lib/nostrLinks';
 
 interface CommentProps {
   root: NostrEvent | URL;
@@ -41,8 +41,7 @@ export function Comment({ root, comment, depth = 0, maxDepth = 3, limit }: Comme
   const hasReplies = replies.length > 0;
 
   // Check if pubkey is a valid hex string for npub encoding
-  const isValidHex = /^[0-9a-f]{64}$/i.test(comment.pubkey);
-  const profileUrl = isValidHex ? `/${nip19.npubEncode(comment.pubkey)}` : `/player/${comment.pubkey}`;
+  const profileUrl = playerPath(comment.pubkey);
 
   return (
     <div className={depth > 0 ? 'ml-6 border-l-2 border-muted pl-4' : ''}>

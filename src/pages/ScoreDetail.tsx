@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
@@ -7,6 +7,7 @@ import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { validateScoreEvent } from '@/hooks/useScores';
 import { resolveGameByIdentifier, formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
+import { playerPath, resolveEventId } from '@/lib/nostrLinks';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,7 +32,10 @@ import { formatDistanceToNow, format } from 'date-fns';
 import type { Event } from 'nostr-tools';
 
 export function ScoreDetail() {
-  const { eventId } = useParams<{ eventId: string }>();
+  // The event id in the URL is a nevent1… (see lib/nostrLinks); raw hex from an
+  // older link is still accepted.
+  const { eventId: eventIdParam } = useParams<{ eventId: string }>();
+  const eventId = useMemo(() => resolveEventId(eventIdParam), [eventIdParam]);
   const [tagsOpen, setTagsOpen] = useState(false);
   const { nostr } = useNostr();
   const { getGame } = useGameConfig();
@@ -170,7 +174,7 @@ export function ScoreDetail() {
           <CardHeader className={gameMetadata?.image ? 'pt-6' : ''}>
             <div className="flex items-start gap-4">
               {/* Player Avatar */}
-              <Link to={`/player/${scoreData.playerPubkey}`}>
+              <Link to={playerPath(scoreData.playerPubkey)}>
                 <div className="relative">
                   <Avatar className="h-16 w-16 ring-2 ring-background">
                     <AvatarImage src={playerMetadata?.picture} alt={playerDisplayName} />
@@ -191,7 +195,7 @@ export function ScoreDetail() {
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <Link
-                      to={`/player/${scoreData.playerPubkey}`}
+                      to={playerPath(scoreData.playerPubkey)}
                       className="hover:opacity-80 transition-opacity"
                     >
                       <div className="flex items-center gap-2">

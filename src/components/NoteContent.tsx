@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import { playerPath } from '@/lib/nostrLinks';
 
 type NProfilePointer = { pubkey: string };
 type NEventPointer = { id: string };
@@ -288,8 +289,7 @@ function NostrMention({ pubkey }: { pubkey: string }) {
   const displayName = author.data?.metadata?.name ?? genUserName(pubkey);
 
   // Check if pubkey is a valid hex string for npub encoding
-  const isValidHex = /^[0-9a-f]{64}$/i.test(pubkey);
-  const profileUrl = isValidHex ? `/${nip19.npubEncode(pubkey)}` : `/player/${pubkey}`;
+  const profileUrl = playerPath(pubkey);
 
   return (
     <Link 

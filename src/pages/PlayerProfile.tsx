@@ -17,11 +17,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy, Target, Gamepad2, TrendingUp, ExternalLink, MessageSquare, Calendar } from 'lucide-react';
 import { genUserName } from '@/lib/genUserName';
 import { formatScoreValue, getScoreDisplayPrefs } from '@/lib/gameConfig';
+import { encodeNevent, resolvePubkey } from '@/lib/nostrLinks';
 import { formatDistanceToNow } from 'date-fns';
 import type { Event } from 'nostr-tools';
 
-export function PlayerProfile() {
-  const { pubkey } = useParams<{ pubkey: string }>();
+export function PlayerProfile({ pubkey: pubkeyProp }: { pubkey?: string } = {}) {
+  // The route param may be bech32 or hex: an old `/player/<hex>` link still
+  // works, and a `/player/<npub>` link resolves to the same person instead of
+  // being used verbatim as an author filter (which silently matched nobody).
+  // NIP19Page renders this component directly for `/<npub>`, passing the
+  // already-decoded key, so the prop takes precedence over the route param.
+  const { pubkey: pubkeyParam } = useParams<{ pubkey: string }>();
+  const pubkey = useMemo(
+    () => resolvePubkey(pubkeyProp ?? pubkeyParam),
+    [pubkeyProp, pubkeyParam],
+  );
   const [period, setPeriod] = useState<LeaderboardPeriod>('all-time');
   const { nostr } = useNostr();
 
@@ -30,7 +40,7 @@ export function PlayerProfile() {
   const displayName = metadata?.name || genUserName(pubkey || '');
   const { data: nip05Config } = useNIP05Config();
   const nip05Domain = nip05Config?.domain;
-  const { data: gamestrNames } = useNIP05NamesByPubkey(pubkey);
+  const { data: gamestrNames } = useNIP05NamesByPubkey(pubkey ?? undefined);
   const gamestrName = gamestrNames?.names?.[0]?.name;
 
   const { data: scores, isLoading } = usePlayerScores(pubkey || '', {
@@ -352,7 +362,7 @@ export function PlayerProfile() {
                   return (
                     <Link
                       key={score.event.id}
-                      to={`/${score.gameIdentifier}/score/${score.event.id}`}
+                      to={`/${score.gameIdentifier}/score/${encodeNevent(score.event.id)}`}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">

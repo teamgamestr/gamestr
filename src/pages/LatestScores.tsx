@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from '@/components/ui/skeleton';
 import { FALLBACK_GAME_METADATA, canonicalGameIdentifier, getGameIdentifierGroup, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
 import { genUserName } from '@/lib/genUserName';
+import { encodeNevent } from '@/lib/nostrLinks';
 
 const LATEST_SCORES_PAGE_LIMIT = 500;
 const SCORES_PER_PAGE = 25;
@@ -245,7 +246,7 @@ function LatestScoreRow({ score, gameConfig, commentCount, reactionCount }: Late
     <Card className="overflow-hidden bg-card/80 transition-colors hover:border-primary/40">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <Link to={`/${score.gameIdentifier}/score/${score.event.id}`} className="group flex min-w-0 items-center gap-4">
+          <Link to={`/${score.gameIdentifier}/score/${encodeNevent(score.event.id)}`} className="group flex min-w-0 items-center gap-4">
             <div className="relative">
               <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                 <AvatarImage src={metadata?.picture} alt={playerName} />

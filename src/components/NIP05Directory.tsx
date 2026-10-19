@@ -7,6 +7,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 
 import { genUserName } from '@/lib/genUserName';
 import { Skeleton } from '@/components/ui/skeleton';
+import { playerPath } from '@/lib/nostrLinks';
 
 function DirectoryItem({ name, pubkey }: { name: string; pubkey: string }) {
   const author = useAuthor(pubkey);
@@ -15,7 +16,7 @@ function DirectoryItem({ name, pubkey }: { name: string; pubkey: string }) {
 
   return (
     <Link
-      to={`/player/${pubkey}`}
+      to={playerPath(pubkey)}
       className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
     >
       <div className="relative">

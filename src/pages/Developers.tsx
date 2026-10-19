@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { validateScoreEvent } from '@/hooks/useScores';
 import { useTheme } from '@/hooks/useTheme';
+import { encodeNevent } from '@/lib/nostrLinks';
 import type { NostrEvent } from '@nostrify/nostrify';
 
 function SectionAnchor({ id }: { id: string }) {
@@ -870,7 +871,7 @@ publish_score(
                   return (
                     <Link
                       key={event.id}
-                      to={`/score/${event.id}`}
+                      to={`/score/${encodeNevent(event.id)}`}
                       className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
