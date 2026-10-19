@@ -144,16 +144,15 @@ export function NoteContent({
           parts.push(fullMatch);
         }
       } else if (hashtag) {
-        // Handle hashtags
-        const tag = hashtag.slice(1); // Remove the #
+        // Hashtags render as styled text, not links: there is no tag feed, and
+        // the previous /t/<tag> href 404'd.
         parts.push(
-          <Link 
+          <span
             key={`hashtag-${keyCounter++}`}
-            to={`/t/${tag}`}
-            className="text-blue-500 hover:underline"
+            className="text-blue-500"
           >
             {hashtag}
-          </Link>
+          </span>
         );
       }
       

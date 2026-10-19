@@ -76,7 +76,7 @@ describe('NoteContent', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('renders hashtags as links', () => {
+  it('renders hashtags as styled text rather than links', () => {
     const event: NostrEvent = {
       id: 'test-id',
       pubkey: 'test-pubkey',
@@ -93,13 +93,16 @@ describe('NoteContent', () => {
       </TestApp>
     );
 
-    const nostrHashtag = screen.getByRole('link', { name: '#nostr' });
-    const bitcoinHashtag = screen.getByRole('link', { name: '#bitcoin' });
-    
+    // There is no tag feed, so a hashtag must not be a link: the old
+    // /t/<tag> href 404'd. The text still renders, styled.
+    const nostrHashtag = screen.getByText('#nostr');
+    const bitcoinHashtag = screen.getByText('#bitcoin');
+
     expect(nostrHashtag).toBeInTheDocument();
     expect(bitcoinHashtag).toBeInTheDocument();
-    expect(nostrHashtag).toHaveAttribute('href', '/t/nostr');
-    expect(bitcoinHashtag).toHaveAttribute('href', '/t/bitcoin');
+    expect(nostrHashtag).toHaveClass('text-blue-500');
+    expect(bitcoinHashtag).toHaveClass('text-blue-500');
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('generates deterministic names for users without metadata and styles them differently', () => {
