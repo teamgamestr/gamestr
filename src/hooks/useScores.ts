@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NPool, NostrEvent, NostrFilter } from '@nostrify/nostrify';
-import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getGameUrl, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
 import { LEGACY_SCORE_RELAYS, isLegacyScoreFilter } from '@/lib/scoreRelays';
 
 export interface ScoreEvent extends NostrEvent {
@@ -262,6 +262,25 @@ export function useScores(options: UseScoresOptions = {}) {
         if (genre) filter30762['#t'] = [genre];
         if (developerPubkey) filter30762.authors = [developerPubkey];
         filters.push(filter30762);
+
+        // A game whose canonical URL is known also matches on the NIP-73 `i`
+        // tag its scores are required to carry. Older events have no `i` at all
+        // (see NIP.md), so this filter goes out alongside the bare one rather
+        // than replacing it - the bare filter only returns the newest N events
+        // network-wide, which silently drops a quiet game's history.
+        const gameUrl = gameIdentifier ? getGameUrl(gameIdentifier) : undefined;
+        if (gameUrl) {
+          const filterByExternalId: NostrFilter = {
+            kinds: [30762],
+            '#i': [gameUrl],
+            limit: 1000,
+          };
+          if (since) filterByExternalId.since = since;
+          if (playerPubkey) filterByExternalId['#p'] = [playerPubkey];
+          if (genre) filterByExternalId['#t'] = [genre];
+          if (developerPubkey) filterByExternalId.authors = [developerPubkey];
+          filters.push(filterByExternalId);
+        }
       }
 
       if (gameIdentifier && isKind5555Game(gameIdentifier)) {
@@ -714,6 +733,18 @@ export function useMultiLeaderboard(
         if (since) filter30762.since = since;
         if (developerPubkey) filter30762.authors = [developerPubkey];
         filters.push(filter30762);
+
+        const gameUrl = gameIdentifier ? getGameUrl(gameIdentifier) : undefined;
+        if (gameUrl) {
+          const filterByExternalId: NostrFilter = {
+            kinds: [30762],
+            '#i': [gameUrl],
+            limit: 1000,
+          };
+          if (since) filterByExternalId.since = since;
+          if (developerPubkey) filterByExternalId.authors = [developerPubkey];
+          filters.push(filterByExternalId);
+        }
       }
 
       if (gameIdentifier && isKind5555Game(gameIdentifier)) {
