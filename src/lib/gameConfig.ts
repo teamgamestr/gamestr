@@ -143,6 +143,8 @@ export interface LeaderboardSplitConfig {
   direction: ScoreDirection;
   scoreFormat?: ScoreFormat;
   scoreUnit?: "ms" | "s";
+  /** See LeaderboardConfig.deduplicateByPlayer. */
+  deduplicateByPlayer?: boolean | 'best' | 'latest';
   /** Layout hint for the UI. "tabs" renders a scrollable tab row. */
   layout?: "tabs" | "grid";
   /** Ordered list of split values mapped to friendly labels. */
@@ -221,6 +223,7 @@ export function resolveLeaderboards(
       filterValue: v.value,
       scoreFormat: split.scoreFormat,
       scoreUnit: split.scoreUnit,
+      deduplicateByPlayer: split.deduplicateByPlayer,
     }));
   }
   return [];
@@ -253,8 +256,11 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
     },
   },
   unicornvssnakes: {
-    scoreField: "score",
-    scoreDirection: "desc",
+    // The game publishes `["time", "<totalMs>"]` and ranks by it ascending -
+    // its own board sorts `totalMs - totalMs` and keeps the fastest run per
+    // player - so a lower value is the better score.
+    scoreField: "time",
+    scoreDirection: "asc",
     metadata: {
       name: "Unicorn vs Snakes",
       description: "Who put all these snakes on this 2D plane?!?",
@@ -264,6 +270,22 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
       developer:
         "npub1dergggklka99wwrs92yz8wdjs952h2ux2ha2ed598ngwu9w7a6fsh9xzpc",
       featured: false,
+      // One board per difficulty, matching the tabs the game itself shows.
+      leaderboardSplit: {
+        splitTag: "difficulty",
+        scoreTag: "time",
+        direction: "asc",
+        scoreFormat: "time",
+        scoreUnit: "ms",
+        deduplicateByPlayer: true,
+        layout: "tabs",
+        values: [
+          { value: "easy", label: "Easy" },
+          { value: "normal", label: "Normal" },
+          { value: "hard", label: "Hard" },
+          { value: "insane", label: "Insane" },
+        ],
+      },
     },
   },
 };
@@ -271,11 +293,23 @@ export const KIND_5555_GAMES: Kind5555GamesMap = {
 export function getKind5555Config(
   gameTag: string,
 ): Kind5555GameConfig | undefined {
-  return KIND_5555_GAMES[gameTag];
+  return KIND_5555_GAMES[canonicalGameIdentifier(gameTag)];
 }
 
 export function isKind5555Game(gameTag: string): boolean {
-  return gameTag in KIND_5555_GAMES;
+  return canonicalGameIdentifier(gameTag) in KIND_5555_GAMES;
+}
+
+/**
+ * Every `t` value that identifies one of the kind 5555 games, aliases included
+ * (e.g. both `unicornvssnakes` and the `UvS` its events actually carry).
+ */
+export function getAllKind5555Tags(): string[] {
+  const tags = new Set<string>();
+  for (const gameTag of Object.keys(KIND_5555_GAMES)) {
+    for (const identifier of getGameIdentifierGroup(gameTag)) tags.add(identifier);
+  }
+  return [...tags];
 }
 
 /**
@@ -1229,6 +1263,10 @@ export const GAME_IDENTIFIER_ALIASES: Record<string, string> = {
   "vocab-vegas-spanish-word-dice": "vocab-vegas",
   // Satoshi Snake camp proxy identifier
   "Satoshi Snake": "satoshisnake",
+  // Unicorn vs Snakes scores are tagged `UvS`; its own client queries both
+  // spellings, so both point at the configured identifier.
+  "UvS": "unicornvssnakes",
+  "unicorn-vs-snakes": "unicornvssnakes",
 };
 
 /** Resolve an identifier to its canonical form (identity when no alias). */
