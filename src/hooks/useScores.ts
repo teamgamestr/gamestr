@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
+import type { NPool, NostrEvent, NostrFilter } from '@nostrify/nostrify';
 import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
+import { LEGACY_SCORE_RELAYS, isLegacyScoreFilter } from '@/lib/scoreRelays';
 
 export interface ScoreEvent extends NostrEvent {
   kind: number;
@@ -132,6 +133,36 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
 }
 
 /**
+ * Query score filters, sending legacy kind 5555 lookups to the relays that
+ * actually index them.
+ *
+ * The Gamestr relay answers a kind 5555 REQ with nothing, so the visitor's own
+ * relay list is the wrong place to ask: a NIP-65 list without the general
+ * relays silently reports no legacy history at all.
+ */
+async function queryScoreFilters(
+  nostr: NPool,
+  filters: NostrFilter[],
+  options: { signal: AbortSignal },
+): Promise<NostrEvent[]> {
+  const poolFilters = filters.filter((filter) => !isLegacyScoreFilter(filter));
+  const legacyFilters = filters.filter(isLegacyScoreFilter);
+
+  const events: NostrEvent[] = [];
+
+  if (poolFilters.length > 0) {
+    events.push(...(await nostr.query(poolFilters, options)));
+  }
+
+  if (legacyFilters.length > 0) {
+    const legacyRelays = nostr.group(LEGACY_SCORE_RELAYS);
+    events.push(...(await legacyRelays.query(legacyFilters, options)));
+  }
+
+  return [...new Map(events.map((event) => [event.id, event])).values()];
+}
+
+/**
  * Collapse scores to a single entry per player.
  *
  * - "best": keep the best score per `direction` (highest for desc, lowest for
@@ -258,7 +289,7 @@ export function useScores(options: UseScoresOptions = {}) {
 
       if (filters.length === 0) return [];
 
-      const events = await nostr.query(filters, { signal });
+      const events = await queryScoreFilters(nostr, filters, { signal });
 
       let parsedScores = events
         .map(validateScoreEvent)
@@ -315,7 +346,7 @@ export function useLatestScores(options: { limit?: number } = {}) {
         });
       }
 
-      const events = await nostr.query(filters, { signal });
+      const events = await queryScoreFilters(nostr, filters, { signal });
       const excludedSet = new Set(EXCLUDED_GAMES);
 
       return events
@@ -442,7 +473,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
           });
         }
 
-        events = await nostr.query(filters, { signal });
+        events = await queryScoreFilters(nostr, filters, { signal });
       } catch (error) {
         console.warn('Failed to fetch scores from relays', error);
       }
@@ -531,7 +562,7 @@ export function useTrendingGames(options: { days?: number } = {}) {
         });
       }
 
-      const events = await nostr.query(filters, { signal });
+      const events = await queryScoreFilters(nostr, filters, { signal });
 
       const parsedScores = events
         .map(validateScoreEvent)
@@ -697,7 +728,7 @@ export function useMultiLeaderboard(
 
       if (filters.length === 0) return leaderboards.map(config => ({ config, scores: [] as ParsedScore[] }));
 
-      const events = await nostr.query(filters, { signal });
+      const events = await queryScoreFilters(nostr, filters, { signal });
 
       return leaderboards.map(config => {
         const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
