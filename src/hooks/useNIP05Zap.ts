@@ -8,13 +8,14 @@ import { useNWC } from '@/hooks/useNWCContext';
 import { assertInvoiceAmount, invoiceCommitsTo } from '@/lib/bolt11';
 import { resolveLnurlPay } from '@/lib/lnurlPay';
 import { unverifiableInvoiceMessage } from '@/lib/zapRequests';
+import { getWriteRelayUrls } from '@/lib/relays';
 import { WebLnUnavailableError, resolveWebLnProvider } from '@/lib/webln';
 import { useNIP05Config } from '@/hooks/useNIP05';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
 export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null, amountMillisats: number) {
   const { user } = useCurrentUser();
-  const { presetRelays } = useAppContext();
+  const { config: appConfig } = useAppContext();
   const { toast } = useToast();
   const { sendPayment, getActiveConnection } = useNWC();
   const { data: config } = useNIP05Config();
@@ -71,7 +72,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
           profile: servicePubkey,
           event: null,
           amount: amountMillisats,
-          relays: presetRelays?.map((r) => r.url) ?? ['wss://nos.lol'],
+          relays: getWriteRelayUrls(appConfig.relayMetadata.relays),
           comment,
         });
 
@@ -177,7 +178,7 @@ export function useNIP05Zap(webln: WebLNProvider | null, orderId: string | null,
         return false;
       }
     },
-    [user, orderId, servicePubkey, author.data?.event, author.data?.metadata, presetRelays, toast, sendPayment, getActiveConnection, webln, amountMillisats],
+    [user, orderId, servicePubkey, author.data?.event, author.data?.metadata, appConfig.relayMetadata.relays, toast, sendPayment, getActiveConnection, webln, amountMillisats],
   );
 
   return {

@@ -6,6 +6,7 @@ import NostrProvider from '@/components/NostrProvider';
 import { AppProvider } from '@/components/AppProvider';
 import { NWCProvider } from '@/contexts/NWCContext';
 import { AppConfig } from '@/contexts/AppContext';
+import { DEFAULT_RELAYS } from '@/lib/relays';
 
 interface TestAppProps {
   children: React.ReactNode;
@@ -23,7 +24,10 @@ export function TestApp({ children }: TestAppProps) {
 
   const defaultConfig: AppConfig = {
     theme: 'light',
-    relayUrl: 'wss://relay.gamestr.io',
+    relayMetadata: {
+      relays: DEFAULT_RELAYS,
+      updatedAt: 0,
+    },
     latestScoresCount: 10,
     latestScoresBufferCount: 10,
   };

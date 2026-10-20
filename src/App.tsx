@@ -6,6 +6,7 @@ import { createHead, UnheadProvider } from '@unhead/react/client';
 import { InferSeoMetaPlugin } from '@unhead/addons';
 import { Suspense } from 'react';
 import NostrProvider from '@/components/NostrProvider';
+import { NostrSync } from '@/components/NostrSync';
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NostrLoginProvider } from '@nostrify/react/login';
@@ -14,6 +15,7 @@ import { NWCProvider } from '@/contexts/NWCContext';
 import { DMProvider, type DMConfig } from '@/contexts/DMContext';
 import { AppConfig } from '@/contexts/AppContext';
 import { PROTOCOL_MODE } from '@/lib/dmConstants';
+import { DEFAULT_RELAYS } from '@/lib/relays';
 import AppRouter from './AppRouter';
 
 const head = createHead({
@@ -34,19 +36,13 @@ const queryClient = new QueryClient({
 
 const defaultConfig: AppConfig = {
   theme: "dark",
-  relayUrl: "wss://relay.gamestr.io",
+  relayMetadata: {
+    relays: DEFAULT_RELAYS,
+    updatedAt: 0,
+  },
   latestScoresCount: 10,
   latestScoresBufferCount: 10,
 };
-
-const relays = [
-  { url: 'wss://relay.gamestr.io', name: 'Gamestr (Main)' },
-  { url: 'wss://test.gamestr.io', name: 'Gamestr (Test)' },
-  { url: 'wss://relay.ditto.pub', name: 'Ditto' },
-  { url: 'wss://nos.lol', name: 'nos.lol' },
-  { url: 'wss://relay.damus.io', name: 'Damus' },
-  { url: 'wss://relay.primal.net', name: 'Primal' },
-];
 
 const dmConfig: DMConfig = {
   // Enable or disable DMs entirely
@@ -62,10 +58,11 @@ const dmConfig: DMConfig = {
 export function App() {
   return (
     <UnheadProvider head={head}>
-      <AppProvider storageKey="nostr:app-config" defaultConfig={defaultConfig} presetRelays={relays}>
+      <AppProvider storageKey="nostr:app-config" defaultConfig={defaultConfig}>
         <QueryClientProvider client={queryClient}>
           <NostrLoginProvider storageKey='nostr:login'>
             <NostrProvider>
+              <NostrSync />
               <NWCProvider>
                 <DMProvider config={dmConfig}>
                   <TooltipProvider>

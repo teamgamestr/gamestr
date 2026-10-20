@@ -19,6 +19,7 @@ import {
   type ZapPointerTag,
 } from '@/lib/zapRequests';
 import { waitForZapReceipt } from '@/lib/zapReceipts';
+import { getWriteRelayUrls } from '@/lib/relays';
 import { WebLnUnavailableError, resolveWebLnProvider } from '@/lib/webln';
 
 export function useZaps(
@@ -32,7 +33,7 @@ export function useZaps(
   const { nostr } = useNostr();
   const { toast } = useToast();
   const { user } = useCurrentUser();
-  const { presetRelays } = useAppContext();
+  const { config } = useAppContext();
   const queryClient = useQueryClient();
 
   // Handle the case where an empty array is passed (from ZapButton when external data is provided)
@@ -423,7 +424,7 @@ export function useZaps(
         profile: actualTarget.pubkey,
         event: null,
         amount: zapAmount,
-        relays: presetRelays?.map(r => r.url) ?? ['wss://nos.lol'],
+        relays: getWriteRelayUrls(config.relayMetadata.relays),
         comment
       });
 
