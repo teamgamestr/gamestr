@@ -1,7 +1,7 @@
 // NOTE: This file is stable and usually should not be modified.
 // It is important that all functionality in this file is preserved, and should only be modified if explicitly requested.
 
-import { ChevronDown, Gamepad2, LogOut, UserIcon, UserPlus, Wallet } from 'lucide-react';
+import { ChevronDown, Gamepad2, LogOut, Settings2, UserIcon, UserPlus, Wallet } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +11,18 @@ import {
 } from '@/components/ui/dropdown-menu.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { WalletModal } from '@/components/WalletModal';
+import { RelayListManager } from '@/components/RelayListManager';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useNIP05NamesByPubkey } from '@/hooks/useNIP05';
 import { useLoggedInAccounts, type Account } from '@/hooks/useLoggedInAccounts';
 import { genUserName } from '@/lib/genUserName';
+import { useState } from 'react';
 
 interface AccountSwitcherProps {
   onAddAccountClick: () => void;
@@ -23,6 +32,7 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
   const { currentUser, otherUsers, setLogin, removeLogin } = useLoggedInAccounts();
   const { data: gamestrNames } = useNIP05NamesByPubkey(currentUser?.pubkey);
   const gamestrName = gamestrNames?.names?.[0]?.name;
+  const [relayDialogOpen, setRelayDialogOpen] = useState(false);
 
   if (!currentUser) return null;
 
@@ -80,6 +90,16 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
           </DropdownMenuItem>
         </WalletModal>
         <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            setRelayDialogOpen(true);
+          }}
+          className='flex items-center gap-2 cursor-pointer p-2 rounded-md'
+        >
+          <Settings2 className='w-4 h-4' />
+          <span>Relays</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
           onClick={onAddAccountClick}
           className='flex items-center gap-2 cursor-pointer p-2 rounded-md'
         >
@@ -94,6 +114,18 @@ export function AccountSwitcher({ onAddAccountClick }: AccountSwitcherProps) {
           <span>Log out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
+
+      <Dialog open={relayDialogOpen} onOpenChange={setRelayDialogOpen}>
+        <DialogContent className='sm:max-w-2xl'>
+          <DialogHeader>
+            <DialogTitle>Relays</DialogTitle>
+            <DialogDescription>
+              Gamestr is always connected. Add your own read and write relays; they are saved as your NIP-65 relay list.
+            </DialogDescription>
+          </DialogHeader>
+          <RelayListManager />
+        </DialogContent>
+      </Dialog>
     </DropdownMenu>
   );
 }

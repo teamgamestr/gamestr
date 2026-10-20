@@ -6,6 +6,7 @@ import { useAppContext } from '@/hooks/useAppContext';
 import { useNostrPublish } from '@/hooks/useNostrPublish';
 import { useToast } from '@/hooks/useToast';
 import { validateDMEvent } from '@/lib/dmUtils';
+import { relaySetKey } from '@/lib/relays';
 import { LOADING_PHASES, type LoadingPhase, PROTOCOL_MODE, type ProtocolMode } from '@/lib/dmConstants';
 import { NSecSigner, type NostrEvent } from '@nostrify/nostrify';
 import { generateSecretKey } from 'nostr-tools';
@@ -385,8 +386,12 @@ export function DMProvider({ children, config }: DMProviderProps) {
 
   const userPubkey = useMemo(() => user?.pubkey, [user?.pubkey]);
   
-  // Track relay URL to detect changes
-  const previousRelayUrl = useRef<string>(appConfig.relayUrl);
+  // Track the relay set to detect changes
+  const relayKey = useMemo(
+    () => relaySetKey(appConfig.relayMetadata.relays),
+    [appConfig.relayMetadata.relays],
+  );
+  const previousRelayKey = useRef<string>(relayKey);
   
   // Determine if NIP-17 is enabled based on protocol mode
   const enableNIP17 = protocolMode !== PROTOCOL_MODE.NIP04_ONLY;
@@ -1520,14 +1525,14 @@ export function DMProvider({ children, config }: DMProviderProps) {
 
   // Detect relay changes and reload messages
   useEffect(() => {
-    const relayChanged = previousRelayUrl.current !== appConfig.relayUrl;
+    const relayChanged = previousRelayKey.current !== relayKey;
     
-    previousRelayUrl.current = appConfig.relayUrl;
+    previousRelayKey.current = relayKey;
     
     if (relayChanged && enabled && userPubkey && hasInitialLoadCompleted) {
       clearCacheAndRefetch();
     }
-  }, [enabled, userPubkey, appConfig.relayUrl, hasInitialLoadCompleted, clearCacheAndRefetch]);
+  }, [enabled, userPubkey, relayKey, hasInitialLoadCompleted, clearCacheAndRefetch]);
 
   // Detect hard refresh shortcut (Ctrl+Shift+R / Cmd+Shift+R) to clear cache
   useEffect(() => {
