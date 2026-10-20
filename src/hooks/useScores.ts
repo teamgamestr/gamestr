@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
 import type { NPool, NostrEvent, NostrFilter } from '@nostrify/nostrify';
-import { EXCLUDED_GAMES, KIND_5555_GAMES, canonicalGameIdentifier, getGameIdentifierGroup, getGameUrl, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
+import { EXCLUDED_GAMES, canonicalGameIdentifier, getAllKind5555Tags, getGameIdentifierGroup, getGameUrl, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
 import { LEGACY_SCORE_RELAYS, isLegacyScoreFilter } from '@/lib/scoreRelays';
 
 export interface ScoreEvent extends NostrEvent {
@@ -95,6 +95,9 @@ function validateKind5555(event: NostrEvent): ParsedScore | null {
 
   const config = getKind5555Config(gameTag);
   if (!config) return null;
+
+  // The game flags runs it considers cheating, and its own board drops them.
+  if (event.tags.some(([name, value]) => name === 'cheated' && value === 'true')) return null;
 
   const scoreTag = event.tags.find(([name]) => name === config.scoreField)?.[1];
   if (!scoreTag) return null;
@@ -287,14 +290,14 @@ export function useScores(options: UseScoresOptions = {}) {
       if (gameIdentifier && isKind5555Game(gameIdentifier)) {
         const filter5555: NostrFilter = {
           kinds: [5555],
-          '#t': [gameIdentifier],
+          '#t': getGameIdentifierGroup(gameIdentifier),
           limit: 1000,
         };
         if (since) filter5555.since = since;
         if (playerPubkey) filter5555.authors = [playerPubkey];
         filters.push(filter5555);
       } else if (kind5555Only) {
-        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        const kind5555Tags = getAllKind5555Tags();
         if (kind5555Tags.length > 0) {
           const filter5555: NostrFilter = {
             kinds: [5555],
@@ -357,7 +360,7 @@ export function useLatestScores(options: { limit?: number } = {}) {
         { kinds: [30762], limit: queryLimit },
       ];
 
-      const kind5555Tags = Object.keys(KIND_5555_GAMES);
+      const kind5555Tags = getAllKind5555Tags();
       if (kind5555Tags.length > 0) {
         filters.push({
           kinds: [5555],
@@ -391,7 +394,7 @@ export function useLatestScores(options: { limit?: number } = {}) {
     (async () => {
       try {
         const filters: NostrFilter[] = [{ kinds: [30762], since }];
-        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        const kind5555Tags = getAllKind5555Tags();
         if (kind5555Tags.length > 0) {
           filters.push({ kinds: [5555], '#t': kind5555Tags, since });
         }
@@ -484,7 +487,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
           { kinds: [30762], limit },
         ];
 
-        const kind5555Tags = Object.keys(KIND_5555_GAMES);
+        const kind5555Tags = getAllKind5555Tags();
         if (kind5555Tags.length > 0) {
           filters.push({
             kinds: [5555],
@@ -572,7 +575,7 @@ export function useTrendingGames(options: { days?: number } = {}) {
         { kinds: [30762], since, limit: 1000 },
       ];
 
-      const kind5555Tags = Object.keys(KIND_5555_GAMES);
+      const kind5555Tags = getAllKind5555Tags();
       if (kind5555Tags.length > 0) {
         filters.push({
           kinds: [5555],
@@ -671,6 +674,8 @@ function parseEventWithScoreTag(
     }
     if (!gameTag) return null;
 
+    if (event.tags.some(([name, value]) => name === 'cheated' && value === 'true')) return null;
+
     const scoreValue = event.tags.find(([name]) => name === scoreTag)?.[1];
     if (!scoreValue) return null;
 
@@ -751,7 +756,7 @@ export function useMultiLeaderboard(
       if (gameIdentifier && isKind5555Game(gameIdentifier)) {
         const filter5555: NostrFilter = {
           kinds: [5555],
-          '#t': [gameIdentifier],
+          '#t': getGameIdentifierGroup(gameIdentifier),
           limit: 1000,
         };
         if (since) filter5555.since = since;
