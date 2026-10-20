@@ -3,7 +3,7 @@ import { NostrEvent, NostrFilter, NPool, NRelay1 } from '@nostrify/nostrify';
 import { NostrContext } from '@nostrify/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '@/hooks/useAppContext';
-import { getReadRelayUrls, getWriteRelayUrls, relaySetKey } from '@/lib/relays';
+import { getReadRelayUrls, getScoreReadRelayUrls, getWriteRelayUrls, isScoreFilter, relaySetKey } from '@/lib/relays';
 
 interface NostrProviderProps {
   children: React.ReactNode;
@@ -46,6 +46,18 @@ const NostrProvider: React.FC<NostrProviderProps> = (props) => {
 
         for (const url of getReadRelayUrls(relaysRef.current)) {
           routes.set(url, filters);
+        }
+
+        // Score reads do not depend on the visitor's list: most score events
+        // exist on exactly one relay and the Gamestr relay holds almost all of
+        // them, so the score mirrors stay in the fan-out even when a NIP-65
+        // list leaves them out.
+        const scoreFilters = filters.filter(isScoreFilter);
+        if (scoreFilters.length > 0) {
+          for (const url of getScoreReadRelayUrls(relaysRef.current)) {
+            if (routes.has(url)) continue;
+            routes.set(url, scoreFilters);
+          }
         }
 
         return routes;
