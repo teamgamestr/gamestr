@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import type { NPool, NostrEvent, NostrFilter } from '@nostrify/nostrify';
+import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
+import { useStagedRelayQuery } from '@/hooks/useStagedRelayQuery';
 import { EXCLUDED_GAMES, canonicalGameIdentifier, getAllKind5555Tags, getGameIdentifierGroup, getGameUrl, getKind5555Config, isKind5555Game, isPlayerSignedGame, type ScoreDirection, type LeaderboardConfig } from '@/lib/gameConfig';
-import { LEGACY_SCORE_RELAYS, isLegacyScoreFilter } from '@/lib/scoreRelays';
 
 export interface ScoreEvent extends NostrEvent {
   kind: number;
@@ -136,37 +136,6 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
 }
 
 /**
- * Query score filters, sending legacy kind 5555 lookups to the relays that
- * index them.
- *
- * Legacy scores live on the Gamestr relay - the router sweeps them in and the
- * history was backfilled - and on the general relays that publish them. The
- * visitor's own list is the wrong place to ask: it need not contain either, and
- * a NIP-65 list without them reports no legacy history at all.
- */
-async function queryScoreFilters(
-  nostr: NPool,
-  filters: NostrFilter[],
-  options: { signal: AbortSignal },
-): Promise<NostrEvent[]> {
-  const poolFilters = filters.filter((filter) => !isLegacyScoreFilter(filter));
-  const legacyFilters = filters.filter(isLegacyScoreFilter);
-
-  const events: NostrEvent[] = [];
-
-  if (poolFilters.length > 0) {
-    events.push(...(await nostr.query(poolFilters, options)));
-  }
-
-  if (legacyFilters.length > 0) {
-    const legacyRelays = nostr.group(LEGACY_SCORE_RELAYS);
-    events.push(...(await legacyRelays.query(legacyFilters, options)));
-  }
-
-  return [...new Map(events.map((event) => [event.id, event])).values()];
-}
-
-/**
  * Collapse scores to a single entry per player.
  *
  * - "best": keep the best score per `direction` (highest for desc, lowest for
@@ -230,10 +199,14 @@ interface UseScoresOptions {
 }
 
 /**
- * Query score events from Nostr
+ * Query score events from Nostr.
+ *
+ * Gamestr answers first and is rendered immediately; the visitor's own read
+ * relays are then merged in, so their list cannot slow the first paint.
  */
 export function useScores(options: UseScoresOptions = {}) {
-  const { nostr } = useNostr();
+  const queryClient = useQueryClient();
+  const stagedQuery = useStagedRelayQuery();
   const {
     gameIdentifier,
     playerPubkey,
@@ -247,11 +220,34 @@ export function useScores(options: UseScoresOptions = {}) {
     kind5555Only = false,
   } = options;
 
+  const queryKey = ['scores', gameIdentifier, playerPubkey, difficulty, mode, genre, period, limit, developerPubkey, kind5555Only];
+
+  const toScores = useCallback((events: NostrEvent[]): ParsedScore[] => {
+    let parsedScores = events
+      .map(validateScoreEvent)
+      .filter((score): score is ParsedScore => score !== null)
+      .filter(score => score.state !== 'invalidated' && score.state !== 'retired');
+
+    if (gameIdentifier) {
+      const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
+      parsedScores = parsedScores.filter(score => identifierGroup.has(score.gameIdentifier));
+    }
+
+    if (difficulty) {
+      parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
+    }
+
+    if (mode) {
+      parsedScores = parsedScores.filter(score => score.mode === mode);
+    }
+
+    const direction = gameIdentifier ? getScoreDirection(gameIdentifier) : 'desc';
+    return sortScores(parsedScores, direction).slice(0, limit);
+  }, [gameIdentifier, difficulty, mode, limit]);
+
   return useQuery({
-    queryKey: ['scores', gameIdentifier, playerPubkey, difficulty, mode, genre, period, limit, developerPubkey, kind5555Only],
+    queryKey,
     queryFn: async (c) => {
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
-      
       const filters: NostrFilter[] = [];
 
       const since = getPeriodTimestamp(period);
@@ -312,28 +308,16 @@ export function useScores(options: UseScoresOptions = {}) {
 
       if (filters.length === 0) return [];
 
-      const events = await queryScoreFilters(nostr, filters, { signal });
+      const events = await stagedQuery(filters, {
+        signal: c.signal,
+        timeoutMs: 3000,
+        onPrimary: (primary) => {
+          if (primary.length === 0) return;
+          queryClient.setQueryData<ParsedScore[]>(queryKey, toScores(primary));
+        },
+      });
 
-      let parsedScores = events
-        .map(validateScoreEvent)
-        .filter((score): score is ParsedScore => score !== null)
-        .filter(score => score.state !== 'invalidated' && score.state !== 'retired');
-
-      if (gameIdentifier) {
-        const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
-        parsedScores = parsedScores.filter(score => identifierGroup.has(score.gameIdentifier));
-      }
-
-      if (difficulty) {
-        parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
-      }
-
-      if (mode) {
-        parsedScores = parsedScores.filter(score => score.mode === mode);
-      }
-
-      const direction = gameIdentifier ? getScoreDirection(gameIdentifier) : 'desc';
-      return sortScores(parsedScores, direction).slice(0, limit);
+      return toScores(events);
     },
     enabled,
   });
@@ -349,11 +333,25 @@ export function useLatestScores(options: { limit?: number } = {}) {
   const { nostr } = useNostr();
   const { limit = 5 } = options;
   const queryClient = useQueryClient();
+  const stagedQuery = useStagedRelayQuery();
+
+  const queryKey = ['latest-scores', limit];
+
+  const toLatest = useCallback((events: NostrEvent[]): ParsedScore[] => {
+    const excludedSet = new Set(EXCLUDED_GAMES);
+
+    return events
+      .map(validateScoreEvent)
+      .filter((score): score is ParsedScore => score !== null)
+      .filter(score => score.state !== 'invalidated' && score.state !== 'retired')
+      .filter(score => !excludedSet.has(score.gameIdentifier))
+      .sort((a, b) => b.event.created_at - a.event.created_at)
+      .slice(0, limit);
+  }, [limit]);
 
   const query = useQuery({
-    queryKey: ['latest-scores', limit],
+    queryKey,
     queryFn: async (c) => {
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const queryLimit = Math.max(limit * 6, 30);
 
       const filters: NostrFilter[] = [
@@ -369,16 +367,16 @@ export function useLatestScores(options: { limit?: number } = {}) {
         });
       }
 
-      const events = await queryScoreFilters(nostr, filters, { signal });
-      const excludedSet = new Set(EXCLUDED_GAMES);
+      const events = await stagedQuery(filters, {
+        signal: c.signal,
+        timeoutMs: 3000,
+        onPrimary: (primary) => {
+          if (primary.length === 0) return;
+          queryClient.setQueryData<ParsedScore[]>(queryKey, toLatest(primary));
+        },
+      });
 
-      return events
-        .map(validateScoreEvent)
-        .filter((score): score is ParsedScore => score !== null)
-        .filter(score => score.state !== 'invalidated' && score.state !== 'retired')
-        .filter(score => !excludedSet.has(score.gameIdentifier))
-        .sort((a, b) => b.event.created_at - a.event.created_at)
-        .slice(0, limit);
+      return toLatest(events);
     },
   });
 
@@ -472,88 +470,93 @@ export function usePlayerScores(
  * Get all games with scores
  */
 export function useGamesWithScores(options: { limit?: number } = {}) {
-  const { nostr } = useNostr();
   const { limit = 500 } = options;
+  const queryClient = useQueryClient();
+  const stagedQuery = useStagedRelayQuery();
+  const queryKey = ['games-with-scores', limit];
+
+  const toGames = (events: NostrEvent[]) => {
+    const parsedScores = events
+      .map(validateScoreEvent)
+      .filter((score): score is ParsedScore => score !== null);
+
+    const gamesMap = new Map<string, {
+      gameIdentifier: string;
+      developerPubkey: string;
+      scoreCount: number;
+      topScore: number;
+      latestTimestamp: number;
+      genres: Set<string>;
+      sourceKind: number;
+    }>();
+
+    parsedScores.forEach(score => {
+      const key = canonicalGameIdentifier(score.gameIdentifier);
+      const existing = gamesMap.get(key);
+
+      if (existing) {
+        existing.scoreCount++;
+        const direction = getScoreDirection(score.gameIdentifier);
+        if (direction === 'asc') {
+          existing.topScore = Math.min(existing.topScore, score.score);
+        } else {
+          existing.topScore = Math.max(existing.topScore, score.score);
+        }
+        existing.latestTimestamp = Math.max(existing.latestTimestamp, score.event.created_at);
+        if (score.genres) {
+          score.genres.forEach(g => existing.genres.add(g));
+        }
+      } else {
+        const isK5555 = score.sourceKind === 5555;
+        const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
+        gamesMap.set(key, {
+          gameIdentifier: key,
+          developerPubkey: devPubkey,
+          scoreCount: 1,
+          topScore: score.score,
+          latestTimestamp: score.event.created_at,
+          genres: new Set(score.genres || []),
+          sourceKind: score.sourceKind || 30762,
+        });
+      }
+    });
+
+    const excludedSet = new Set(EXCLUDED_GAMES);
+    return Array.from(gamesMap.values())
+      .filter(game => !excludedSet.has(game.gameIdentifier))
+      .map(game => ({
+        ...game,
+        genres: Array.from(game.genres),
+      }))
+      .sort((a, b) => b.latestTimestamp - a.latestTimestamp);
+  };
 
   return useQuery({
-    queryKey: ['games-with-scores', limit],
+    queryKey,
     queryFn: async (c) => {
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
-      
-      let events: NostrEvent[] = [];
-      
-      try {
-        const filters: NostrFilter[] = [
-          { kinds: [30762], limit },
-        ];
+      const filters: NostrFilter[] = [
+        { kinds: [30762], limit },
+      ];
 
-        const kind5555Tags = getAllKind5555Tags();
-        if (kind5555Tags.length > 0) {
-          filters.push({
-            kinds: [5555],
-            '#t': kind5555Tags,
-            limit,
-          });
-        }
-
-        events = await queryScoreFilters(nostr, filters, { signal });
-      } catch (error) {
-        console.warn('Failed to fetch scores from relays', error);
+      const kind5555Tags = getAllKind5555Tags();
+      if (kind5555Tags.length > 0) {
+        filters.push({
+          kinds: [5555],
+          '#t': kind5555Tags,
+          limit,
+        });
       }
 
-      const parsedScores = events
-        .map(validateScoreEvent)
-        .filter((score): score is ParsedScore => score !== null);
-
-      const gamesMap = new Map<string, {
-        gameIdentifier: string;
-        developerPubkey: string;
-        scoreCount: number;
-        topScore: number;
-        latestTimestamp: number;
-        genres: Set<string>;
-        sourceKind: number;
-      }>();
-
-      parsedScores.forEach(score => {
-        const key = canonicalGameIdentifier(score.gameIdentifier);
-        const existing = gamesMap.get(key);
-
-        if (existing) {
-          existing.scoreCount++;
-          const direction = getScoreDirection(score.gameIdentifier);
-          if (direction === 'asc') {
-            existing.topScore = Math.min(existing.topScore, score.score);
-          } else {
-            existing.topScore = Math.max(existing.topScore, score.score);
-          }
-          existing.latestTimestamp = Math.max(existing.latestTimestamp, score.event.created_at);
-          if (score.genres) {
-            score.genres.forEach(g => existing.genres.add(g));
-          }
-        } else {
-          const isK5555 = score.sourceKind === 5555;
-          const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
-          gamesMap.set(key, {
-            gameIdentifier: key,
-            developerPubkey: devPubkey,
-            scoreCount: 1,
-            topScore: score.score,
-            latestTimestamp: score.event.created_at,
-            genres: new Set(score.genres || []),
-            sourceKind: score.sourceKind || 30762,
-          });
-        }
+      const events = await stagedQuery(filters, {
+        signal: c.signal,
+        timeoutMs: 3000,
+        onPrimary: (primary) => {
+          if (primary.length === 0) return;
+          queryClient.setQueryData<ReturnType<typeof toGames>>(queryKey, toGames(primary));
+        },
       });
 
-      const excludedSet = new Set(EXCLUDED_GAMES);
-      return Array.from(gamesMap.values())
-        .filter(game => !excludedSet.has(game.gameIdentifier))
-        .map(game => ({
-          ...game,
-          genres: Array.from(game.genres),
-        }))
-        .sort((a, b) => b.latestTimestamp - a.latestTimestamp);
+      return toGames(events);
     },
   });
 }
@@ -562,15 +565,58 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
  * Get trending games based on recent score activity
  */
 export function useTrendingGames(options: { days?: number } = {}) {
-  const { nostr } = useNostr();
   const { days = 7 } = options;
+  const queryClient = useQueryClient();
+  const stagedQuery = useStagedRelayQuery();
+  const queryKey = ['trending-games', days];
+
+  const toTrending = (events: NostrEvent[]) => {
+    const parsedScores = events
+      .map(validateScoreEvent)
+      .filter((score): score is ParsedScore => score !== null);
+
+    const gamesMap = new Map<string, {
+      gameIdentifier: string;
+      developerPubkey: string;
+      scoreCount: number;
+      uniquePlayers: Set<string>;
+    }>();
+
+    parsedScores.forEach(score => {
+      const key = canonicalGameIdentifier(score.gameIdentifier);
+      const existing = gamesMap.get(key);
+
+      if (existing) {
+        existing.scoreCount++;
+        existing.uniquePlayers.add(score.playerPubkey);
+      } else {
+        const isK5555 = score.sourceKind === 5555;
+        const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
+        gamesMap.set(key, {
+          gameIdentifier: key,
+          developerPubkey: devPubkey,
+          scoreCount: 1,
+          uniquePlayers: new Set([score.playerPubkey]),
+        });
+      }
+    });
+
+    return Array.from(gamesMap.values())
+      .map(game => ({
+        gameIdentifier: game.gameIdentifier,
+        developerPubkey: game.developerPubkey,
+        scoreCount: game.scoreCount,
+        playerCount: game.uniquePlayers.size,
+        trendingScore: game.scoreCount * game.uniquePlayers.size,
+      }))
+      .sort((a, b) => b.trendingScore - a.trendingScore);
+  };
 
   return useQuery({
-    queryKey: ['trending-games', days],
+    queryKey,
     queryFn: async (c) => {
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const since = Math.floor(Date.now() / 1000) - (days * 86400);
-      
+
       const filters: NostrFilter[] = [
         { kinds: [30762], since, limit: 1000 },
       ];
@@ -585,47 +631,16 @@ export function useTrendingGames(options: { days?: number } = {}) {
         });
       }
 
-      const events = await queryScoreFilters(nostr, filters, { signal });
-
-      const parsedScores = events
-        .map(validateScoreEvent)
-        .filter((score): score is ParsedScore => score !== null);
-
-      const gamesMap = new Map<string, {
-        gameIdentifier: string;
-        developerPubkey: string;
-        scoreCount: number;
-        uniquePlayers: Set<string>;
-      }>();
-
-      parsedScores.forEach(score => {
-        const key = canonicalGameIdentifier(score.gameIdentifier);
-        const existing = gamesMap.get(key);
-
-        if (existing) {
-          existing.scoreCount++;
-          existing.uniquePlayers.add(score.playerPubkey);
-        } else {
-          const isK5555 = score.sourceKind === 5555;
-          const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
-          gamesMap.set(key, {
-            gameIdentifier: key,
-            developerPubkey: devPubkey,
-            scoreCount: 1,
-            uniquePlayers: new Set([score.playerPubkey]),
-          });
-        }
+      const events = await stagedQuery(filters, {
+        signal: c.signal,
+        timeoutMs: 3000,
+        onPrimary: (primary) => {
+          if (primary.length === 0) return;
+          queryClient.setQueryData<ReturnType<typeof toTrending>>(queryKey, toTrending(primary));
+        },
       });
 
-      return Array.from(gamesMap.values())
-        .map(game => ({
-          gameIdentifier: game.gameIdentifier,
-          developerPubkey: game.developerPubkey,
-          scoreCount: game.scoreCount,
-          playerCount: game.uniquePlayers.size,
-          trendingScore: game.scoreCount * game.uniquePlayers.size,
-        }))
-        .sort((a, b) => b.trendingScore - a.trendingScore);
+      return toTrending(events);
     },
   });
 }
@@ -714,7 +729,6 @@ export function useMultiLeaderboard(
     kind5555Only?: boolean;
   } = {}
 ) {
-  const { nostr } = useNostr();
   const {
     difficulty,
     mode,
@@ -724,10 +738,47 @@ export function useMultiLeaderboard(
     kind5555Only = false,
   } = options;
 
+  const queryClient = useQueryClient();
+  const stagedQuery = useStagedRelayQuery();
+
+  const queryKey = ['multi-leaderboard', gameIdentifier, leaderboards.map(l => `${l.scoreTag}:${l.filterTag ?? ''}=${l.filterValue ?? ''}`).join(','), period, difficulty, mode, limit, developerPubkey, kind5555Only];
+
+  const toLeaderboards = (events: NostrEvent[]) => {
+    return leaderboards.map(config => {
+      const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
+      let parsedScores = events
+        .map(e => parseEventWithScoreTag(e, config.scoreTag, config.displayTag))
+        .filter((score): score is ParsedScore => score !== null)
+        .filter(score => identifierGroup.has(score.gameIdentifier));
+
+      if (config.filterTag && config.filterValue) {
+        parsedScores = parsedScores.filter(score =>
+          score.event.tags.some(([name, value]) => name === config.filterTag && value === config.filterValue)
+        );
+      }
+      if (difficulty) {
+        parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
+      }
+      if (mode) {
+        parsedScores = parsedScores.filter(score => score.mode === mode);
+      }
+
+      if (config.deduplicateByPlayer) {
+        parsedScores = deduplicateScoresByPlayer(
+          parsedScores,
+          config.direction,
+          config.deduplicateByPlayer === 'latest' ? 'latest' : 'best',
+        );
+      }
+
+      const sorted = sortScores(parsedScores, config.direction);
+      return { config, scores: sorted.slice(0, limit) };
+    });
+  };
+
   return useQuery({
-    queryKey: ['multi-leaderboard', gameIdentifier, leaderboards.map(l => `${l.scoreTag}:${l.filterTag ?? ''}=${l.filterValue ?? ''}`).join(','), period, difficulty, mode, limit, developerPubkey, kind5555Only],
+    queryKey,
     queryFn: async (c) => {
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(3000)]);
       const filters: NostrFilter[] = [];
       const since = getPeriodTimestamp(period);
 
@@ -765,38 +816,16 @@ export function useMultiLeaderboard(
 
       if (filters.length === 0) return leaderboards.map(config => ({ config, scores: [] as ParsedScore[] }));
 
-      const events = await queryScoreFilters(nostr, filters, { signal });
-
-      return leaderboards.map(config => {
-        const identifierGroup = new Set(getGameIdentifierGroup(gameIdentifier));
-        let parsedScores = events
-          .map(e => parseEventWithScoreTag(e, config.scoreTag, config.displayTag))
-          .filter((score): score is ParsedScore => score !== null)
-          .filter(score => identifierGroup.has(score.gameIdentifier));
-
-        if (config.filterTag && config.filterValue) {
-          parsedScores = parsedScores.filter(score =>
-            score.event.tags.some(([name, value]) => name === config.filterTag && value === config.filterValue)
-          );
-        }
-        if (difficulty) {
-          parsedScores = parsedScores.filter(score => score.difficulty === difficulty);
-        }
-        if (mode) {
-          parsedScores = parsedScores.filter(score => score.mode === mode);
-        }
-
-        if (config.deduplicateByPlayer) {
-          parsedScores = deduplicateScoresByPlayer(
-            parsedScores,
-            config.direction,
-            config.deduplicateByPlayer === 'latest' ? 'latest' : 'best',
-          );
-        }
-
-        const sorted = sortScores(parsedScores, config.direction);
-        return { config, scores: sorted.slice(0, limit) };
+      const events = await stagedQuery(filters, {
+        signal: c.signal,
+        timeoutMs: 3000,
+        onPrimary: (primary) => {
+          if (primary.length === 0) return;
+          queryClient.setQueryData<ReturnType<typeof toLeaderboards>>(queryKey, toLeaderboards(primary));
+        },
       });
+
+      return toLeaderboards(events);
     },
     enabled,
   });
