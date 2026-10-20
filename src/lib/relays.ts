@@ -1,4 +1,4 @@
-import type { NostrEvent } from '@nostrify/nostrify';
+import type { NostrEvent, NostrFilter } from '@nostrify/nostrify';
 
 /** A relay plus the direction(s) the visitor wants to use it in. */
 export interface RelayEntry {
@@ -132,4 +132,34 @@ export function relaySetKey(relays: RelayEntry[]): string {
     .map((relay) => `${relay.url}:${relay.read ? 'r' : ''}${relay.write ? 'w' : ''}`)
     .sort()
     .join(',');
+}
+
+/**
+ * Relays that index kind 30762 score events, beyond the Gamestr relay.
+ *
+ * Scores are not mirrored: 61% of the 2,051 kind 30762 events measured across
+ * the network on 2026-10-20 exist on exactly one relay, and the Gamestr relay
+ * holds 1,976 of them. A logged-in visitor's NIP-65 list replaces the defaults
+ * (`withGamestrRelay` only forces the Gamestr relay back in), so a list without
+ * these mirrors silently drops the scores that were only ever published to
+ * them - and cannot fall back at all if the Gamestr relay is unreachable.
+ */
+export const SCORE_RELAYS = [
+  'wss://relay.ditto.pub',
+  'wss://nos.lol',
+  'wss://relay.damus.io',
+  'wss://relay.primal.net',
+];
+
+/** Kinds that carry scores, primary and legacy. */
+const SCORE_KINDS = [30762, 5555];
+
+/** True when a filter reads score events. */
+export function isScoreFilter(filter: NostrFilter): boolean {
+  return filter.kinds?.some((kind) => SCORE_KINDS.includes(kind)) ?? false;
+}
+
+/** Read relays for scores: the visitor's read relays plus the score mirrors. */
+export function getScoreReadRelayUrls(relays: RelayEntry[]): string[] {
+  return [...new Set([...getReadRelayUrls(relays), ...SCORE_RELAYS])];
 }
