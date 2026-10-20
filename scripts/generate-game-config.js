@@ -7,7 +7,8 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
 const gameConfigPath = join(rootDir, 'src/lib/gameConfig.ts');
-const outputPath = join(rootDir, 'dist/game-config.json');
+const outputDir = process.argv[2] || 'dist';
+const outputPath = join(rootDir, outputDir, 'game-config.json');
 
 const tsContent = readFileSync(gameConfigPath, 'utf-8');
 
