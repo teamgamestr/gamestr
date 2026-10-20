@@ -4,7 +4,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { GamesGrid } from '@/components/GamesGrid';
 import { GameCard } from '@/components/GameCard';
 import { FeatureGameDialog } from '@/components/FeatureGameDialog';
-import { useGamesWithScores, useLatestScores, useTrendingGames, type ParsedScore } from '@/hooks/useScores';
+import { useHomeScoreFeed } from '@/hooks/useHomeScoreFeed';
+import { type ParsedScore } from '@/hooks/useScores';
 import { useFeaturedPlacements } from '@/hooks/useFeaturedPlacements';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
@@ -28,13 +29,13 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
-  const { data: gamesWithScores, isLoading } = useGamesWithScores({ limit: 1000 });
+  const { data: feed, isLoading } = useHomeScoreFeed();
   const { config, getGame, getFeatured } = useGameConfig();
   const { config: appConfig } = useAppContext();
   const [visibleLatestScoresCount, setVisibleLatestScoresCount] = useState(appConfig.latestScoresCount);
-  const latestScoresQueryLimit = visibleLatestScoresCount + appConfig.latestScoresBufferCount;
-  const { data: latestScores, isLoading: isLatestScoresLoading } = useLatestScores({ limit: latestScoresQueryLimit });
-  const { data: trendingGames } = useTrendingGames({ days: 7 });
+  const gamesWithScores = feed?.games;
+  const latestScores = feed?.latest;
+  const trendingGames = feed?.trending;
   const trendingIdentifiers = useMemo(() => {
     const full = trendingGames || [];
     const cutoff = Math.max(1, Math.ceil(full.length * 0.2));
@@ -215,7 +216,7 @@ export function Home() {
           scores={(latestScores || []).slice(0, visibleLatestScoresCount)}
           gameConfig={config}
           hasMoreScores={(latestScores?.length ?? 0) > visibleLatestScoresCount}
-          isLoading={isLatestScoresLoading}
+          isLoading={isLoading}
           onLoadMore={() => setVisibleLatestScoresCount(count => count + appConfig.latestScoresCount)}
         />
 
