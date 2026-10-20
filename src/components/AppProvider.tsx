@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { z } from 'zod';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { AppContext, type AppConfig, type AppContextType, type Theme, type RelayMetadata } from '@/contexts/AppContext';
+import { stripRetiredTestRelay } from '@/lib/relays';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -45,7 +46,23 @@ export function AppProvider(props: AppProviderProps) {
       serialize: JSON.stringify,
       deserialize: (value: string) => {
         const parsed = JSON.parse(value);
-        return AppConfigSchema.partial().parse(parsed);
+        const config = AppConfigSchema.partial().parse(parsed);
+
+        // A list with no owning account was never derived from NIP-65: it is
+        // either the defaults this app shipped with or an edit made while
+        // logged out, and neither carries the testnet relay deliberately. An
+        // account's own list is explicit and is left alone.
+        if (config.relayMetadata && !config.relayMetadata.pubkey) {
+          return {
+            ...config,
+            relayMetadata: {
+              ...config.relayMetadata,
+              relays: stripRetiredTestRelay(config.relayMetadata.relays),
+            },
+          };
+        }
+
+        return config;
       }
     }
   );
