@@ -1342,6 +1342,19 @@ export function resolveGameByIdentifier(
 }
 
 /**
+ * The game's own canonical URL - the value its score events carry in the NIP-73
+ * `i` tag (see NIP.md). Undefined when the game has no known URL, in which case
+ * callers must fall back to client-side matching on the `game` tag.
+ */
+export function getGameUrl(
+  gameIdentifier: string,
+  customConfig?: GameConfigMap,
+): string | undefined {
+  const url = resolveGameByIdentifier(gameIdentifier, customConfig)?.metadata.url?.trim();
+  return url ? url : undefined;
+}
+
+/**
  * Create a game config key from pubkey and game identifier
  */
 export function createGameKey(pubkey: string, gameIdentifier: string): string {

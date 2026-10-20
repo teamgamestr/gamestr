@@ -61,6 +61,8 @@ export function Developers() {
   "tags": [
     ["d", "my-awesome-game:player-pubkey:level-12"],
     ["game", "my-awesome-game"],
+    ["i", "https://example.com/my-awesome-game"],
+    ["k", "web"],
     ["score", "15000"],
     ["p", "player-pubkey"],
     ["state", "active"],
@@ -81,6 +83,8 @@ export function Developers() {
   "tags": [
     ["d", "my-awesome-game:player-pubkey:level-12"],
     ["game", "my-awesome-game"],
+    ["i", "https://example.com/my-awesome-game"],
+    ["k", "web"],
     ["score", "15000"],
     ["p", "the-players-own-pubkey"],
     ["state", "active"],
@@ -112,6 +116,8 @@ async function publishScore(playerPubkey, score, metadata = {}) {
     tags: [
       ['d', \`my-awesome-game:\${playerPubkey}:\${metadata.level || 'default'}\`],
       ['game', 'my-awesome-game'],
+      ['i', 'https://example.com/my-awesome-game'],
+      ['k', 'web'],
       ['score', score.toString()],
       ['p', playerPubkey],
       ['state', 'active'], // Score state
@@ -159,6 +165,8 @@ const relays = ['wss://relay.gamestr.io', 'wss://relay.damus.io'];
       tags: [
         ['d', \`my-awesome-game:\${playerPubkey}:\${metadata.level || 'default'}\`],
         ['game', 'my-awesome-game'],
+        ['i', 'https://example.com/my-awesome-game'],
+        ['k', 'web'],
         ['score', score.toString()],
         ['p', playerPubkey],
         ['state', 'active'],
@@ -203,6 +211,8 @@ def publish_score(player_pubkey, score, **metadata):
     tags = [
         ["d", f"my-game:{int(time.time())}:{hash(time.time())}"],
         ["game", "my-awesome-game"],
+        ["i", "https://example.com/my-awesome-game"],
+        ["k", "web"],
         ["score", str(score)],
         ["p", player_pubkey],
         ["t", "arcade"],  # Genre tag
@@ -551,6 +561,14 @@ publish_score(
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
               Score events use kind 30762 (addressable replaceable). The structure differs slightly depending on your signing approach:
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              Required tags: <code>d</code>, <code>game</code>, <code>i</code>, <code>k</code>,{' '}
+              <code>score</code> and <code>p</code>. The <code>i</code> tag carries the game's canonical
+              URL as a NIP-73 external content id and <code>k</code> names its kind (<code>web</code>) -
+              that pair is what lets relays answer "every score for this game" directly, so publish it
+              even though clients still fall back to the <code>game</code> tag for older events.
             </p>
 
             <Tabs defaultValue="gamedev-signed">
