@@ -21,15 +21,31 @@ export const GAMESTR_RELAY: RelayEntry = {
   write: true,
 };
 
+/**
+ * The testnet relay.
+ *
+ * It shipped as one of the defaults, so visitors who never edited their list
+ * still read from it and publish to it - which puts testnet scores for live
+ * games on the production leaderboards. It is no longer a default, and
+ * `stripRetiredTestRelay` removes it from a stored default list. It stays a
+ * usable URL (the developer page quotes it for game testing); it is just not
+ * part of anyone's defaults.
+ */
+export const TESTNET_RELAY_URL = 'wss://test.gamestr.io';
+
 /** Relays used until a visitor's NIP-65 relay list is known. */
 export const DEFAULT_RELAYS: RelayEntry[] = [
   GAMESTR_RELAY,
-  { url: 'wss://test.gamestr.io', read: true, write: true },
   { url: 'wss://relay.ditto.pub', read: true, write: true },
   { url: 'wss://nos.lol', read: true, write: true },
   { url: 'wss://relay.damus.io', read: true, write: true },
   { url: 'wss://relay.primal.net', read: true, write: true },
 ];
+
+/** Drop the retired testnet relay from a list that predates its removal. */
+export function stripRetiredTestRelay(relays: RelayEntry[]): RelayEntry[] {
+  return relays.filter((relay) => normalizeRelayUrl(relay.url) !== TESTNET_RELAY_URL);
+}
 
 /**
  * Canonical form of a relay URL: ws(s) scheme, no trailing slash, no fragment.
