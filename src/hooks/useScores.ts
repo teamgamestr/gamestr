@@ -134,11 +134,12 @@ function sortScores(scores: ParsedScore[], direction: ScoreDirection): ParsedSco
 
 /**
  * Query score filters, sending legacy kind 5555 lookups to the relays that
- * actually index them.
+ * index them.
  *
- * The Gamestr relay answers a kind 5555 REQ with nothing, so the visitor's own
- * relay list is the wrong place to ask: a NIP-65 list without the general
- * relays silently reports no legacy history at all.
+ * Legacy scores live on the Gamestr relay - the router sweeps them in and the
+ * history was backfilled - and on the general relays that publish them. The
+ * visitor's own list is the wrong place to ask: it need not contain either, and
+ * a NIP-65 list without them reports no legacy history at all.
  */
 async function queryScoreFilters(
   nostr: NPool,
