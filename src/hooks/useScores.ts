@@ -185,6 +185,140 @@ function getPeriodTimestamp(period: LeaderboardPeriod): number | undefined {
   }
 }
 
+/**
+ * The newest scores across every configured game, ready for the "Latest
+ * Scores" list. `limit` caps the result; omit it to get the full ordering.
+ */
+export function buildLatestScores(events: NostrEvent[], limit = Number.POSITIVE_INFINITY): ParsedScore[] {
+  const excludedSet = new Set(EXCLUDED_GAMES);
+
+  return events
+    .map(validateScoreEvent)
+    .filter((score): score is ParsedScore => score !== null)
+    .filter(score => score.state !== 'invalidated' && score.state !== 'retired')
+    .filter(score => !excludedSet.has(score.gameIdentifier))
+    .sort((a, b) => b.event.created_at - a.event.created_at)
+    .slice(0, limit);
+}
+
+export interface GameWithScores {
+  gameIdentifier: string;
+  developerPubkey: string;
+  scoreCount: number;
+  topScore: number;
+  latestTimestamp: number;
+  genres: string[];
+  sourceKind: number;
+}
+
+/** Aggregate score events into one row per game, newest activity first. */
+export function buildGamesWithScores(events: NostrEvent[]): GameWithScores[] {
+  const parsedScores = events
+    .map(validateScoreEvent)
+    .filter((score): score is ParsedScore => score !== null);
+
+  const gamesMap = new Map<string, {
+    gameIdentifier: string;
+    developerPubkey: string;
+    scoreCount: number;
+    topScore: number;
+    latestTimestamp: number;
+    genres: Set<string>;
+    sourceKind: number;
+  }>();
+
+  parsedScores.forEach(score => {
+    const key = canonicalGameIdentifier(score.gameIdentifier);
+    const existing = gamesMap.get(key);
+
+    if (existing) {
+      existing.scoreCount++;
+      const direction = getScoreDirection(score.gameIdentifier);
+      if (direction === 'asc') {
+        existing.topScore = Math.min(existing.topScore, score.score);
+      } else {
+        existing.topScore = Math.max(existing.topScore, score.score);
+      }
+      existing.latestTimestamp = Math.max(existing.latestTimestamp, score.event.created_at);
+      if (score.genres) {
+        score.genres.forEach(g => existing.genres.add(g));
+      }
+    } else {
+      const isK5555 = score.sourceKind === 5555;
+      const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
+      gamesMap.set(key, {
+        gameIdentifier: key,
+        developerPubkey: devPubkey,
+        scoreCount: 1,
+        topScore: score.score,
+        latestTimestamp: score.event.created_at,
+        genres: new Set(score.genres || []),
+        sourceKind: score.sourceKind || 30762,
+      });
+    }
+  });
+
+  const excludedSet = new Set(EXCLUDED_GAMES);
+  return Array.from(gamesMap.values())
+    .filter(game => !excludedSet.has(game.gameIdentifier))
+    .map(game => ({
+      ...game,
+      genres: Array.from(game.genres),
+    }))
+    .sort((a, b) => b.latestTimestamp - a.latestTimestamp);
+}
+
+export interface TrendingGame {
+  gameIdentifier: string;
+  developerPubkey: string;
+  scoreCount: number;
+  playerCount: number;
+  trendingScore: number;
+}
+
+/** Rank games by recent activity: scores x distinct players. */
+export function buildTrendingGames(events: NostrEvent[]): TrendingGame[] {
+  const parsedScores = events
+    .map(validateScoreEvent)
+    .filter((score): score is ParsedScore => score !== null);
+
+  const gamesMap = new Map<string, {
+    gameIdentifier: string;
+    developerPubkey: string;
+    scoreCount: number;
+    uniquePlayers: Set<string>;
+  }>();
+
+  parsedScores.forEach(score => {
+    const key = canonicalGameIdentifier(score.gameIdentifier);
+    const existing = gamesMap.get(key);
+
+    if (existing) {
+      existing.scoreCount++;
+      existing.uniquePlayers.add(score.playerPubkey);
+    } else {
+      const isK5555 = score.sourceKind === 5555;
+      const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
+      gamesMap.set(key, {
+        gameIdentifier: key,
+        developerPubkey: devPubkey,
+        scoreCount: 1,
+        uniquePlayers: new Set([score.playerPubkey]),
+      });
+    }
+  });
+
+  return Array.from(gamesMap.values())
+    .map(game => ({
+      gameIdentifier: game.gameIdentifier,
+      developerPubkey: game.developerPubkey,
+      scoreCount: game.scoreCount,
+      playerCount: game.uniquePlayers.size,
+      trendingScore: game.scoreCount * game.uniquePlayers.size,
+    }))
+    .sort((a, b) => b.trendingScore - a.trendingScore);
+}
+
 interface UseScoresOptions {
   gameIdentifier?: string;
   playerPubkey?: string;
@@ -337,17 +471,10 @@ export function useLatestScores(options: { limit?: number } = {}) {
 
   const queryKey = ['latest-scores', limit];
 
-  const toLatest = useCallback((events: NostrEvent[]): ParsedScore[] => {
-    const excludedSet = new Set(EXCLUDED_GAMES);
-
-    return events
-      .map(validateScoreEvent)
-      .filter((score): score is ParsedScore => score !== null)
-      .filter(score => score.state !== 'invalidated' && score.state !== 'retired')
-      .filter(score => !excludedSet.has(score.gameIdentifier))
-      .sort((a, b) => b.event.created_at - a.event.created_at)
-      .slice(0, limit);
-  }, [limit]);
+  const toLatest = useCallback(
+    (events: NostrEvent[]): ParsedScore[] => buildLatestScores(events, limit),
+    [limit],
+  );
 
   const query = useQuery({
     queryKey,
@@ -475,61 +602,7 @@ export function useGamesWithScores(options: { limit?: number } = {}) {
   const stagedQuery = useStagedRelayQuery();
   const queryKey = ['games-with-scores', limit];
 
-  const toGames = (events: NostrEvent[]) => {
-    const parsedScores = events
-      .map(validateScoreEvent)
-      .filter((score): score is ParsedScore => score !== null);
-
-    const gamesMap = new Map<string, {
-      gameIdentifier: string;
-      developerPubkey: string;
-      scoreCount: number;
-      topScore: number;
-      latestTimestamp: number;
-      genres: Set<string>;
-      sourceKind: number;
-    }>();
-
-    parsedScores.forEach(score => {
-      const key = canonicalGameIdentifier(score.gameIdentifier);
-      const existing = gamesMap.get(key);
-
-      if (existing) {
-        existing.scoreCount++;
-        const direction = getScoreDirection(score.gameIdentifier);
-        if (direction === 'asc') {
-          existing.topScore = Math.min(existing.topScore, score.score);
-        } else {
-          existing.topScore = Math.max(existing.topScore, score.score);
-        }
-        existing.latestTimestamp = Math.max(existing.latestTimestamp, score.event.created_at);
-        if (score.genres) {
-          score.genres.forEach(g => existing.genres.add(g));
-        }
-      } else {
-        const isK5555 = score.sourceKind === 5555;
-        const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? `nopubkey` : score.event.pubkey;
-        gamesMap.set(key, {
-          gameIdentifier: key,
-          developerPubkey: devPubkey,
-          scoreCount: 1,
-          topScore: score.score,
-          latestTimestamp: score.event.created_at,
-          genres: new Set(score.genres || []),
-          sourceKind: score.sourceKind || 30762,
-        });
-      }
-    });
-
-    const excludedSet = new Set(EXCLUDED_GAMES);
-    return Array.from(gamesMap.values())
-      .filter(game => !excludedSet.has(game.gameIdentifier))
-      .map(game => ({
-        ...game,
-        genres: Array.from(game.genres),
-      }))
-      .sort((a, b) => b.latestTimestamp - a.latestTimestamp);
-  };
+  const toGames = buildGamesWithScores;
 
   return useQuery({
     queryKey,
@@ -570,47 +643,7 @@ export function useTrendingGames(options: { days?: number } = {}) {
   const stagedQuery = useStagedRelayQuery();
   const queryKey = ['trending-games', days];
 
-  const toTrending = (events: NostrEvent[]) => {
-    const parsedScores = events
-      .map(validateScoreEvent)
-      .filter((score): score is ParsedScore => score !== null);
-
-    const gamesMap = new Map<string, {
-      gameIdentifier: string;
-      developerPubkey: string;
-      scoreCount: number;
-      uniquePlayers: Set<string>;
-    }>();
-
-    parsedScores.forEach(score => {
-      const key = canonicalGameIdentifier(score.gameIdentifier);
-      const existing = gamesMap.get(key);
-
-      if (existing) {
-        existing.scoreCount++;
-        existing.uniquePlayers.add(score.playerPubkey);
-      } else {
-        const isK5555 = score.sourceKind === 5555;
-        const devPubkey = (isK5555 || isPlayerSignedGame(score.gameIdentifier)) ? 'nopubkey' : score.event.pubkey;
-        gamesMap.set(key, {
-          gameIdentifier: key,
-          developerPubkey: devPubkey,
-          scoreCount: 1,
-          uniquePlayers: new Set([score.playerPubkey]),
-        });
-      }
-    });
-
-    return Array.from(gamesMap.values())
-      .map(game => ({
-        gameIdentifier: game.gameIdentifier,
-        developerPubkey: game.developerPubkey,
-        scoreCount: game.scoreCount,
-        playerCount: game.uniquePlayers.size,
-        trendingScore: game.scoreCount * game.uniquePlayers.size,
-      }))
-      .sort((a, b) => b.trendingScore - a.trendingScore);
-  };
+  const toTrending = buildTrendingGames;
 
   return useQuery({
     queryKey,
