@@ -14,6 +14,7 @@ const __dirname = dirname(__filename);
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 const distPath = join(__dirname, 'dist');
 
@@ -149,8 +150,8 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-app.listen(PORT, '0.0.0.0', async () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+app.listen(PORT, HOST, async () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
   
   // Start the score bot
   try {
