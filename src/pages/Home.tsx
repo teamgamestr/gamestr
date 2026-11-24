@@ -1,27 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { useEffect, useMemo, useState } from 'react';
 import { GamesGrid } from '@/components/GamesGrid';
 import { GameCard } from '@/components/GameCard';
 import { FeatureGameDialog } from '@/components/FeatureGameDialog';
+import { LatestScoresSection } from '@/components/LatestScoresSection';
 import { useHomeScoreFeed } from '@/hooks/useHomeScoreFeed';
-import { type ParsedScore } from '@/hooks/useScores';
 import { useFeaturedPlacements } from '@/hooks/useFeaturedPlacements';
 import { useGameConfig } from '@/hooks/useGameConfig';
 import { useAppContext } from '@/hooks/useAppContext';
 import { useTheme } from '@/hooks/useTheme';
-import { useAuthor } from '@/hooks/useAuthor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Gamepad2, Flame, Sparkles, Star, Activity, Trophy, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, FALLBACK_GAME_METADATA, formatScoreValue, getScoreDisplayPrefs, resolveGameByIdentifier, isFeaturedActive, isNewGame, type GameConfigMap, type GameMetadata } from '@/lib/gameConfig';
-import { genUserName } from '@/lib/genUserName';
-import { encodeNevent } from '@/lib/nostrLinks';
+import { Search, Gamepad2, Flame, Sparkles, Star, Trophy } from 'lucide-react';
+import { GAME_GENRES, isNoPubkeyGame, getNoPubkeyGames, getAllKind5555Games, getAllGames, NO_PUBKEY_PREFIX, isFeaturedActive, isNewGame, type GameMetadata } from '@/lib/gameConfig';
 
 type FilterMode = 'all' | 'featured' | 'trending' | 'new';
 
@@ -342,179 +334,6 @@ export function Home() {
         </div>
       </div>
     </div>
-  );
-}
-
-interface LatestScoresSectionProps {
-  scores: ParsedScore[];
-  gameConfig: GameConfigMap;
-  hasMoreScores: boolean;
-  isLoading: boolean;
-  onLoadMore: () => void;
-}
-
-function LatestScoresSection({ scores, gameConfig, hasMoreScores, isLoading, onLoadMore }: LatestScoresSectionProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  useEffect(() => {
-    const row = scrollRef.current;
-    if (!row) return;
-
-    const updateScrollState = () => {
-      setCanScrollLeft(row.scrollLeft > 0);
-      setCanScrollRight(hasMoreScores || row.scrollLeft + row.clientWidth < row.scrollWidth - 1);
-    };
-
-    updateScrollState();
-    row.addEventListener('scroll', updateScrollState, { passive: true });
-    window.addEventListener('resize', updateScrollState);
-
-    return () => {
-      row.removeEventListener('scroll', updateScrollState);
-      window.removeEventListener('resize', updateScrollState);
-    };
-  }, [hasMoreScores, isLoading, scores.length]);
-
-  const scrollScores = (direction: 'left' | 'right') => {
-    const row = scrollRef.current;
-    if (!row) return;
-
-    const isAtEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 1;
-    if (direction === 'right' && isAtEnd && hasMoreScores) {
-      onLoadMore();
-      window.requestAnimationFrame(() => {
-        row.scrollBy({ left: row.clientWidth * 0.85, behavior: 'smooth' });
-      });
-      return;
-    }
-
-    row.scrollBy({
-      left: direction === 'left' ? -row.clientWidth * 0.85 : row.clientWidth * 0.85,
-      behavior: 'smooth',
-    });
-  };
-
-  return (
-    <section className="relative overflow-visible rounded-3xl border bg-card/80 p-5 shadow-lg shadow-primary/5 sm:p-6">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.16),transparent_30%)]" />
-      </div>
-      <div className="relative space-y-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <Badge variant="outline" className="mb-2 gap-1 border-primary/30 bg-primary/10 text-primary">
-              <Activity className="h-3 w-3" />
-              Live feed
-            </Badge>
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Latest Scores</h2>
-            <p className="text-sm text-muted-foreground">Fresh runs arriving from Nostr leaderboards.</p>
-          </div>
-          <Button variant="outline" size="sm" asChild className="w-fit gap-2 rounded-full bg-background/70">
-            <Link to="/scores">
-              View all
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        {isLoading || scores.length > 0 ? (
-          <div className="relative py-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label="Scroll latest scores left"
-              disabled={!canScrollLeft}
-              onClick={() => scrollScores('left')}
-              className="absolute left-0 top-1/2 z-10 h-10 w-10 -translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div
-              ref={scrollRef}
-              className="-my-4 flex gap-3 overflow-x-auto py-4 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, index) => (
-                    <Card key={index} className="min-w-[240px] flex-1 snap-start bg-background/70 md:min-w-[280px]">
-                      <CardHeader className="space-y-3 pb-3">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <Skeleton className="h-5 w-3/4" />
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <Skeleton className="h-8 w-24" />
-                        <Skeleton className="h-4 w-full" />
-                      </CardContent>
-                    </Card>
-                  ))
-                : scores.map((score) => (
-                    <LatestScoreCard key={score.event.id} score={score} gameConfig={gameConfig} />
-                  ))}
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              aria-label="Scroll latest scores right"
-              disabled={!canScrollRight}
-              onClick={() => scrollScores('right')}
-              className="absolute right-0 top-1/2 z-10 h-10 w-10 translate-x-3 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur transition-opacity disabled:opacity-0"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
-        ) : (
-          <Card className="border-dashed bg-background/70">
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No recent scores found. Try another relay or check back soon.
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </section>
-  );
-}
-
-interface LatestScoreCardProps {
-  score: ParsedScore;
-  gameConfig: GameConfigMap;
-}
-
-function LatestScoreCard({ score, gameConfig }: LatestScoreCardProps) {
-  const author = useAuthor(score.playerPubkey);
-  const metadata = author.data?.metadata;
-  const playerName = metadata?.name || metadata?.display_name || genUserName(score.playerPubkey);
-  const resolvedGame = resolveGameByIdentifier(score.gameIdentifier, gameConfig);
-  const gameMetadata: GameMetadata = resolvedGame?.metadata || FALLBACK_GAME_METADATA;
-  const scorePrefs = getScoreDisplayPrefs(gameMetadata);
-
-  return (
-    <Link to={`/${score.gameIdentifier}/score/${encodeNevent(score.event.id)}`} className="group block min-w-[240px] flex-1 snap-start rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:min-w-[280px]">
-      <Card className="h-full overflow-hidden bg-background/75 transition-all group-hover:-translate-y-1 group-hover:border-primary/50 group-hover:shadow-xl group-hover:shadow-primary/10">
-        <CardHeader className="space-y-3 pb-3">
-          <div className="flex items-center justify-between gap-2">
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-              <AvatarImage src={metadata?.picture} alt={playerName} />
-              <AvatarFallback>{playerName.slice(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <Badge variant="secondary" className="max-w-36 rounded-full px-3 py-1 text-xs font-semibold">
-              <span className="truncate">{gameMetadata.name}</span>
-            </Badge>
-          </div>
-          <CardTitle className="line-clamp-1 text-base">{playerName}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <p className="text-3xl font-black tracking-tight text-primary">{formatScoreValue(score.score, scorePrefs)}</p>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {formatDistanceToNow(score.event.created_at * 1000, { addSuffix: true })}
-          </p>
-        </CardContent>
-      </Card>
-    </Link>
   );
 }
 
